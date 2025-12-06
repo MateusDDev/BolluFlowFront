@@ -7,5 +7,6 @@ export function mapCustomerDTO(dto: CustomerDTO): Customer {
         name: dto.name,
         whatsapp: dto.whatsapp,
         address: dto.address,
+        birthdate: dto.birthdate
     };
 }
