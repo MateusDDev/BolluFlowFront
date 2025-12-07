@@ -30,22 +30,30 @@ export const columns: ColumnDef<Customer>[] = [
         },
     },
     {
-        accessorKey: "number",
-        header: "Número",
+        accessorKey: "whatsapp",
+        header: "Whatsapp",
     },
-    // {
-    //     accessorKey: "amount",
-    //     header: () => <div className="text-right">Amount</div>,
-    //     cell: ({ row }) => {
-    //         const amount = parseFloat(row.getValue("amount"))
-    //         const formatted = new Intl.NumberFormat("en-US", {
-    //             style: "currency",
-    //             currency: "USD",
-    //         }).format(amount)
-    //
-    //         return <div className="text-right font-medium">{formatted}</div>
-    //     }
-    // },
+    {
+        accessorKey: "birthdate",
+        header: "Aniversário"
+    },
+    {
+        accessorKey: "preferences",
+        header: "Preferências"
+    },
+    {
+        accessorKey: "address",
+        header: () => <div className="text-center">Endereço</div>,
+        cell: ({ row }) => {
+            const customer = row.original as Customer
+
+            const address = customer.deliveryAddress
+
+            return (
+                <div className="text-center">{`${address.neighborhood} - ${address.street} - ${address.number}`}</div>
+            )
+        }
+    },
     {
         id: "actions",
         cell: ({ row }) => {
@@ -55,7 +63,7 @@ export const columns: ColumnDef<Customer>[] = [
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
+                            <span className="sr-only">Abrir menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -64,7 +72,7 @@ export const columns: ColumnDef<Customer>[] = [
                         <DropdownMenuItem
                             onClick={() => navigator.clipboard.writeText(payment.whatsapp)}
                         >
-                            Copiar número
+                            Copiar número do Whatsapp
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>Editar cliente</DropdownMenuItem>

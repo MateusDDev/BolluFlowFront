@@ -4,7 +4,7 @@ export interface CustomerDTO {
     id: number;
     name: string;
     whatsapp: string;
-    address: DeliveryAddressType;
+    deliveryAddress: DeliveryAddressType;
     preferences?: string;
-    birthdate: Date;
+    birthday?: Date;
 }
