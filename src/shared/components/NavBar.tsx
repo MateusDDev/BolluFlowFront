@@ -1,6 +1,5 @@
 ﻿"use client"
 
-import Link from "next/link";
 import {LogOut, Moon, Settings, Sun, User} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/shared/components/ui/avatar";
 import {
@@ -25,7 +24,7 @@ const NavBar = () => {
 
     return (
         <nav className="flex items-center justify-between p-4">
-            <SidebarTrigger />
+            <SidebarTrigger className="text-primary" />
 
             <h1>{pageName}</h1>
 

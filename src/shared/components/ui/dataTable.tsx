@@ -7,7 +7,9 @@ import {
     flexRender,
     getCoreRowModel,
     useReactTable,
+    ColumnFiltersState,
     getPaginationRowModel,
+    getFilteredRowModel,
     getSortedRowModel
 } from "@tanstack/react-table"
 import {
@@ -24,9 +26,11 @@ import {ChevronLeft, ChevronRight} from "lucide-react";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    columnFilters?: ColumnFiltersState
+    onColumnFiltersChange?: (updater: ColumnFiltersState | ((old: ColumnFiltersState) => ColumnFiltersState)) => void
 }
 
-export function DataTable<TData, TValue>({columns, data,}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({columns, data, columnFilters, onColumnFiltersChange}: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
 
     const table = useReactTable({
@@ -36,8 +40,11 @@ export function DataTable<TData, TValue>({columns, data,}: DataTableProps<TData,
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
+        onColumnFiltersChange: onColumnFiltersChange,
+        getFilteredRowModel: getFilteredRowModel(),
         state: {
             sorting,
+            columnFilters: columnFilters
         }
     })
 
