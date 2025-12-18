@@ -1,6 +1,6 @@
 ﻿import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCustomer } from "@/features/customers/services/api/customer.api";
-import { mapCustomerDTO } from "@/features/customers/domain/customer.mapper";
+import { mapCustomerModel } from "@/features/customers/domain/customer.mapper";
 
 type CreateCustomerInput = {
     name: string;
@@ -19,7 +19,7 @@ export function useCreateCustomer() {
                 throw new Error(res.errorMessage ?? "Erro ao criar cliente");
             }
 
-            return mapCustomerDTO(res.value!);
+            return mapCustomerModel(res.value!);
         },
         onSuccess: async () => {
             await client.invalidateQueries({ queryKey: ["customers"] });

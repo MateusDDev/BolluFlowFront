@@ -1,82 +1,68 @@
-﻿"use client"
+﻿"use client";
 
-import {LogOut, Moon, Settings, Sun, User} from "lucide-react";
-import {Avatar, AvatarFallback, AvatarImage} from "@/shared/components/ui/avatar";
+import { LogOut, Moon, Settings, Sun, User } from "lucide-react";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
-import {Button} from "@/shared/components/ui/button";
-import {useTheme} from "next-themes";
-import {SidebarTrigger} from "ui/sidebar";
-import {usePathname} from "next/navigation";
-import {navItems} from "@/shared/navigation/items";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { SidebarTrigger } from "ui/sidebar";
+import { usePathname } from "next/navigation";
+import { navItems } from "@/shared/navigation/items";
+import ThemeButton from "components/ThemeButton";
+import { useLogout } from "@/features/login/hooks/mutations/useLogout";
 
 const NavBar = () => {
-    const { setTheme } = useTheme()
-    const pathname = usePathname();
+  const logout = useLogout();
 
-    const pageName = navItems.find(item => item.url === pathname)?.title;
+  const pathname = usePathname();
 
-    return (
-        <nav className="flex items-center justify-between p-4">
-            <SidebarTrigger className="text-primary" />
+  const pageName = navItems.find((item) => item.url === pathname)?.title;
 
-            <h1>{pageName}</h1>
+  return (
+    <nav className="flex items-center justify-between p-4">
+      <SidebarTrigger className="text-primary" />
 
-            <div className="flex items-center gap-4">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-                            <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-                            <span className="sr-only">Toggle theme</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setTheme("light")}>
-                            Claro
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("dark")}>
-                            Escuro
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("system")}>
-                            Sistema
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+      <h1>{pageName}</h1>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent sideOffset={8}>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <User/>
-                            Perfil
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Settings/>
-                            Configurações
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-400">
-                            <LogOut/>
-                            Sair
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </nav>
-    );
-}
+      <div className="flex items-center gap-4">
+        <ThemeButton />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent sideOffset={8}>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <User />
+              Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings />
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-400" onClick={logout}>
+              <LogOut />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </nav>
+  );
+};
 
 export default NavBar;

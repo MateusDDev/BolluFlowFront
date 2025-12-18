@@ -1,12 +1,12 @@
 ﻿import { Customer } from "./customer";
-import {CustomerDTO} from "@/features/customers/services/api/customer.dto";
+import {CustomerModel} from "@/features/customers/services/api/customer.model";
 
-export function mapCustomerDTO(dto: CustomerDTO): Customer {
+export function mapCustomerModel(model: CustomerModel): Customer {
     return {
-        id: dto.id,
-        name: dto.name,
-        whatsapp: dto.whatsapp,
-        deliveryAddress: dto.deliveryAddress,
-        birthday: dto.birthday
+        id: model.id,
+        name: model.name,
+        whatsapp: model.whatsapp,
+        deliveryAddress: model.deliveryAddress,
+        birthday: model.birthday
     };
 }

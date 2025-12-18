@@ -1,6 +1,6 @@
 ﻿import {DeliveryAddressType} from "@/shared/types/deliveryAddressType";
 
-export interface CustomerDTO {
+export interface CustomerModel {
     id: number;
     name: string;
     whatsapp: string;
