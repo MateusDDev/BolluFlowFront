@@ -1,9 +1,9 @@
 ﻿import { ResultOf } from "@/shared/types/result";
-import { CustomerDTO } from "./customer.dto";
+import { CustomerModel } from "./customer.model";
 import {apiClient} from "@/shared/api/client";
 
 export function getCustomers() {
-    return apiClient<ResultOf<CustomerDTO[]>>("/customers", "GET");
+    return apiClient<ResultOf<CustomerModel[]>>("/customers", "GET");
 }
 
 export function createCustomer(data: {
@@ -11,11 +11,11 @@ export function createCustomer(data: {
     whatsapp: string;
     address: string;
 }) {
-    return apiClient<ResultOf<CustomerDTO>>("/customers", "POST", data);
+    return apiClient<ResultOf<CustomerModel>>("/customers", "POST", data);
 }
 
-export function updateCustomer(id: number, data: Partial<CustomerDTO>) {
-    return apiClient<ResultOf<CustomerDTO>>(`/customers/${id}`, "PUT", data);
+export function updateCustomer(id: number, data: Partial<CustomerModel>) {
+    return apiClient<ResultOf<CustomerModel>>(`/customers/${id}`, "PUT", data);
 }
 
 export function deleteCustomer(id: number) {

@@ -8,9 +8,11 @@ export async function apiClient<T>(
     body?: unknown,
     options: RequestInit = {}
 ): Promise<T> {
+    const token = localStorage.getItem("authToken");
 
     const headers: HeadersInit = {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers ?? {})
     };
 
