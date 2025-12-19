@@ -1,9 +1,9 @@
-﻿"use client"
+﻿'use client'
 
-import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown } from "lucide-react"
+import { ColumnDef } from '@tanstack/react-table'
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react'
 
-import { Button } from "ui/button"
+import { Button } from 'ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,17 +11,19 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "ui/dropdown-menu"
-import {Customer} from "@/features/customers/domain/customer";
+} from 'ui/dropdown-menu'
+import { Customer } from '@/features/customers/domain/customer'
 
 export const columns: ColumnDef<Customer>[] = [
     {
-        accessorKey: "name",
+        accessorKey: 'name',
         header: ({ column }) => {
             return (
                 <Button
                     variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    onClick={() =>
+                        column.toggleSorting(column.getIsSorted() === 'asc')
+                    }
                 >
                     Nome
                     <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -30,19 +32,19 @@ export const columns: ColumnDef<Customer>[] = [
         },
     },
     {
-        accessorKey: "whatsapp",
-        header: "Whatsapp",
+        accessorKey: 'whatsapp',
+        header: 'Whatsapp',
     },
     {
-        accessorKey: "birthdate",
-        header: "Aniversário"
+        accessorKey: 'birthdate',
+        header: 'Aniversário',
     },
     {
-        accessorKey: "preferences",
-        header: "Preferências"
+        accessorKey: 'preferences',
+        header: 'Preferências',
     },
     {
-        accessorKey: "address",
+        accessorKey: 'address',
         header: () => <div className="text-center">Endereço</div>,
         cell: ({ row }) => {
             const customer = row.original as Customer
@@ -52,12 +54,12 @@ export const columns: ColumnDef<Customer>[] = [
             return (
                 <div className="text-center">{`${address.neighborhood} - ${address.street} - ${address.number}`}</div>
             )
-        }
+        },
     },
     {
-        id: "actions",
+        id: 'actions',
         cell: ({ row }) => {
-            const payment = row.original
+            const customer = row.original
 
             return (
                 <DropdownMenu>
@@ -70,7 +72,9 @@ export const columns: ColumnDef<Customer>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.whatsapp)}
+                            onClick={() =>
+                                navigator.clipboard.writeText(customer.whatsapp)
+                            }
                         >
                             Copiar número do Whatsapp
                         </DropdownMenuItem>
@@ -80,6 +84,6 @@ export const columns: ColumnDef<Customer>[] = [
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
-        }
-    }
+        },
+    },
 ]
