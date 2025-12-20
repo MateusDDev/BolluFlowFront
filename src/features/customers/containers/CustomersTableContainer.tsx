@@ -41,9 +41,7 @@ const CustomersTableContainer = () => {
                         <Search className="text-primary" />
                     </Button>
                 </div>
-                <div>
-                    <NewCustomerModal />
-                </div>
+                <NewCustomerModal />
             </div>
             <div>
                 <DataTable

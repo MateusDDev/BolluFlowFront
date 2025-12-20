@@ -15,15 +15,17 @@ import React, { useState } from 'react'
 import { useCreateCustomer } from '@/features/customers/hooks/mutations/useCreateCustomer'
 import { BirthdayCalendar } from '@/features/customers/components/atoms/BirthdayCalendar'
 import { Textarea } from 'ui/textarea'
+import { formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { useMe } from '@/features/login/hooks/useMe'
 
 const NewCustomerModal = () => {
+    const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [whatsapp, setWhatsapp] = useState('')
     const [birthday, setBirthday] = React.useState<Date>()
     const [preferences, setPreferences] = useState<string>()
     const [street, setStreet] = useState('')
-    const [number, setNumber] = useState(0)
+    const [number, setNumber] = useState('')
     const [neighborhood, setNeighborhood] = useState('')
     const { data: me } = useMe()
 
@@ -40,27 +42,27 @@ const NewCustomerModal = () => {
             preferences,
             deliveryAddress: {
                 neighborhood,
-                number,
+                number: Number(number),
                 street,
             },
         })
+
+        resetForm()
+        setOpen(false)
     }
 
-    function formatWhatsapp(value: string) {
-        const digits = value.replace(/\D/g, '')
-
-        if (!digits) return ''
-
-        if (digits.length <= 2) return `(${digits}`
-
-        if (digits.length <= 7)
-            return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
-
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
+    const resetForm = () => {
+        setName('')
+        setWhatsapp('')
+        setBirthday(undefined)
+        setPreferences('')
+        setStreet('')
+        setNumber('')
+        setNeighborhood('')
     }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline">Novo cliente</Button>
             </DialogTrigger>
@@ -75,7 +77,7 @@ const NewCustomerModal = () => {
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-3">
-                        <Label>Nome</Label>
+                        <Label>Nome*</Label>
                         <Input
                             placeholder="Nome do cliente"
                             value={name}
@@ -84,16 +86,16 @@ const NewCustomerModal = () => {
                         />
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>Whatsapp</Label>
-                        <Input
-                            placeholder="(73) 99999-9999"
-                            value={whatsapp}
-                            onChange={(e) =>
-                                setWhatsapp(formatWhatsapp(e.target.value))
-                            }
-                        />
-                    </div>
+                    <Label>Whatsapp*</Label>
+                    <Input
+                        placeholder="(73) 99999-9999"
+                        value={formatWhatsapp(whatsapp)}
+                        onChange={(e) => {
+                            const onlyDigits = e.target.value.replace(/\D/g, '')
+                            setWhatsapp(onlyDigits)
+                        }}
+                        required
+                    />
 
                     <BirthdayCalendar
                         date={birthday}
@@ -110,21 +112,26 @@ const NewCustomerModal = () => {
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Endereço de entrega</Label>
+                        <Label>Endereço de entrega*</Label>
 
                         <Input
                             placeholder="Rua / Avenida"
                             value={street}
                             onChange={(e) => setStreet(e.target.value)}
+                            required
                         />
 
                         <div className="grid grid-cols-3 gap-2">
                             <Input
                                 placeholder="Número"
                                 value={number}
-                                onChange={(e) =>
-                                    setNumber(Number(e.target.value))
-                                }
+                                onChange={(e) => {
+                                    const onlyNumbers = e.target.value.replace(
+                                        /\D/g,
+                                        ''
+                                    )
+                                    setNumber(onlyNumbers)
+                                }}
                             />
 
                             <Input
@@ -134,6 +141,7 @@ const NewCustomerModal = () => {
                                     setNeighborhood(e.target.value)
                                 }
                                 className="col-span-2"
+                                required
                             />
                         </div>
                     </div>
