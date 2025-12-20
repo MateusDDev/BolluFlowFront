@@ -1,18 +1,12 @@
 ﻿'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal, ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 
 import { Button } from 'ui/button'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from 'ui/dropdown-menu'
 import { Customer } from '@/features/customers/domain/customer'
+import { CustomerActions } from '@/features/customers/components/atoms/CustomerActions'
+import { formatDate, formatWhatsapp } from '@/shared/helpers/formatHelper'
 
 export const columns: ColumnDef<Customer>[] = [
     {
@@ -34,14 +28,37 @@ export const columns: ColumnDef<Customer>[] = [
     {
         accessorKey: 'whatsapp',
         header: 'Whatsapp',
+        cell: ({ row }) => {
+            const customer = row.original as Customer
+
+            return (
+                <a
+                    target="_blank"
+                    href={`https://wa.me/55${customer.whatsapp}`}
+                    className="text-primary"
+                >
+                    {formatWhatsapp(customer.whatsapp)}
+                </a>
+            )
+        },
     },
     {
         accessorKey: 'birthdate',
         header: 'Aniversário',
+        cell: ({ row }) => {
+            const customer = row.original as Customer
+
+            return <div>{formatDate(customer.birthday)}</div>
+        },
     },
     {
         accessorKey: 'preferences',
         header: 'Preferências',
+        cell: ({ row }) => {
+            const customer = row.original as Customer
+
+            return <div>{customer.preferences}</div>
+        },
     },
     {
         accessorKey: 'address',
@@ -58,32 +75,8 @@ export const columns: ColumnDef<Customer>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
-            const customer = row.original
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() =>
-                                navigator.clipboard.writeText(customer.whatsapp)
-                            }
-                        >
-                            Copiar número do Whatsapp
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Editar cliente</DropdownMenuItem>
-                        <DropdownMenuItem>Excluir cliente</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
-        },
+        cell: ({ row }) => (
+            <CustomerActions customer={row.original as Customer} />
+        ),
     },
 ]
