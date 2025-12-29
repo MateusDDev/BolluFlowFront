@@ -3,7 +3,6 @@ import { createCustomer } from '@/features/customers/services/api/customer.api'
 import { mapCustomerModel } from '@/features/customers/domain/customer.mapper'
 
 export type CreateCustomerInput = {
-    userId: number
     name: string
     whatsapp: string
     preferences?: string
@@ -20,20 +19,16 @@ export function useCreateCustomer() {
 
     return useMutation({
         mutationFn: async (data: CreateCustomerInput) => {
-            const res = await createCustomer(data)
-
-            if (!res.isSuccessful) {
-                throw new Error(res.errorMessage ?? 'Erro ao criar cliente')
-            }
-
-            return mapCustomerModel(res.value!)
+            const customer = await createCustomer(data)
+            return mapCustomerModel(customer)
         },
+
         onSuccess: async () => {
             await client.invalidateQueries({ queryKey: ['customers'] })
         },
-        onError: (err) => {
-            console.error(err)
-            return 'Erro ao criar cliente:'
+
+        onError: (error) => {
+            console.error(error)
         },
     })
 }

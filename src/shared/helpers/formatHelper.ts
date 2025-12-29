@@ -17,3 +17,21 @@ export function formatDate(date?: Date | string): string {
 
     return new Intl.DateTimeFormat('pt-BR').format(parsedDate)
 }
+
+export function formatCurrency(
+    value: string,
+    locale = 'pt-BR',
+    currency?: string
+) {
+    const digits = value.replace(/\D/g, '')
+    if (!digits) return ''
+
+    const number = Number(digits) / 100
+
+    return new Intl.NumberFormat(locale, {
+        style: currency ? 'currency' : 'decimal',
+        currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(number)
+}

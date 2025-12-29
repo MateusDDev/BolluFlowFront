@@ -43,7 +43,7 @@ export const columns: ColumnDef<Customer>[] = [
         },
     },
     {
-        accessorKey: 'birthdate',
+        accessorKey: 'birthday',
         header: 'Aniversário',
         cell: ({ row }) => {
             const customer = row.original as Customer
@@ -54,11 +54,6 @@ export const columns: ColumnDef<Customer>[] = [
     {
         accessorKey: 'preferences',
         header: 'Preferências',
-        cell: ({ row }) => {
-            const customer = row.original as Customer
-
-            return <div>{customer.preferences}</div>
-        },
     },
     {
         accessorKey: 'address',
@@ -69,7 +64,7 @@ export const columns: ColumnDef<Customer>[] = [
             const address = customer.deliveryAddress
 
             return (
-                <div className="text-center">{`${address.neighborhood} - ${address.street} - ${address.number}`}</div>
+                <div className="text-center">{`Bairro ${address.neighborhood}, Rua ${address.street} - Nº ${address.number}`}</div>
             )
         },
     },

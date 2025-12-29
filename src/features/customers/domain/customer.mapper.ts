@@ -9,5 +9,6 @@ export function mapCustomerModel(model: CustomerModel): Customer {
         whatsapp: model.whatsapp,
         deliveryAddress: model.deliveryAddress,
         birthday: model.birthday,
+        preferences: model.preferences,
     }
 }
