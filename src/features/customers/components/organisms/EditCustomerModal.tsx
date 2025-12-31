@@ -14,10 +14,10 @@ import { BirthdayCalendar } from '@/features/customers/components/atoms/Birthday
 import { Textarea } from 'ui/textarea'
 import { formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { useUpdateCustomer } from '@/features/customers/hooks/mutations/useUpdateCustomer'
-import { Customer } from '@/features/customers/domain/customer'
+import { CustomerModel } from '@/features/customers/services/api/customer.model'
 
 interface EditCustomerModalProps {
-    customer: Customer
+    customer: CustomerModel
     open: boolean
     onOpenChange: (isOpen: boolean) => void
 }
@@ -32,7 +32,7 @@ interface FormState {
     neighborhood: string
 }
 
-const mapCustomerToForm = (customer: Customer): FormState => ({
+const mapCustomerToForm = (customer: CustomerModel): FormState => ({
     name: customer.name,
     whatsapp: customer.whatsapp,
     birthday: customer.birthday ? new Date(customer.birthday) : undefined,

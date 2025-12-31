@@ -3,7 +3,6 @@ import {
     updateIngredient,
     UpdateIngredientData,
 } from '@/features/ingredients/services/ingredient.api'
-import { mapIngredientModel } from '@/features/ingredients/domain/ingredient.mapper'
 
 export function useUpdateIngredient() {
     const client = useQueryClient()
@@ -15,10 +14,7 @@ export function useUpdateIngredient() {
         }: {
             id: number
             data: UpdateIngredientData
-        }) => {
-            const ingredient = await updateIngredient(id, data)
-            return mapIngredientModel(ingredient)
-        },
+        }) => await updateIngredient(id, data),
 
         onSuccess: async () => {
             await client.invalidateQueries({ queryKey: ['ingredients'] })

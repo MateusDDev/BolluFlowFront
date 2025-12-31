@@ -12,11 +12,11 @@ import { Input } from 'ui/input'
 import React, { useEffect, useState } from 'react'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
-import { Ingredient } from '@/features/ingredients/domain/ingredient'
 import { UpdateIngredientData } from '@/features/ingredients/services/ingredient.api'
+import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 interface EditIngredientModalProps {
-    ingredient: Ingredient
+    ingredient: IngredientModel
     open: boolean
     onOpenChange: (open: boolean) => void
 }
@@ -29,7 +29,7 @@ interface FormState {
     minimumStockQuantity: string
 }
 
-const mapIngredientToForm = (ingredient: Ingredient): FormState => ({
+const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
     unit: ingredient.unit,
     unitPrice: formatCurrency(

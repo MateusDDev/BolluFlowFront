@@ -4,11 +4,11 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 
 import { Button } from 'ui/button'
-import { Customer } from '@/features/customers/domain/customer'
 import { CustomerActions } from '@/features/customers/components/atoms/CustomerActions'
 import { formatDate, formatWhatsapp } from '@/shared/helpers/formatHelper'
+import { CustomerModel } from '@/features/customers/services/api/customer.model'
 
-export const columns: ColumnDef<Customer>[] = [
+export const columns: ColumnDef<CustomerModel>[] = [
     {
         accessorKey: 'name',
         header: ({ column }) => {
@@ -29,7 +29,7 @@ export const columns: ColumnDef<Customer>[] = [
         accessorKey: 'whatsapp',
         header: 'Whatsapp',
         cell: ({ row }) => {
-            const customer = row.original as Customer
+            const customer = row.original as CustomerModel
 
             return (
                 <a
@@ -46,7 +46,7 @@ export const columns: ColumnDef<Customer>[] = [
         accessorKey: 'birthday',
         header: 'Aniversário',
         cell: ({ row }) => {
-            const customer = row.original as Customer
+            const customer = row.original as CustomerModel
 
             return <div>{formatDate(customer.birthday)}</div>
         },
@@ -59,7 +59,7 @@ export const columns: ColumnDef<Customer>[] = [
         accessorKey: 'address',
         header: () => <div className="text-center">Endereço</div>,
         cell: ({ row }) => {
-            const customer = row.original as Customer
+            const customer = row.original as CustomerModel
 
             const address = customer.deliveryAddress
 
@@ -71,7 +71,7 @@ export const columns: ColumnDef<Customer>[] = [
     {
         id: 'actions',
         cell: ({ row }) => (
-            <CustomerActions customer={row.original as Customer} />
+            <CustomerActions customer={row.original as CustomerModel} />
         ),
     },
 ]

@@ -20,12 +20,12 @@ import {
 } from 'ui/dropdown-menu'
 import { Button } from 'ui/button'
 import { MoreHorizontal } from 'lucide-react'
-import { Ingredient } from '@/features/ingredients/domain/ingredient'
 import { useDeleteIngredient } from '@/features/ingredients/hooks/mutations/useDeleteIngredient'
 import { EditIngredientModal } from '@/features/ingredients/components/organisms/EditIngredientModal'
+import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 type Props = {
-    ingredient: Ingredient
+    ingredient: IngredientModel
 }
 
 export function IngredientActions({ ingredient }: Props) {

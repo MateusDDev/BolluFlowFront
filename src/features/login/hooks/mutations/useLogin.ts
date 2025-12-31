@@ -1,8 +1,6 @@
 ﻿'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-
-import { mapUserToUserModel } from '@/features/login/domain/user.mapper'
 import { login } from '@/features/login/services/user.api.js'
 
 type LoginPayload = {
@@ -15,9 +13,7 @@ export function useLogin() {
 
     return useMutation({
         mutationFn: async ({ email, password }: LoginPayload) => {
-            const res = await login(email, password)
-
-            const user = mapUserToUserModel(res)
+            const user = await login(email, password)
 
             localStorage.setItem('authToken', user.token ?? '')
 

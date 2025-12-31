@@ -1,28 +1,28 @@
-﻿"use client";
+﻿'use client'
 
-import { ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useMe } from "@/features/login/hooks/useMe";
+import { ReactNode, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMe } from '@/features/login/hooks/useMe'
 
 type Props = {
-  children: ReactNode;
-};
+    children: ReactNode
+}
 
 export function AuthWrapper({ children }: Props) {
-  const router = useRouter();
-  const { data: user, isLoading, isError } = useMe();
+    const router = useRouter()
+    const { data: user, isLoading, isError } = useMe()
 
-  useEffect(() => {
-    if (isError) {
-      router.push("/login");
+    useEffect(() => {
+        if (isError) {
+            router.push('/login')
+        }
+    }, [isError, router])
+
+    if (isLoading) {
+        return null
     }
-  }, [isError, router]);
 
-  if (isLoading) {
-    return null;
-  }
+    if (!user) return null
 
-  if (!user) return null;
-
-  return <>{children}</>;
+    return <>{children}</>
 }
