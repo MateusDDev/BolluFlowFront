@@ -12,7 +12,7 @@ import { Input } from 'ui/input'
 import React, { useEffect, useState } from 'react'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
-import { UpdateIngredientData } from '@/features/ingredients/services/ingredient.api'
+import { UpdateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 interface EditIngredientModalProps {
@@ -68,7 +68,7 @@ export const EditIngredientModal = ({
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        const payload: UpdateIngredientData = {
+        const payload: UpdateIngredientDataType = {
             name: form.name,
             unit: form.unit,
             unitPrice: Number(form.unitPrice.replace(',', '.')),

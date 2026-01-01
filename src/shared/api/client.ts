@@ -1,6 +1,6 @@
 ﻿import { API_URL } from './config'
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 export type ApiError = {
     code: string

@@ -14,7 +14,7 @@ import { Input } from 'ui/input'
 import React, { useState } from 'react'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
-import { CreateIngredientData } from '@/features/ingredients/services/ingredient.api'
+import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 
 export const NewIngredientModal = () => {
     const [open, setOpen] = useState(false)
@@ -41,7 +41,7 @@ export const NewIngredientModal = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        const payload: CreateIngredientData = {
+        const payload: CreateIngredientDataType = {
             name,
             unit,
             unitPrice: Number(unitPrice.replace(',', '.')),

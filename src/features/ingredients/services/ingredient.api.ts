@@ -9,7 +9,7 @@ export function getIngredientById(id: number) {
     return apiClient<IngredientModel>(`/ingredients/${id}`, 'GET')
 }
 
-export type CreateIngredientData = {
+export type CreateIngredientDataType = {
     name: string
     unit: string
     unitPrice: number
@@ -17,13 +17,13 @@ export type CreateIngredientData = {
     minimumStockQuantity?: number
 }
 
-export function createIngredient(data: CreateIngredientData) {
+export function createIngredient(data: CreateIngredientDataType) {
     return apiClient<IngredientModel>('/ingredients', 'POST', data)
 }
 
-export type UpdateIngredientData = Partial<Omit<IngredientModel, 'id'>>
+export type UpdateIngredientDataType = Partial<Omit<IngredientModel, 'id'>>
 
-export function updateIngredient(id: number, data: UpdateIngredientData) {
+export function updateIngredient(id: number, data: UpdateIngredientDataType) {
     return apiClient<IngredientModel>(`/ingredients/${id}`, 'PUT', data)
 }
 

@@ -1,7 +1,7 @@
 ﻿import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     updateIngredient,
-    UpdateIngredientData,
+    UpdateIngredientDataType,
 } from '@/features/ingredients/services/ingredient.api'
 
 export function useUpdateIngredient() {
@@ -13,7 +13,7 @@ export function useUpdateIngredient() {
             data,
         }: {
             id: number
-            data: UpdateIngredientData
+            data: UpdateIngredientDataType
         }) => await updateIngredient(id, data),
 
         onSuccess: async () => {

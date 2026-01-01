@@ -1,6 +1,57 @@
 import { apiClient } from '@/shared/api/client'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
+import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
 
 export function getRecipes() {
-    return apiClient<RecipeModel>('/recipes', 'GET')
+    return apiClient<RecipeModel[]>('/recipes', 'GET')
+}
+
+export type CreateRecipeDataType = {
+    name: string
+    category: string
+    preparationTime?: number
+}
+
+export function getRecipeById(id: number) {
+    return apiClient<RecipeModel>(`/recipes/${id}`, 'GET')
+}
+
+export function getRecipeIngredients(id: number) {
+    return apiClient<RecipeIngredientModel[]>(
+        `/recipes/${id}/ingredients`,
+        'GET'
+    )
+}
+
+export function createRecipe(data: CreateRecipeDataType) {
+    return apiClient<RecipeModel>('/recipes', 'POST', data)
+}
+
+export type UpdateRecipeDataType = {
+    name?: string
+    category?: string
+    preparationTime?: number
+    isActive?: boolean
+}
+
+export function updateRecipe(id: number, data: UpdateRecipeDataType) {
+    return apiClient<RecipeModel>(`/recipes/${id}`, 'PATCH', data)
+}
+
+export type UpdateRecipePricingDataType = {
+    indirectCostPercentage?: number
+    markupPercentage?: number
+    finalPrice?: number
+    discountPercentage?: number
+}
+
+export function updateRecipePricing(
+    id: number,
+    data: UpdateRecipePricingDataType
+) {
+    return apiClient<RecipeModel>(`/recipes/${id}/pricing`, 'PATCH', data)
+}
+
+export function deleteRecipe(id: number) {
+    return apiClient<null>(`/recipes/${id}`, 'DELETE')
 }

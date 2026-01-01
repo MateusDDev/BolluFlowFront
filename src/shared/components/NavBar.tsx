@@ -20,14 +20,18 @@ import { navItems } from '@/shared/navigation/items'
 import ThemeButton from 'components/ThemeButton'
 import { useLogout } from '@/features/login/hooks/mutations/useLogout'
 import { useMe } from '@/features/login/hooks/useMe'
+import { usePageTitle } from 'components/providers/PageTitleProvider'
 
 const NavBar = () => {
     const logout = useLogout()
     const { data: user } = useMe()
 
+    const { title } = usePageTitle()
+
     const pathname = usePathname()
 
-    const pageName = navItems.find((item) => item.url === pathname)?.title
+    const pageName =
+        title ?? navItems.find((item) => item.url === pathname)?.title
 
     return (
         <nav className="flex items-center justify-between p-4">

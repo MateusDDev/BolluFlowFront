@@ -1,29 +1,35 @@
-﻿import {Home, UsersIcon, ChefHatIcon, WheatIcon, NotepadTextIcon} from "lucide-react";
+﻿import {
+    Home,
+    UsersIcon,
+    ChefHatIcon,
+    WheatIcon,
+    NotepadTextIcon,
+} from 'lucide-react'
 
 export const navItems = [
     {
-        title: "Dashboard",
-        url: "/",
+        title: 'Dashboard',
+        url: '/',
         icon: Home,
     },
     {
-        title: "Clientes",
-        url: "/customers",
+        title: 'Clientes',
+        url: '/customers',
         icon: UsersIcon,
     },
     {
-        title: "Receitas",
-        url: "/recipies",
+        title: 'Receitas',
+        url: '/recipes',
         icon: ChefHatIcon,
     },
     {
-        title: "Ingredientes",
-        url: "/ingredients",
+        title: 'Ingredientes',
+        url: '/ingredients',
         icon: WheatIcon,
     },
     {
-        title: "Pedidos",
-        url: "/orders",
-        icon: NotepadTextIcon
-    }
-];
+        title: 'Pedidos',
+        url: '/orders',
+        icon: NotepadTextIcon,
+    },
+]
