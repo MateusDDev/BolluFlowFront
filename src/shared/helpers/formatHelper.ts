@@ -18,10 +18,10 @@ export function formatDate(date?: Date | string): string {
     return new Intl.DateTimeFormat('pt-BR').format(parsedDate)
 }
 
-export function formatCurrency(
+export function formatCurrencyInput(
     value: string,
     locale = 'pt-BR',
-    currency?: string
+    currency = 'BRL'
 ) {
     const digits = value.replace(/\D/g, '')
     if (!digits) return ''
@@ -34,4 +34,47 @@ export function formatCurrency(
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(number)
+}
+
+export function formatCurrencyDisplay(
+    value: string | number,
+    locale = 'pt-BR',
+    currency = 'BRL'
+) {
+    const number =
+        typeof value === 'number'
+            ? value
+            : Number(value.toString().replace(',', '.'))
+
+    if (isNaN(number)) return ''
+
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(number)
+}
+
+export function formatQuantityInput(value: string) {
+    let formatted = value.replace(/[^\d,]/g, '')
+
+    const parts = formatted.split(',')
+    if (parts.length > 2) {
+        formatted = parts[0] + ',' + parts.slice(1).join('')
+    }
+
+    if (parts[1]) {
+        formatted = parts[0] + ',' + parts[1].slice(0, 2)
+    }
+
+    return formatted
+}
+
+export function formatQuantityDisplay(value: number) {
+    if (value == null) return ''
+    return value.toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    })
 }

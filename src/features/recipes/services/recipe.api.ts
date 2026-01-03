@@ -27,6 +27,22 @@ export function createRecipe(data: CreateRecipeDataType) {
     return apiClient<RecipeModel>('/recipes', 'POST', data)
 }
 
+export type CreateRecipeIngredientDataType = {
+    ingredientId: number
+    quantityUsed: number
+}
+
+export function createRecipeIngredient(
+    recipeId: number,
+    data: CreateRecipeIngredientDataType
+) {
+    return apiClient<RecipeIngredientModel>(
+        `/recipes/${recipeId}/ingredients`,
+        'POST',
+        data
+    )
+}
+
 export type UpdateRecipeDataType = {
     name?: string
     category?: string
@@ -39,9 +55,9 @@ export function updateRecipe(id: number, data: UpdateRecipeDataType) {
 }
 
 export type UpdateRecipePricingDataType = {
-    indirectCostPercentage?: number
-    markupPercentage?: number
-    finalPrice?: number
+    indirectCostPercentage: number
+    markupPercentage: number
+    finalPrice: number
     discountPercentage?: number
 }
 
@@ -54,4 +70,23 @@ export function updateRecipePricing(
 
 export function deleteRecipe(id: number) {
     return apiClient<null>(`/recipes/${id}`, 'DELETE')
+}
+
+export function deleteRecipeIngredient(recipeId: number, ingredientId: number) {
+    return apiClient<null>(
+        `/recipes/${recipeId}/ingredients/${ingredientId}`,
+        'DELETE'
+    )
+}
+
+export function updateRecipeIngredient(
+    recipeId: number,
+    ingredientId: number,
+    data: { quantityUsed: number }
+) {
+    return apiClient<RecipeIngredientModel>(
+        `/recipes/${recipeId}/ingredients/${ingredientId}`,
+        'PUT',
+        data
+    )
 }

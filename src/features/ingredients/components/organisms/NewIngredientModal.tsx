@@ -13,7 +13,7 @@ import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import React, { useState } from 'react'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 
 export const NewIngredientModal = () => {
@@ -99,7 +99,9 @@ export const NewIngredientModal = () => {
                             inputMode="decimal"
                             value={unitPrice}
                             onChange={(e) =>
-                                setUnitPrice(formatCurrency(e.target.value))
+                                setUnitPrice(
+                                    formatCurrencyInput(e.target.value)
+                                )
                             }
                             required
                         />

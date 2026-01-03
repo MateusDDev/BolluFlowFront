@@ -12,7 +12,7 @@ import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe
 import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpdateRecipe'
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
 
 interface FormState {
     name: string
@@ -193,12 +193,12 @@ export function RecipeDetails() {
 
             <section className="space-y-4 border-t pt-6">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Cálculos e valores
+                    Precificação
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Markup (%)</Label>
+                        <Label>Margem de lucro (%)</Label>
                         <Input value={recipe.markupPercentage} disabled />
                     </div>
 
@@ -218,7 +218,9 @@ export function RecipeDetails() {
                     <div className="grid gap-2">
                         <Label>Preço final</Label>
                         <Input
-                            value={formatCurrency(recipe.finalPrice.toString())}
+                            value={formatCurrencyInput(
+                                recipe.finalPrice.toString()
+                            )}
                             disabled
                         />
                     </div>

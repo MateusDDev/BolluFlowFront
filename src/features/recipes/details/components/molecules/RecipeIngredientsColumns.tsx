@@ -2,7 +2,11 @@
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
+import {
+    formatCurrencyInput,
+    formatQuantityDisplay,
+} from '@/shared/helpers/formatHelper'
+import { RecipeIngredientsActions } from '@/features/recipes/details/components/atoms/RecipeIngredientsActions'
 
 export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
     {
@@ -23,7 +27,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
     },
     {
         accessorKey: 'stockQuantity',
-        header: 'Quantidade',
+        header: 'Em Estoque',
         cell: ({ row }) => {
             const recipeIngredient = row.original as RecipeIngredientModel
 
@@ -42,7 +46,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             return (
                 <span>
-                    {formatCurrency(recipeIngredient.unitPrice.toString())}
+                    {formatCurrencyInput(recipeIngredient.unitPrice.toString())}
                 </span>
             )
         },
@@ -50,6 +54,15 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
     {
         accessorKey: 'quantityUsed',
         header: 'Quantidade Usada',
+        cell: ({ row }) => {
+            const recipeIngredient = row.original as RecipeIngredientModel
+
+            return (
+                <span>
+                    {formatQuantityDisplay(recipeIngredient.quantityUsed)}
+                </span>
+            )
+        },
     },
     {
         accessorKey: 'totalPrice',
@@ -57,11 +70,21 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
         cell: ({ row }) => {
             const recipeIngredient = row.original as RecipeIngredientModel
 
-            return (
-                <span>
-                    {recipeIngredient.quantityUsed * recipeIngredient.unitPrice}
-                </span>
-            )
+            const total =
+                Number(recipeIngredient.quantityUsed) *
+                Number(recipeIngredient.unitPrice)
+
+            const rounded = total.toFixed(2)
+
+            return <span>{formatCurrencyInput(rounded)}</span>
         },
+    },
+    {
+        id: 'actions',
+        cell: ({ row }) => (
+            <RecipeIngredientsActions
+                recipeIngredient={row.original as RecipeIngredientModel}
+            />
+        ),
     },
 ]

@@ -10,11 +10,14 @@ import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe
 import { Button } from 'ui/button'
 import { StepBackIcon } from 'lucide-react'
 import { RecipeDetails } from '@/features/recipes/details/components/organisms/RecipeDetails'
+import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 
 export function RecipeTabs() {
     const { id } = useParams<{ id: string }>()
     const router = useRouter()
     const recipeId = Number(id)
+
+    const ingredientsQuery = useGetRecipeIngredients(recipeId)
 
     const { data: recipe } = useGetRecipe(recipeId)
     const { setTitle } = usePageTitle()
@@ -44,7 +47,11 @@ export function RecipeTabs() {
                     <RecipeDetails />
                 </TabsContent>
                 <TabsContent value="ingredients">
-                    <RecipeIngredientsTable />
+                    <RecipeIngredientsTable
+                        recipeIngredients={ingredientsQuery.data}
+                        isLoading={ingredientsQuery.isLoading}
+                        error={ingredientsQuery.error}
+                    />
                 </TabsContent>
                 <TabsContent value="pricing">
                     <RecipePricing />

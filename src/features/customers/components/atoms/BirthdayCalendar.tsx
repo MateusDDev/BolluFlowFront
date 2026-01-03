@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import * as React from 'react'
-import { ChevronDownIcon, DeleteIcon, RemoveFormattingIcon } from 'lucide-react'
+import { ChevronDownIcon, DeleteIcon } from 'lucide-react'
 
 import { Button } from '@/shared/components/ui/button'
 import { Calendar } from '@/shared/components/ui/calendar'

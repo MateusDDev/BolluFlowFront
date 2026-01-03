@@ -10,7 +10,7 @@ import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import React, { useEffect, useState } from 'react'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { UpdateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
@@ -32,7 +32,7 @@ interface FormState {
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
     unit: ingredient.unit,
-    unitPrice: formatCurrency(
+    unitPrice: formatCurrencyInput(
         ingredient.unitPrice.toString().replace('.', ',')
     ),
     stockQuantity: ingredient.stockQuantity.toString(),
@@ -122,7 +122,7 @@ export const EditIngredientModal = ({
                             onChange={(e) =>
                                 setField(
                                     'unitPrice',
-                                    formatCurrency(e.target.value)
+                                    formatCurrencyInput(e.target.value)
                                 )
                             }
                         />
