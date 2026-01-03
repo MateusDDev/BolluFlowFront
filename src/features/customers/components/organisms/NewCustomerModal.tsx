@@ -13,9 +13,9 @@ import { Input } from 'ui/input'
 import { Button } from 'ui/button'
 import React, { useState } from 'react'
 import { useCreateCustomer } from '@/features/customers/hooks/mutations/useCreateCustomer'
-import { BirthdayCalendar } from '@/features/customers/components/atoms/BirthdayCalendar'
 import { Textarea } from 'ui/textarea'
 import { formatWhatsapp } from '@/shared/helpers/formatHelper'
+import { DatePicker } from 'components/DatePicker'
 
 const NewCustomerModal = () => {
     const [open, setOpen] = useState(false)
@@ -98,9 +98,10 @@ const NewCustomerModal = () => {
                         required
                     />
 
-                    <BirthdayCalendar
+                    <DatePicker
                         date={birthday}
                         setDateAction={setBirthday}
+                        label="Data de aniversário"
                     />
 
                     <div className="grid gap-3">

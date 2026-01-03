@@ -6,12 +6,6 @@ export function getRecipes() {
     return apiClient<RecipeModel[]>('/recipes', 'GET')
 }
 
-export type CreateRecipeDataType = {
-    name: string
-    category: string
-    preparationTime?: number
-}
-
 export function getRecipeById(id: number) {
     return apiClient<RecipeModel>(`/recipes/${id}`, 'GET')
 }
@@ -21,6 +15,12 @@ export function getRecipeIngredients(id: number) {
         `/recipes/${id}/ingredients`,
         'GET'
     )
+}
+
+export type CreateRecipeDataType = {
+    name: string
+    category: string
+    preparationTime?: number
 }
 
 export function createRecipe(data: CreateRecipeDataType) {

@@ -10,11 +10,11 @@ import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import { Button } from 'ui/button'
 import React, { useEffect, useState } from 'react'
-import { BirthdayCalendar } from '@/features/customers/components/atoms/BirthdayCalendar'
 import { Textarea } from 'ui/textarea'
 import { formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { useUpdateCustomer } from '@/features/customers/hooks/mutations/useUpdateCustomer'
 import { CustomerModel } from '@/features/customers/services/api/customer.model'
+import { DatePicker } from 'components/DatePicker'
 
 interface EditCustomerModalProps {
     customer: CustomerModel
@@ -121,9 +121,10 @@ const EditCustomerModal = ({
                         />
                     </div>
 
-                    <BirthdayCalendar
+                    <DatePicker
                         date={form.birthday}
                         setDateAction={(date) => setField('birthday', date)}
+                        label="Data de aniversário"
                     />
 
                     <div className="grid gap-3">
