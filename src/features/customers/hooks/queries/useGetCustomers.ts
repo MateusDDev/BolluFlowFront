@@ -1,14 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { getCustomers } from '@/features/customers/services/api/customer.api'
-import { mapCustomerModel } from '@/features/customers/domain/customer.mapper'
 
-export function useGetCustomers(id: number) {
+export function useGetCustomers() {
     return useQuery({
-        queryKey: ['customers', id],
+        queryKey: ['customers'],
 
-        queryFn: async () => {
-            const data = await getCustomers(id)
-            return (data.value ?? []).map(mapCustomerModel)
-        },
+        queryFn: async () => await getCustomers(),
     })
 }

@@ -17,3 +17,53 @@ export function formatDate(date?: Date | string): string {
 
     return new Intl.DateTimeFormat('pt-BR').format(parsedDate)
 }
+
+export function formatCurrency(
+    value: number,
+    locale: string = 'pt-BR',
+    currency: string = 'BRL'
+) {
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+    }).format(value)
+}
+
+export function formatCurrencyFromInput(
+    value: string,
+    locale = 'pt-BR',
+    currency = 'BRL'
+) {
+    const digits = value.replace(/\D/g, '')
+    const number = Number(digits) / 100
+
+    if (Number.isNaN(number)) return ''
+
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+    }).format(number)
+}
+
+export function formatQuantityInput(value: string) {
+    let formatted = value.replace(/[^\d,]/g, '')
+
+    const parts = formatted.split(',')
+    if (parts.length > 2) {
+        formatted = parts[0] + ',' + parts.slice(1).join('')
+    }
+
+    if (parts[1]) {
+        formatted = parts[0] + ',' + parts[1].slice(0, 2)
+    }
+
+    return formatted
+}
+
+export function formatQuantityDisplay(value: number) {
+    if (value == null) return ''
+    return value.toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    })
+}

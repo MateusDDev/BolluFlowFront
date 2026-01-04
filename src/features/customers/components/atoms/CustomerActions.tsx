@@ -1,5 +1,4 @@
-﻿import { Customer } from '@/features/customers/domain/customer'
-import { useDeleteCustomer } from '@/features/customers/hooks/mutations/useDeleteCustomer'
+﻿import { useDeleteCustomer } from '@/features/customers/hooks/mutations/useDeleteCustomer'
 import EditCustomerModal from '@/features/customers/components/organisms/EditCustomerModal'
 import {
     AlertDialog,
@@ -23,9 +22,10 @@ import {
 import { Button } from 'ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
+import { CustomerModel } from '@/features/customers/services/api/customer.model'
 
 type Props = {
-    customer: Customer
+    customer: CustomerModel
 }
 
 export function CustomerActions({ customer }: Props) {

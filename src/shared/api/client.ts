@@ -1,6 +1,11 @@
 ﻿import { API_URL } from './config'
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+
+export type ApiError = {
+    code: string
+    message: string
+}
 
 export async function apiClient<T>(
     endpoint: string,
@@ -24,12 +29,16 @@ export async function apiClient<T>(
         ...options,
     })
 
+    const contentType = res.headers.get('Content-Type') ?? ''
+
     if (!res.ok) {
-        const text = await res.text()
-        throw new Error(`API Error (${res.status}): ${text}`)
+        if (contentType.includes('application/json')) {
+            throw (await res.json()) as ApiError
+        }
+
+        throw new Error(`API Error (${res.status})`)
     }
 
-    const contentType = res.headers.get('Content-Type') ?? ''
     return contentType.includes('application/json')
         ? res.json()
         : (undefined as T)

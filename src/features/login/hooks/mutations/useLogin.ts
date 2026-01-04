@@ -1,41 +1,31 @@
-﻿"use client";
+﻿'use client'
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-
-import { mapUserToUserModel } from "@/features/login/domain/user.mapper";
-import { login } from "@/features/login/services/api/user.api.js";
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { login } from '@/features/login/services/user.api.js'
 
 type LoginPayload = {
-  email: string;
-  password: string;
-};
+    email: string
+    password: string
+}
 
 export function useLogin() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+    const queryClient = useQueryClient()
 
-  return useMutation({
-    mutationFn: async ({ email, password }: LoginPayload) => {
-      const res = await login(email, password);
+    return useMutation({
+        mutationFn: async ({ email, password }: LoginPayload) => {
+            const user = await login(email, password)
 
-      if (!res.isSuccessful) {
-        throw new Error(res.errorMessage ?? "Erro ao fazer login");
-      }
+            localStorage.setItem('authToken', user.token ?? '')
 
-      const user = mapUserToUserModel(res.value!);
+            return user
+        },
 
-      localStorage.setItem("authToken", user.token ?? "");
+        onSuccess: (user) => {
+            queryClient.setQueryData(['auth', 'me'], user)
+        },
 
-      return user;
-    },
-
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-
-    onError: (err) => {
-      console.error("Erro ao fazer login:", err);
-    },
-  });
+        onError: (err) => {
+            console.error('Erro ao fazer login:', err)
+        },
+    })
 }

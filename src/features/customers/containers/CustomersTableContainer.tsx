@@ -2,20 +2,18 @@
 
 import { useGetCustomers } from '@/features/customers/hooks/queries/useGetCustomers'
 import { DataTable } from 'ui/dataTable'
-import { columns } from '@/features/customers/components/molecules/Column'
+import { columns } from '@/features/customers/components/molecules/Columns'
 import { Button } from 'ui/button'
 import { Input } from 'ui/input'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { ColumnFiltersState } from '@tanstack/react-table'
-import { useMe } from '@/features/login/hooks/useMe'
 import NewCustomerModal from '@/features/customers/components/organisms/NewCustomerModal'
 
 const CustomersTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const [searchValue, setSearchValue] = useState<string>('')
-    const { data: me } = useMe()
-    const { data: customers, isLoading, error } = useGetCustomers(me?.id ?? 0)
+    const { data: customers, isLoading, error } = useGetCustomers()
 
     if (isLoading) return <p>Carregando clientes...</p>
 

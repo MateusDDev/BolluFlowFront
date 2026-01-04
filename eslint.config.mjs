@@ -1,18 +1,24 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
-import prettier from "eslint-plugin-prettier";
+import { defineConfig, globalIgnores } from 'eslint/config'
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import prettier from 'eslint-plugin-prettier'
 
 export default defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  {
-    plugins: {
-      prettier,
+    ...nextVitals,
+    ...nextTs,
+    {
+        plugins: {
+            prettier,
+        },
+        rules: {
+            'prettier/prettier': 'warn',
+        },
     },
-    rules: {
-      "prettier/prettier": "warn",
-    },
-  },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
-]);
+    globalIgnores([
+        '.next/**',
+        'out/**',
+        'build/**',
+        'next-env.d.ts',
+        './src/shared/components/ui',
+    ]),
+])

@@ -13,10 +13,9 @@ import { Input } from 'ui/input'
 import { Button } from 'ui/button'
 import React, { useState } from 'react'
 import { useCreateCustomer } from '@/features/customers/hooks/mutations/useCreateCustomer'
-import { BirthdayCalendar } from '@/features/customers/components/atoms/BirthdayCalendar'
 import { Textarea } from 'ui/textarea'
 import { formatWhatsapp } from '@/shared/helpers/formatHelper'
-import { useMe } from '@/features/login/hooks/useMe'
+import { DatePicker } from 'components/DatePicker'
 
 const NewCustomerModal = () => {
     const [open, setOpen] = useState(false)
@@ -27,15 +26,17 @@ const NewCustomerModal = () => {
     const [street, setStreet] = useState('')
     const [number, setNumber] = useState('')
     const [neighborhood, setNeighborhood] = useState('')
-    const { data: me } = useMe()
 
-    const { mutateAsync: createCustomer, error } = useCreateCustomer()
+    const {
+        mutateAsync: createCustomer,
+        isPending,
+        error,
+    } = useCreateCustomer()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         await createCustomer({
-            userId: me?.id ?? 0,
             name,
             whatsapp,
             birthday,
@@ -97,9 +98,10 @@ const NewCustomerModal = () => {
                         required
                     />
 
-                    <BirthdayCalendar
+                    <DatePicker
                         date={birthday}
                         setDateAction={setBirthday}
+                        label="Data de aniversário"
                     />
 
                     <div className="grid gap-3">
@@ -149,12 +151,18 @@ const NewCustomerModal = () => {
                     <DialogFooter>
                         <div className="flex justify-end gap-2">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isPending}
+                                >
                                     Cancelar
                                 </Button>
                             </DialogClose>
 
-                            <Button type="submit">Adicionar</Button>
+                            <Button type="submit" disabled={isPending}>
+                                {isPending ? 'Salvando...' : 'Adicionar'}
+                            </Button>
                         </div>
                         {error && (
                             <p className="text-sm text-red-500">

@@ -9,15 +9,15 @@
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import { Button } from 'ui/button'
-import React, { useState } from 'react'
-import { BirthdayCalendar } from '@/features/customers/components/atoms/BirthdayCalendar'
+import React, { useEffect, useState } from 'react'
 import { Textarea } from 'ui/textarea'
 import { formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { useUpdateCustomer } from '@/features/customers/hooks/mutations/useUpdateCustomer'
-import { Customer } from '@/features/customers/domain/customer'
+import { CustomerModel } from '@/features/customers/services/api/customer.model'
+import { DatePicker } from 'components/DatePicker'
 
 interface EditCustomerModalProps {
-    customer: Customer
+    customer: CustomerModel
     open: boolean
     onOpenChange: (isOpen: boolean) => void
 }
@@ -32,22 +32,41 @@ interface FormState {
     neighborhood: string
 }
 
+const mapCustomerToForm = (customer: CustomerModel): FormState => ({
+    name: customer.name,
+    whatsapp: customer.whatsapp,
+    birthday: customer.birthday ? new Date(customer.birthday) : undefined,
+    preferences: customer.preferences ?? '',
+    street: customer.deliveryAddress?.street ?? '',
+    number: customer.deliveryAddress?.number?.toString() ?? '',
+    neighborhood: customer.deliveryAddress?.neighborhood ?? '',
+})
+
 const EditCustomerModal = ({
     customer,
     open,
     onOpenChange,
 }: EditCustomerModalProps) => {
-    const [form, setForm] = useState<FormState>({
-        name: customer.name,
-        whatsapp: customer.whatsapp,
-        birthday: customer.birthday ? new Date(customer.birthday) : undefined,
-        preferences: customer.preferences ?? '',
-        street: customer.deliveryAddress?.street ?? '',
-        number: customer.deliveryAddress?.number?.toString() ?? '',
-        neighborhood: customer.deliveryAddress?.neighborhood ?? '',
-    })
+    const [form, setForm] = useState<FormState>(() =>
+        mapCustomerToForm(customer)
+    )
 
-    const { mutateAsync: updateCustomer, error } = useUpdateCustomer()
+    const {
+        mutateAsync: updateCustomer,
+        error,
+        isPending,
+    } = useUpdateCustomer()
+
+    useEffect(() => {
+        setForm(mapCustomerToForm(customer))
+    }, [customer])
+
+    const setField = <K extends keyof FormState>(
+        field: K,
+        value: FormState[K]
+    ) => {
+        setForm((prev) => ({ ...prev, [field]: value }))
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -85,9 +104,7 @@ const EditCustomerModal = ({
                         <Label>Nome</Label>
                         <Input
                             value={form.name}
-                            onChange={(e) =>
-                                setForm({ ...form, name: e.target.value })
-                            }
+                            onChange={(e) => setField('name', e.target.value)}
                         />
                     </div>
 
@@ -96,19 +113,18 @@ const EditCustomerModal = ({
                         <Input
                             value={formatWhatsapp(form.whatsapp)}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
-                                    whatsapp: e.target.value.replace(/\D/g, ''),
-                                })
+                                setField(
+                                    'whatsapp',
+                                    e.target.value.replace(/\D/g, '')
+                                )
                             }
                         />
                     </div>
 
-                    <BirthdayCalendar
+                    <DatePicker
                         date={form.birthday}
-                        setDateAction={(date) =>
-                            setForm({ ...form, birthday: date })
-                        }
+                        setDateAction={(date) => setField('birthday', date)}
+                        label="Data de aniversário"
                     />
 
                     <div className="grid gap-3">
@@ -116,45 +132,36 @@ const EditCustomerModal = ({
                         <Textarea
                             value={form.preferences}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
-                                    preferences: e.target.value,
-                                })
+                                setField('preferences', e.target.value)
                             }
                         />
                     </div>
 
                     <div className="grid gap-3">
                         <Label>Endereço de entrega</Label>
+
                         <Input
                             placeholder="Rua / Avenida"
                             value={form.street}
-                            onChange={(e) =>
-                                setForm({ ...form, street: e.target.value })
-                            }
+                            onChange={(e) => setField('street', e.target.value)}
                         />
+
                         <div className="grid grid-cols-3 gap-2">
                             <Input
                                 placeholder="Número"
                                 value={form.number}
                                 onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        number: e.target.value.replace(
-                                            /\D/g,
-                                            ''
-                                        ),
-                                    })
+                                    setField(
+                                        'number',
+                                        e.target.value.replace(/\D/g, '')
+                                    )
                                 }
                             />
                             <Input
                                 placeholder="Bairro"
                                 value={form.neighborhood}
                                 onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        neighborhood: e.target.value,
-                                    })
+                                    setField('neighborhood', e.target.value)
                                 }
                                 className="col-span-2"
                             />
@@ -164,11 +171,20 @@ const EditCustomerModal = ({
                     <DialogFooter>
                         <div className="flex justify-end gap-2">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isPending}
+                                >
                                     Cancelar
                                 </Button>
                             </DialogClose>
-                            <Button type="submit">Salvar alterações</Button>
+
+                            <Button type="submit" disabled={isPending}>
+                                {isPending
+                                    ? 'Salvando...'
+                                    : 'Salvar alterações'}
+                            </Button>
                         </div>
 
                         {error && (
