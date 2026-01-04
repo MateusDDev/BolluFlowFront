@@ -13,7 +13,7 @@ import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import React, { useState } from 'react'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
-import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
+import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 
 export const NewIngredientModal = () => {
@@ -41,10 +41,12 @@ export const NewIngredientModal = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
+        console.log(unitPrice)
+
         const payload: CreateIngredientDataType = {
             name,
             unit,
-            unitPrice: Number(unitPrice.replace(',', '.')),
+            unitPrice: unitPrice === '' ? 0 : Number(unitPrice) / 100,
             stockQuantity: Number(stockQuantity),
         }
 
@@ -85,7 +87,7 @@ export const NewIngredientModal = () => {
                     <div className="grid gap-3">
                         <Label>Unidade de medida*</Label>
                         <Input
-                            placeholder="Kg, g, unidade, etc."
+                            placeholder="Kg, g, un, etc."
                             value={unit}
                             onChange={(e) => setUnit(e.target.value)}
                             required
@@ -97,12 +99,11 @@ export const NewIngredientModal = () => {
                         <Input
                             placeholder="0,00"
                             inputMode="decimal"
-                            value={unitPrice}
-                            onChange={(e) =>
-                                setUnitPrice(
-                                    formatCurrencyInput(e.target.value)
-                                )
-                            }
+                            value={formatCurrencyFromInput(unitPrice)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '')
+                                setUnitPrice(digits)
+                            }}
                             required
                         />
                     </div>

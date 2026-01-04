@@ -5,6 +5,25 @@
     | 'Delivered'
     | 'Canceled'
 
+export const orderStatusLabelMap: Record<OrderStatus, string> = {
+    Pending: 'Pendente',
+    InProduction: 'Em preparo',
+    Delivered: 'Entregue',
+    Canceled: 'Cancelado',
+    Ready: 'Pronto',
+}
+
+export const orderStatusVariantMap: Record<
+    OrderStatus,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
+    Pending: 'secondary',
+    InProduction: 'outline',
+    Delivered: 'default',
+    Canceled: 'destructive',
+    Ready: 'default',
+}
+
 interface CustomerDeliveryAddress {
     id: number
     street: string
@@ -30,4 +49,18 @@ export interface OrderModel {
     note: string
     createdAt: Date
     deliveryDate?: Date
+}
+
+interface OrderItemRecipeModel {
+    id: number
+    name: string
+}
+
+export interface OrderItemModel {
+    id: number
+    orderId: number
+    recipe: OrderItemRecipeModel
+    quantity: number
+    unitPrice: number
+    totalPrice: number
 }

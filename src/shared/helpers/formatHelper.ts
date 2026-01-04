@@ -18,41 +18,30 @@ export function formatDate(date?: Date | string): string {
     return new Intl.DateTimeFormat('pt-BR').format(parsedDate)
 }
 
-export function formatCurrencyInput(
+export function formatCurrency(
+    value: number,
+    locale: string = 'pt-BR',
+    currency: string = 'BRL'
+) {
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+    }).format(value)
+}
+
+export function formatCurrencyFromInput(
     value: string,
     locale = 'pt-BR',
     currency = 'BRL'
 ) {
     const digits = value.replace(/\D/g, '')
-    if (!digits) return ''
-
     const number = Number(digits) / 100
 
-    return new Intl.NumberFormat(locale, {
-        style: currency ? 'currency' : 'decimal',
-        currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(number)
-}
-
-export function formatCurrencyDisplay(
-    value: string | number,
-    locale = 'pt-BR',
-    currency = 'BRL'
-) {
-    const number =
-        typeof value === 'number'
-            ? value
-            : Number(value.toString().replace(',', '.'))
-
-    if (isNaN(number)) return ''
+    if (Number.isNaN(number)) return ''
 
     return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
     }).format(number)
 }
 

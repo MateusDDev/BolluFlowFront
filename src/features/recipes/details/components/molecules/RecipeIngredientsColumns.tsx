@@ -3,7 +3,7 @@ import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
 import {
-    formatCurrencyInput,
+    formatCurrency,
     formatQuantityDisplay,
 } from '@/shared/helpers/formatHelper'
 import { RecipeIngredientsActions } from '@/features/recipes/details/components/atoms/RecipeIngredientsActions'
@@ -46,7 +46,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             return (
                 <span>
-                    {formatCurrencyInput(recipeIngredient.unitPrice.toString())}
+                    {formatCurrency(recipeIngredient.unitPrice.toString())}
                 </span>
             )
         },
@@ -76,7 +76,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             const rounded = total.toFixed(2)
 
-            return <span>{formatCurrencyInput(rounded)}</span>
+            return <span>{formatCurrency(rounded)}</span>
         },
     },
     {

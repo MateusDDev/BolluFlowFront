@@ -12,7 +12,7 @@ import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe
 import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpdateRecipe'
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
-import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 
 interface FormState {
     name: string
@@ -218,9 +218,7 @@ export function RecipeDetails() {
                     <div className="grid gap-2">
                         <Label>Preço final</Label>
                         <Input
-                            value={formatCurrencyInput(
-                                recipe.finalPrice.toString()
-                            )}
+                            value={formatCurrency(recipe.finalPrice)}
                             disabled
                         />
                     </div>

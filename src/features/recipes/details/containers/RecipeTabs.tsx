@@ -3,18 +3,16 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from 'ui/tabs'
 import { RecipeIngredientsTable } from '@/features/recipes/details/components/organisms/RecipeIngredientsTable'
 import { RecipePricing } from '@/features/recipes/details/components/organisms/RecipePricing'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
 import { useEffect } from 'react'
 import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe'
-import { Button } from 'ui/button'
-import { StepBackIcon } from 'lucide-react'
 import { RecipeDetails } from '@/features/recipes/details/components/organisms/RecipeDetails'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
+import { BackButton } from 'components/BackButton'
 
 export function RecipeTabs() {
     const { id } = useParams<{ id: string }>()
-    const router = useRouter()
     const recipeId = Number(id)
 
     const ingredientsQuery = useGetRecipeIngredients(recipeId)
@@ -30,19 +28,17 @@ export function RecipeTabs() {
 
     return (
         <section>
-            <Button
-                variant="ghost"
-                className="h-6 w-6 mb-2"
-                onClick={() => router.back()}
-            >
-                <StepBackIcon className="text-primary" />
-            </Button>
             <Tabs defaultValue="details">
-                <TabsList>
-                    <TabsTrigger value="details">Detalhes</TabsTrigger>
-                    <TabsTrigger value="ingredients">Ingredientes</TabsTrigger>
-                    <TabsTrigger value="pricing">Precificação</TabsTrigger>
-                </TabsList>
+                <div className="flex justify-between items-center">
+                    <TabsList>
+                        <TabsTrigger value="details">Detalhes</TabsTrigger>
+                        <TabsTrigger value="ingredients">
+                            Ingredientes
+                        </TabsTrigger>
+                        <TabsTrigger value="pricing">Precificação</TabsTrigger>
+                    </TabsList>
+                    <BackButton className="[&_svg]:size-6" />
+                </div>
                 <TabsContent value="details">
                     <RecipeDetails />
                 </TabsContent>

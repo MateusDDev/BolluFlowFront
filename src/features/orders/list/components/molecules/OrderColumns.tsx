@@ -3,26 +3,11 @@ import { Button } from 'ui/button'
 import { ArrowUpDown } from 'lucide-react'
 import { Badge } from 'ui/badge'
 import Link from 'next/link'
-import { OrderModel, OrderStatus } from '@/features/orders/services/order.model'
-
-const statusVariantMap: Record<
-    OrderStatus,
-    'default' | 'secondary' | 'destructive' | 'outline'
-> = {
-    Pending: 'secondary',
-    InProduction: 'outline',
-    Delivered: 'default',
-    Canceled: 'destructive',
-    Ready: 'default',
-}
-
-const statusLabelMap: Record<OrderStatus, string> = {
-    Pending: 'Pendente',
-    InProduction: 'Em preparo',
-    Delivered: 'Entregue',
-    Canceled: 'Cancelado',
-    Ready: 'Pronto',
-}
+import {
+    OrderModel,
+    orderStatusLabelMap,
+    orderStatusVariantMap,
+} from '@/features/orders/services/order.model'
 
 export const orderColumns: ColumnDef<OrderModel>[] = [
     {
@@ -60,8 +45,8 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
             const order = row.original as OrderModel
 
             return (
-                <Badge variant={statusVariantMap[order.status]}>
-                    {statusLabelMap[order.status]}
+                <Badge variant={orderStatusVariantMap[order.status]}>
+                    {orderStatusLabelMap[order.status]}
                 </Badge>
             )
         },

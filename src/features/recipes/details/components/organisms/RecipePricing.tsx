@@ -11,7 +11,10 @@ import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 import { useUpdateRecipePricing } from '@/features/recipes/details/hooks/mutations/useUpdateRecipePricing'
 import { UpdateRecipePricingDataType } from '@/features/recipes/services/recipe.api'
-import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
+import {
+    formatCurrency,
+    formatCurrencyFromInput,
+} from '@/shared/helpers/formatHelper'
 import { InfoIcon } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from 'ui/tooltip'
 
@@ -117,10 +120,6 @@ export function RecipePricing() {
         if (form.discount !== '')
             payload.discountPercentage = Number(form.discount) || 0
 
-        console.log('Form', form)
-
-        console.log('Payload', payload)
-
         await updatePricing({
             recipeId,
             data: payload,
@@ -187,10 +186,7 @@ export function RecipePricing() {
                             </Tooltip>
                         </Label>
                         <Input
-                            value={suggestedPrice.toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                            })}
+                            value={formatCurrency(suggestedPrice)}
                             disabled
                         />
                     </div>
@@ -215,7 +211,7 @@ export function RecipePricing() {
                         </Label>
                         <Input
                             type="text"
-                            value={formatCurrencyInput(form.finalPrice)}
+                            value={formatCurrencyFromInput(form.finalPrice)}
                             onChange={(e) => {
                                 const digits = e.target.value.replace(/\D/g, '')
                                 setField('finalPrice', digits)

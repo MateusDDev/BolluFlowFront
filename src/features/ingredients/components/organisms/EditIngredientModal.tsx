@@ -10,7 +10,7 @@ import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import React, { useEffect, useState } from 'react'
-import { formatCurrencyInput } from '@/shared/helpers/formatHelper'
+import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { UpdateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
@@ -32,9 +32,7 @@ interface FormState {
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
     unit: ingredient.unit,
-    unitPrice: formatCurrencyInput(
-        ingredient.unitPrice.toString().replace('.', ',')
-    ),
+    unitPrice: String(Math.round(ingredient.unitPrice * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
 })
@@ -71,7 +69,7 @@ export const EditIngredientModal = ({
         const payload: UpdateIngredientDataType = {
             name: form.name,
             unit: form.unit,
-            unitPrice: Number(form.unitPrice.replace(',', '.')),
+            unitPrice: form.unitPrice === '' ? 0 : Number(form.unitPrice) / 100,
             stockQuantity: Number(form.stockQuantity),
         }
 
@@ -118,13 +116,11 @@ export const EditIngredientModal = ({
                         <Input
                             placeholder="0,00"
                             inputMode="decimal"
-                            value={form.unitPrice}
-                            onChange={(e) =>
-                                setField(
-                                    'unitPrice',
-                                    formatCurrencyInput(e.target.value)
-                                )
-                            }
+                            value={formatCurrencyFromInput(form.unitPrice)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '')
+                                setField('unitPrice', digits)
+                            }}
                         />
                     </div>
 
