@@ -120,6 +120,14 @@ export function EditOrderItemModal({
                         />
                     </div>
 
+                    <div>
+                        {error && (
+                            <p className="text-sm text-red-500">
+                                {error.message}
+                            </p>
+                        )}
+                    </div>
+
                     <DialogFooter className="flex flex-col gap-2">
                         <div className="flex justify-end gap-2">
                             <DialogClose asChild>
@@ -141,12 +149,6 @@ export function EditOrderItemModal({
                                     : 'Salvar alterações'}
                             </Button>
                         </div>
-
-                        {error && (
-                            <p className="text-sm text-red-500">
-                                Erro ao atualizar item.
-                            </p>
-                        )}
                     </DialogFooter>
                 </form>
             </DialogContent>

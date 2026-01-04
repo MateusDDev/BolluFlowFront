@@ -70,12 +70,12 @@ export function NewOrderItemModal() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Adicionar receita</Button>
+                <Button>Adicionar item</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Adicionar receita</DialogTitle>
+                    <DialogTitle>Adicionar item</DialogTitle>
                     <DialogDescription>
                         Selecione a receita que deseja adicionar ao pedido.
                     </DialogDescription>

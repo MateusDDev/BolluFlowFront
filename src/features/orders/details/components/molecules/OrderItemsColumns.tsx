@@ -16,7 +16,7 @@ export const orderItemsColumns: ColumnDef<OrderItemModel>[] = [
                         column.toggleSorting(column.getIsSorted() === 'asc')
                     }
                 >
-                    Produto
+                    Item
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
