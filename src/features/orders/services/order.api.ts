@@ -54,3 +54,33 @@ export type CreateOrderDataType = {
 export function createOrder(data: CreateOrderDataType) {
     return apiClient<OrderModel>('/orders', 'POST', data)
 }
+
+export type UpdateOrderDataType = {
+    notes?: string
+    deliveryDate?: Date
+    customerId?: number
+}
+
+export function updateOrder(id: number, data: UpdateOrderDataType) {
+    return apiClient(`/orders/${id}`, 'PUT', data)
+}
+
+export function cancelOrder(id: number) {
+    return apiClient(`/orders/${id}/cancel`, 'POST')
+}
+
+export function deliverOrder(id: number) {
+    return apiClient(`/orders/${id}/deliver`, 'POST')
+}
+
+export function startProductionOrder(id: number) {
+    return apiClient(`/orders/${id}/start`, 'POST')
+}
+
+export function finishProductionOrder(id: number) {
+    return apiClient(`/orders/${id}/finish`, 'POST')
+}
+
+export function reopenOrder(id: number) {
+    return apiClient(`/orders/${id}/reopen`, 'POST')
+}

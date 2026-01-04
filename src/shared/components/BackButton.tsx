@@ -1,4 +1,6 @@
-﻿import { StepBackIcon } from 'lucide-react'
+﻿'use client'
+
+import { StepBackIcon } from 'lucide-react'
 import { Button } from 'ui/button'
 import { useRouter } from 'next/navigation'
 

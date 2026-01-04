@@ -13,9 +13,9 @@ export const navItems = [
         icon: Home,
     },
     {
-        title: 'Clientes',
-        url: '/customers',
-        icon: UsersIcon,
+        title: 'Pedidos',
+        url: '/orders',
+        icon: NotepadTextIcon,
     },
     {
         title: 'Receitas',
@@ -28,8 +28,8 @@ export const navItems = [
         icon: WheatIcon,
     },
     {
-        title: 'Pedidos',
-        url: '/orders',
-        icon: NotepadTextIcon,
+        title: 'Clientes',
+        url: '/customers',
+        icon: UsersIcon,
     },
 ]

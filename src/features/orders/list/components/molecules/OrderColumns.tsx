@@ -1,6 +1,6 @@
 ﻿import { ColumnDef } from '@tanstack/react-table'
 import { Button } from 'ui/button'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, EyeIcon } from 'lucide-react'
 import { Badge } from 'ui/badge'
 import Link from 'next/link'
 import {
@@ -13,14 +13,6 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
     {
         accessorKey: 'number',
         header: 'Nº do Pedido',
-        cell: ({ row }) => {
-            const order = row.original as OrderModel
-            return (
-                <Link href={`/orders/${order.id}`}>
-                    <span className="text-primary">{order.number}</span>
-                </Link>
-            )
-        },
     },
     {
         accessorKey: 'customer.name',
@@ -61,6 +53,20 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
                 <span>{new Date(order.deliveryDate).toLocaleDateString()}</span>
             ) : (
                 <span>Sem data de entrega definida</span>
+            )
+        },
+    },
+    {
+        id: 'actions',
+        cell: ({ row }) => {
+            const order = row.original as OrderModel
+
+            return (
+                <div className="flex gap-2">
+                    <Link href={`/orders/${order.id}`}>
+                        <EyeIcon className="text-primary" />
+                    </Link>
+                </div>
             )
         },
     },

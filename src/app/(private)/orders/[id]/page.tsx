@@ -1,9 +1,9 @@
-﻿import { OrderDetails } from '@/features/orders/details/containers/OrderDetails'
+﻿import { OrderTabs } from '@/features/orders/details/containers/OrderTabs'
 
 export default function OrderDetailsPage() {
     return (
         <div className="p-8">
-            <OrderDetails />
+            <OrderTabs />
         </div>
     )
 }
