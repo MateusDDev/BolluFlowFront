@@ -44,11 +44,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
         cell: ({ row }) => {
             const recipeIngredient = row.original as RecipeIngredientModel
 
-            return (
-                <span>
-                    {formatCurrency(recipeIngredient.unitPrice.toString())}
-                </span>
-            )
+            return <span>{formatCurrency(recipeIngredient.unitPrice)}</span>
         },
     },
     {
@@ -76,7 +72,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             const rounded = total.toFixed(2)
 
-            return <span>{formatCurrency(rounded)}</span>
+            return <span>{formatCurrency(Number(rounded))}</span>
         },
     },
     {

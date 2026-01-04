@@ -40,7 +40,7 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         cell: ({ row }) => {
             const ingredient = row.original as IngredientModel
 
-            return formatCurrency(ingredient.unitPrice.toString())
+            return formatCurrency(ingredient.unitPrice)
         },
     },
     {
