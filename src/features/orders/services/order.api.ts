@@ -84,3 +84,9 @@ export function finishProductionOrder(id: number) {
 export function reopenOrder(id: number) {
     return apiClient(`/orders/${id}/reopen`, 'POST')
 }
+
+export function openOrderReport(orderId: number) {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/reports/order/${orderId}`
+
+    window.open(url, '_blank')
+}

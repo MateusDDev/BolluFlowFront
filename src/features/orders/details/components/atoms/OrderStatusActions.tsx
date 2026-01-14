@@ -59,11 +59,12 @@ import {
     cancelOrder,
     deliverOrder,
     finishProductionOrder,
+    openOrderReport,
     reopenOrder,
     startProductionOrder,
 } from '@/features/orders/services/order.api'
 import { useState } from 'react'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, FileText } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from 'ui/alert'
 
 export function OrderStatusActions({
@@ -157,6 +158,14 @@ export function OrderStatusActions({
                         {transitions.primary.label}
                     </Button>
                 )}
+
+                <Button
+                    variant="secondary"
+                    onClick={() => openOrderReport(orderId)}
+                >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Gerar comanda
+                </Button>
             </div>
         </div>
     )
