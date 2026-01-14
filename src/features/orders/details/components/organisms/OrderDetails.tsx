@@ -274,7 +274,9 @@ export function OrderDetails() {
                             <div>
                                 <Label>Pedido criado</Label>
                                 <p>
-                                    {new Date(order.createdAt).toLocaleString()}
+                                    {new Date(
+                                        order.createdAt
+                                    ).toLocaleDateString()}
                                 </p>
                             </div>
 
@@ -293,7 +295,7 @@ export function OrderDetails() {
                                         {order.deliveryDate
                                             ? new Date(
                                                   order.deliveryDate
-                                              ).toLocaleString()
+                                              ).toLocaleDateString()
                                             : '-'}
                                     </p>
                                 )}
