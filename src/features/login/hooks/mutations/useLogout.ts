@@ -1,17 +1,30 @@
 ﻿'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import { logout } from '@/features/login/services/user.api.js'
 
 export function useLogout() {
     const queryClient = useQueryClient()
     const router = useRouter()
 
-    return () => {
-        localStorage.removeItem('authToken')
+    return useMutation({
+        mutationFn: async () => {
+            await logout()
+            localStorage.removeItem('authToken')
+        },
 
-        queryClient.clear()
+        onSuccess: () => {
+            queryClient.removeQueries({ queryKey: ['auth'] })
+            router.push('/login')
+        },
 
-        router.push('/login')
-    }
+        onError: (err) => {
+            console.error('Erro ao fazer logout:', err)
+
+            localStorage.removeItem('authToken')
+            queryClient.clear()
+            router.push('/login')
+        },
+    })
 }
