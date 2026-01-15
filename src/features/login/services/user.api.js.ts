@@ -8,6 +8,10 @@ export function login(email: string, password: string) {
     })
 }
 
+export function logout() {
+    return apiClient('/auth/logout', 'POST')
+}
+
 export function me() {
     return apiClient<UserModel>('/auth/me', 'GET')
 }

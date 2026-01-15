@@ -23,7 +23,7 @@ import { useMe } from '@/features/login/hooks/useMe'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
 
 const NavBar = () => {
-    const logout = useLogout()
+    const { mutateAsync: logout, isPending } = useLogout()
     const { data: user } = useMe()
 
     const { title } = usePageTitle()
@@ -59,7 +59,8 @@ const NavBar = () => {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-red-400"
-                            onClick={logout}
+                            disabled={isPending}
+                            onClick={() => logout()}
                         >
                             <LogOut />
                             Sair
