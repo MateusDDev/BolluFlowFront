@@ -122,7 +122,7 @@ export function OrderStatusActions({
                 </Alert>
             )}
 
-            <div className="flex justify-end gap-2 pt-6">
+            <div className="flex flex-wrap justify-center items-center gap-2">
                 {transitions.secondary?.map((button, index) => {
                     if (button.type !== 'action') return null
 
