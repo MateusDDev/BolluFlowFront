@@ -5,7 +5,10 @@ export const MEASUREMENT_UNITS = [
 ] as const
 
 const measurementUnitLabelMap = new Map<string, string>([
-    ...MEASUREMENT_UNITS.map((unit) => [unit.value, unit.label]),
+    ...MEASUREMENT_UNITS.map((unit): [string, string] => [
+        unit.value,
+        unit.label,
+    ]),
     ['un', 'Unidade (un)'],
     ['g', 'Grama (g)'],
     ['ml', 'Mililitro (ml)'],

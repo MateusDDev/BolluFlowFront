@@ -24,9 +24,9 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         },
     },
     {
-        accessorKey: 'unit',
+        accessorKey: 'baseUnit',
         header: 'Unidade de medida',
-        cell: ({ row }) => getMeasurementUnitLabel(row.original.unit),
+        cell: ({ row }) => getMeasurementUnitLabel(row.original.baseUnit),
     },
     {
         accessorKey: 'stockQuantity',

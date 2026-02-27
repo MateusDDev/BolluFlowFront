@@ -42,7 +42,7 @@ interface FormState {
 
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
-    unit: ingredient.unit,
+    unit: ingredient.baseUnit,
     unitPrice: String(Math.round(ingredient.unitPrice * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
@@ -79,7 +79,7 @@ export const EditIngredientModal = ({
 
         const payload: UpdateIngredientDataType = {
             name: form.name,
-            unit: form.unit,
+            baseUnit: form.unit,
             unitPrice: form.unitPrice === '' ? 0 : Number(form.unitPrice) / 100,
             stockQuantity: Number(form.stockQuantity),
         }
@@ -135,11 +135,12 @@ export const EditIngredientModal = ({
                                     </SelectItem>
                                 ))}
 
-                                {form.unit && !isMeasurementUnitOption(form.unit) && (
-                                    <SelectItem value={form.unit}>
-                                        {form.unit}
-                                    </SelectItem>
-                                )}
+                                {form.unit &&
+                                    !isMeasurementUnitOption(form.unit) && (
+                                        <SelectItem value={form.unit}>
+                                            {form.unit}
+                                        </SelectItem>
+                                    )}
                             </SelectContent>
                         </Select>
                     </div>
@@ -194,7 +195,9 @@ export const EditIngredientModal = ({
                             </DialogClose>
 
                             <Button type="submit" disabled={isPending}>
-                                {isPending ? 'Salvando...' : 'Salvar alterações'}
+                                {isPending
+                                    ? 'Salvando...'
+                                    : 'Salvar alterações'}
                             </Button>
                         </div>
 
