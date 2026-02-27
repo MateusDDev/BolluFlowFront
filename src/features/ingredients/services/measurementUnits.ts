@@ -52,14 +52,6 @@ export const isMeasurementUnitOption = (unit: string | number) => {
     return MEASUREMENT_UNITS.some((option) => option.value === normalized)
 }
 
-export const getBaseUnitEnumValue = (unit: string | number) => {
-    const normalized = normalizeMeasurementUnit(unit)
-
-    return (
-        MEASUREMENT_UNITS.find((option) => option.value === normalized)?.enumValue ?? 0
-    )
-}
-
 export const DEFAULT_CONVERSIONS_BY_BASE_UNIT: Record<
     MeasurementUnitValue,
     UnitConversionOption[]

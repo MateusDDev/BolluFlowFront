@@ -1,6 +1,6 @@
 import { apiClient } from '@/shared/api/client'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
-import { getBaseUnitEnumValue } from '@/features/ingredients/services/measurementUnits'
+import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
 
 export function getIngredients() {
     return apiClient<IngredientModel[]>('/ingredients', 'GET')
@@ -21,7 +21,7 @@ export type CreateIngredientDataType = {
 export function createIngredient(data: CreateIngredientDataType) {
     return apiClient<IngredientModel>('/ingredients', 'POST', {
         ...data,
-        baseUnit: getBaseUnitEnumValue(data.baseUnit),
+        baseUnit: normalizeMeasurementUnit(data.baseUnit),
     })
 }
 
@@ -31,7 +31,7 @@ export function updateIngredient(id: number, data: UpdateIngredientDataType) {
     return apiClient<IngredientModel>(`/ingredients/${id}`, 'PUT', {
         ...data,
         ...(data.baseUnit !== undefined
-            ? { baseUnit: getBaseUnitEnumValue(data.baseUnit) }
+            ? { baseUnit: normalizeMeasurementUnit(data.baseUnit) }
             : {}),
     })
 }
