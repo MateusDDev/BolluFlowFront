@@ -24,6 +24,7 @@ import { useDeleteIngredient } from '@/features/ingredients/hooks/mutations/useD
 import { EditIngredientModal } from '@/features/ingredients/components/organisms/EditIngredientModal'
 import { IngredientConversionsModal } from '@/features/ingredients/components/organisms/IngredientConversionsModal'
 import { IngredientStockEntryModal } from '@/features/ingredients/components/organisms/IngredientStockEntryModal'
+import { IngredientStockViewModal } from '@/features/ingredients/components/organisms/IngredientStockViewModal'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 type Props = {
@@ -35,6 +36,7 @@ export function IngredientActions({ ingredient }: Props) {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isConversionsOpen, setIsConversionsOpen] = useState(false)
     const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
+    const [isStockViewOpen, setIsStockViewOpen] = useState(false)
 
     async function handleConfirmDelete() {
         await deleteIngredient(ingredient.id)
@@ -66,6 +68,10 @@ export function IngredientActions({ ingredient }: Props) {
                         Entrada de estoque por conversão
                     </DropdownMenuItem>
 
+                    <DropdownMenuItem onClick={() => setIsStockViewOpen(true)}>
+                        Visualizar estoque convertido
+                    </DropdownMenuItem>
+
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
                             Excluir ingrediente
@@ -90,6 +96,12 @@ export function IngredientActions({ ingredient }: Props) {
                 ingredient={ingredient}
                 open={isStockEntryOpen}
                 onOpenChange={setIsStockEntryOpen}
+            />
+
+            <IngredientStockViewModal
+                ingredient={ingredient}
+                open={isStockViewOpen}
+                onOpenChange={setIsStockViewOpen}
             />
 
             <AlertDialogContent>
