@@ -1,4 +1,4 @@
-﻿import {
+import {
     Dialog,
     DialogClose,
     DialogContent,
@@ -27,7 +27,7 @@ import { MEASUREMENT_UNITS } from '@/features/ingredients/services/measurementUn
 export const NewIngredientModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
-    const [unit, setUnit] = useState('')
+    const [baseUnit, setBaseUnit] = useState('')
     const [unitPrice, setUnitPrice] = useState('')
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [stockQuantity, setStockQuantity] = useState<string | undefined>('')
@@ -40,7 +40,7 @@ export const NewIngredientModal = () => {
 
     const resetForm = () => {
         setName('')
-        setUnit('')
+        setBaseUnit('')
         setUnitPrice('')
         setMinimumStockQuantity('')
         setStockQuantity('')
@@ -51,7 +51,7 @@ export const NewIngredientModal = () => {
 
         const payload: CreateIngredientDataType = {
             name,
-            unit,
+            baseUnit,
             unitPrice: unitPrice === '' ? 0 : Number(unitPrice) / 100,
             stockQuantity: Number(stockQuantity),
         }
@@ -93,8 +93,8 @@ export const NewIngredientModal = () => {
                     <div className="grid gap-3">
                         <Label>Unidade base de cálculo*</Label>
                         <Select
-                            value={unit}
-                            onValueChange={setUnit}
+                            value={baseUnit}
+                            onValueChange={setBaseUnit}
                             required
                         >
                             <SelectTrigger>

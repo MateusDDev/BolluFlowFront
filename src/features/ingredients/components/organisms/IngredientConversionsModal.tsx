@@ -16,7 +16,7 @@ import { useCreateIngredientConversion } from '@/features/ingredients/hooks/muta
 import { useUpdateIngredientConversion } from '@/features/ingredients/hooks/mutations/useUpdateIngredientConversion'
 import { useDeleteIngredientConversion } from '@/features/ingredients/hooks/mutations/useDeleteIngredientConversion'
 import {
-    DEFAULT_CONVERSIONS_BY_BASE_UNIT,
+    getDefaultConversionsForBaseUnit,
     getMeasurementUnitLabel,
 } from '@/features/ingredients/services/measurementUnits'
 
@@ -58,8 +58,8 @@ export function IngredientConversionsModal({
     } = useDeleteIngredientConversion()
 
     const defaultConversions = useMemo(
-        () => DEFAULT_CONVERSIONS_BY_BASE_UNIT[ingredient.unit] ?? [],
-        [ingredient.unit]
+        () => getDefaultConversionsForBaseUnit(ingredient.baseUnit),
+        [ingredient.baseUnit]
     )
 
     const isBusy = isCreating || isUpdating || isDeleting
@@ -87,7 +87,10 @@ export function IngredientConversionsModal({
         setEditingConversionQuantity('')
     }
 
-    const handleCreate = async (name = newConversionName, quantity = newConversionQuantity) => {
+    const handleCreate = async (
+        name = newConversionName,
+        quantity = newConversionQuantity
+    ) => {
         const parsedQuantity = Number(quantity.replace(',', '.'))
 
         if (!name.trim() || isNaN(parsedQuantity) || parsedQuantity <= 0) return
@@ -135,7 +138,10 @@ export function IngredientConversionsModal({
                     <DialogDescription>
                         Defina como você compra esse ingrediente (ex: cartela,
                         pote, vasilha). O sistema converte para a unidade base{' '}
-                        <strong>{getMeasurementUnitLabel(ingredient.unit)}</strong>.
+                        <strong>
+                            {getMeasurementUnitLabel(ingredient.baseUnit)}
+                        </strong>
+                        .
                     </DialogDescription>
                 </DialogHeader>
 
@@ -151,7 +157,7 @@ export function IngredientConversionsModal({
                                 }
                             />
                             <Input
-                                placeholder={`Qtd em ${ingredient.unit}`}
+                                placeholder={`Qtd em ${ingredient.baseUnit}`}
                                 inputMode="decimal"
                                 value={newConversionQuantity}
                                 onChange={(e) =>
@@ -171,37 +177,39 @@ export function IngredientConversionsModal({
                         </div>
                     </div>
 
-                    {!isLoading && !conversions?.length && defaultConversions.length > 0 && (
-                        <div className="rounded-md border border-dashed p-3 grid gap-2">
-                            <p className="text-sm font-medium">
-                                Nenhuma conversão personalizada cadastrada.
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                Você pode usar as padrão abaixo para começar.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {defaultConversions.map((defaultConversion) => (
-                                    <Button
-                                        key={defaultConversion.name}
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() =>
-                                            handleCreate(
-                                                defaultConversion.name,
-                                                String(
-                                                    defaultConversion.quantityInBaseUnit
+                    {!isLoading &&
+                        !conversions?.length &&
+                        defaultConversions.length > 0 && (
+                            <div className="rounded-md border border-dashed p-3 grid gap-2">
+                                <p className="text-sm font-medium">
+                                    Nenhuma conversão personalizada cadastrada.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Você pode usar as padrão abaixo para começar.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {defaultConversions.map((defaultConversion) => (
+                                        <Button
+                                            key={defaultConversion.name}
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                handleCreate(
+                                                    defaultConversion.name,
+                                                    String(
+                                                        defaultConversion.quantityInBaseUnit
+                                                    )
                                                 )
-                                            )
-                                        }
-                                        disabled={isBusy}
-                                    >
-                                        {defaultConversion.name} ={' '}
-                                        {defaultConversion.quantityInBaseUnit}
-                                    </Button>
-                                ))}
+                                            }
+                                            disabled={isBusy}
+                                        >
+                                            {defaultConversion.name} ={' '}
+                                            {defaultConversion.quantityInBaseUnit}
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
                     <div className="grid gap-2">
                         <Label>Conversões cadastradas</Label>
@@ -211,7 +219,8 @@ export function IngredientConversionsModal({
                             </p>
                         ) : conversions?.length ? (
                             conversions.map((conversion) => {
-                                const isEditing = editingConversionId === conversion.id
+                                const isEditing =
+                                    editingConversionId === conversion.id
 
                                 return (
                                     <div

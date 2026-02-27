@@ -1,4 +1,4 @@
-﻿import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { Button } from 'ui/button'
 import { ArrowUpDown } from 'lucide-react'
 import { IngredientActions } from '@/features/ingredients/components/atoms/IngredientActions'
@@ -24,9 +24,9 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         },
     },
     {
-        accessorKey: 'unit',
+        accessorKey: 'baseUnit',
         header: 'Unidade de medida',
-        cell: ({ row }) => getMeasurementUnitLabel(row.original.unit),
+        cell: ({ row }) => getMeasurementUnitLabel(row.original.baseUnit),
     },
     {
         accessorKey: 'stockQuantity',

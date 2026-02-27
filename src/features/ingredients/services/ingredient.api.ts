@@ -1,4 +1,4 @@
-﻿import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api/client'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 export function getIngredients() {
@@ -11,7 +11,7 @@ export function getIngredientById(id: number) {
 
 export type CreateIngredientDataType = {
     name: string
-    unit: string
+    baseUnit: string
     unitPrice: number
     stockQuantity: number
     minimumStockQuantity?: number
@@ -21,7 +21,7 @@ export function createIngredient(data: CreateIngredientDataType) {
     return apiClient<IngredientModel>('/ingredients', 'POST', data)
 }
 
-export type UpdateIngredientDataType = Partial<Omit<IngredientModel, 'id'>>
+export type UpdateIngredientDataType = Partial<Omit<IngredientModel, 'id' | 'unit'>>
 
 export function updateIngredient(id: number, data: UpdateIngredientDataType) {
     return apiClient<IngredientModel>(`/ingredients/${id}`, 'PUT', data)

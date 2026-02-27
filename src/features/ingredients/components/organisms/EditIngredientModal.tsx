@@ -34,7 +34,7 @@ interface EditIngredientModalProps {
 
 interface FormState {
     name: string
-    unit: string
+    baseUnit: string
     unitPrice: string
     stockQuantity: string
     minimumStockQuantity: string
@@ -42,7 +42,7 @@ interface FormState {
 
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
-    unit: ingredient.unit,
+    baseUnit: ingredient.baseUnit,
     unitPrice: String(Math.round(ingredient.unitPrice * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
@@ -79,7 +79,7 @@ export const EditIngredientModal = ({
 
         const payload: UpdateIngredientDataType = {
             name: form.name,
-            unit: form.unit,
+            baseUnit: form.baseUnit,
             unitPrice: form.unitPrice === '' ? 0 : Number(form.unitPrice) / 100,
             stockQuantity: Number(form.stockQuantity),
         }
@@ -117,8 +117,8 @@ export const EditIngredientModal = ({
                     <div className="grid gap-3">
                         <Label>Unidade base de cálculo</Label>
                         <Select
-                            value={form.unit}
-                            onValueChange={(value) => setField('unit', value)}
+                            value={form.baseUnit}
+                            onValueChange={(value) => setField('baseUnit', value)}
                             required
                         >
                             <SelectTrigger>
@@ -135,11 +135,12 @@ export const EditIngredientModal = ({
                                     </SelectItem>
                                 ))}
 
-                                {form.unit && !isMeasurementUnitOption(form.unit) && (
-                                    <SelectItem value={form.unit}>
-                                        {form.unit}
-                                    </SelectItem>
-                                )}
+                                {form.baseUnit &&
+                                    !isMeasurementUnitOption(form.baseUnit) && (
+                                        <SelectItem value={form.baseUnit}>
+                                            {form.baseUnit}
+                                        </SelectItem>
+                                    )}
                             </SelectContent>
                         </Select>
                     </div>

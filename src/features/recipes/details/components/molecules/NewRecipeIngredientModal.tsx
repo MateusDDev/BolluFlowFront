@@ -144,9 +144,9 @@ export function NewRecipeIngredientModal() {
                         <div className="flex justify-between items-center">
                             <Label>Quantidade usada*</Label>
 
-                            {selectedIngredient?.unit && (
+                            {selectedIngredient?.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(selectedIngredient.unit)}
+                                    {getMeasurementUnitLabel(selectedIngredient.baseUnit)}
                                 </span>
                             )}
                         </div>

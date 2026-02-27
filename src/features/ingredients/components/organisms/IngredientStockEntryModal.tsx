@@ -57,12 +57,12 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             }))
         }
 
-        return getDefaultConversionsForBaseUnit(ingredient.unit).map((item) => ({
+        return getDefaultConversionsForBaseUnit(ingredient.baseUnit).map((item) => ({
             value: `default-${item.name}`,
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
-    }, [customConversions, ingredient.unit])
+    }, [customConversions, ingredient.baseUnit])
 
     const selectedFactor = useMemo(() => {
         if (selectedConversion === BASE_OPTION_VALUE) return 1
@@ -87,7 +87,7 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             id: ingredient.id,
             data: {
                 name: ingredient.name,
-                unit: ingredient.unit,
+                baseUnit: ingredient.baseUnit,
                 unitPrice: ingredient.unitPrice,
                 stockQuantity: ingredient.stockQuantity + addedInBaseUnit,
                 minimumStockQuantity: ingredient.minimumStockQuantity,
@@ -123,12 +123,12 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base ({getMeasurementUnitLabel(ingredient.unit)})
+                                    Unidade base ({getMeasurementUnitLabel(ingredient.baseUnit)})
                                 </SelectItem>
                                 {availableConversions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
                                         {option.label} = {option.quantityInBaseUnit}{' '}
-                                        {getMeasurementUnitLabel(ingredient.unit)}
+                                        {getMeasurementUnitLabel(ingredient.baseUnit)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -154,7 +154,7 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                         Será adicionado ao estoque:{' '}
                         <strong>
                             {addedInBaseUnit.toLocaleString('pt-BR')} {' '}
-                            {getMeasurementUnitLabel(ingredient.unit)}
+                            {getMeasurementUnitLabel(ingredient.baseUnit)}
                         </strong>
                     </div>
 

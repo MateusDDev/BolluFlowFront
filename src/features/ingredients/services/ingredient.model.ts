@@ -1,8 +1,9 @@
-﻿export interface IngredientModel {
+export interface IngredientModel {
     id: number
     name: string
-    unit: string
+    baseUnit: string
     unitPrice: number
     stockQuantity: number
     minimumStockQuantity?: number
+    unit?: string
 }

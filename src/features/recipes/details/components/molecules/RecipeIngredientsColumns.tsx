@@ -34,7 +34,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             return (
                 <span>
-                    {recipeIngredient.stockQuantity} {getMeasurementUnitLabel(recipeIngredient.unit)}
+                    {recipeIngredient.stockQuantity} {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
                 </span>
             )
         },
