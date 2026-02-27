@@ -16,10 +16,7 @@ import {
 } from 'ui/select'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
-import {
-    getDefaultConversionsForBaseUnit,
-    getMeasurementUnitLabel,
-} from '@/features/ingredients/services/measurementUnits'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 type Props = {
     ingredient: IngredientModel
@@ -38,16 +35,8 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
     )
 
     const availableConversions = useMemo(() => {
-        if (customConversions?.length) {
-            return customConversions.map((item) => ({
-                value: String(item.id),
-                label: item.name,
-                quantityInBaseUnit: item.quantityInBaseUnit,
-            }))
-        }
-
-        return getDefaultConversionsForBaseUnit(ingredient.baseUnit).map((item) => ({
-            value: `default-${item.name}`,
+        return (customConversions ?? []).map((item) => ({
+            value: String(item.id),
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))

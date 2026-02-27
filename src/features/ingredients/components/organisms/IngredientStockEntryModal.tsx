@@ -20,10 +20,7 @@ import {
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
-import {
-    getDefaultConversionsForBaseUnit,
-    getMeasurementUnitLabel,
-} from '@/features/ingredients/services/measurementUnits'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 type Props = {
     ingredient: IngredientModel
@@ -49,16 +46,8 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
     } = useUpdateIngredient()
 
     const availableConversions = useMemo(() => {
-        if (customConversions?.length) {
-            return customConversions.map((item) => ({
-                value: String(item.id),
-                label: item.name,
-                quantityInBaseUnit: item.quantityInBaseUnit,
-            }))
-        }
-
-        return getDefaultConversionsForBaseUnit(ingredient.baseUnit).map((item) => ({
-            value: `default-${item.name}`,
+        return (customConversions ?? []).map((item) => ({
+            value: String(item.id),
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
@@ -105,8 +94,8 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                 <DialogHeader>
                     <DialogTitle>Entrada de estoque</DialogTitle>
                     <DialogDescription>
-                        Lance compras usando conversões personalizadas (ou padrão)
-                        e o sistema converte para unidade base.
+                        Lance compras usando conversões personalizadas e o sistema
+                        converte para unidade base.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -134,6 +123,12 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {!isLoading && availableConversions.length === 0 && (
+                        <p className="text-xs text-muted-foreground">
+                            Nenhuma conversão personalizada cadastrada.
+                        </p>
+                    )}
 
                     <div className="grid gap-2">
                         <Label>Quantidade comprada</Label>
