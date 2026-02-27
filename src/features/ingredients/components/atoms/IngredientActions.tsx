@@ -22,6 +22,8 @@ import { Button } from 'ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { useDeleteIngredient } from '@/features/ingredients/hooks/mutations/useDeleteIngredient'
 import { EditIngredientModal } from '@/features/ingredients/components/organisms/EditIngredientModal'
+import { IngredientConversionsModal } from '@/features/ingredients/components/organisms/IngredientConversionsModal'
+import { IngredientStockEntryModal } from '@/features/ingredients/components/organisms/IngredientStockEntryModal'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 
 type Props = {
@@ -31,6 +33,8 @@ type Props = {
 export function IngredientActions({ ingredient }: Props) {
     const { mutateAsync: deleteIngredient, isPending } = useDeleteIngredient()
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isConversionsOpen, setIsConversionsOpen] = useState(false)
+    const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
 
     async function handleConfirmDelete() {
         await deleteIngredient(ingredient.id)
@@ -54,6 +58,14 @@ export function IngredientActions({ ingredient }: Props) {
                         Editar ingrediente
                     </DropdownMenuItem>
 
+                    <DropdownMenuItem onClick={() => setIsConversionsOpen(true)}>
+                        Gerenciar conversões
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
+                        Entrada de estoque por conversão
+                    </DropdownMenuItem>
+
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
                             Excluir ingrediente
@@ -66,6 +78,18 @@ export function IngredientActions({ ingredient }: Props) {
                 ingredient={ingredient}
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
+            />
+
+            <IngredientConversionsModal
+                ingredient={ingredient}
+                open={isConversionsOpen}
+                onOpenChange={setIsConversionsOpen}
+            />
+
+            <IngredientStockEntryModal
+                ingredient={ingredient}
+                open={isStockEntryOpen}
+                onOpenChange={setIsStockEntryOpen}
             />
 
             <AlertDialogContent>

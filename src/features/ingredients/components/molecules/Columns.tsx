@@ -4,6 +4,7 @@ import { ArrowUpDown } from 'lucide-react'
 import { IngredientActions } from '@/features/ingredients/components/atoms/IngredientActions'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
     {
@@ -25,6 +26,7 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
     {
         accessorKey: 'unit',
         header: 'Unidade de medida',
+        cell: ({ row }) => getMeasurementUnitLabel(row.original.unit),
     },
     {
         accessorKey: 'stockQuantity',
