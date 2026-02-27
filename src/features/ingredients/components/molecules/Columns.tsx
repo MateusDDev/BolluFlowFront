@@ -37,12 +37,12 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         header: 'Estoque mínimo',
     },
     {
-        accessorKey: 'unitPrice',
+        accessorKey: 'unitCost',
         header: 'Preço',
         cell: ({ row }) => {
             const ingredient = row.original as IngredientModel
 
-            return formatCurrency(ingredient.unitPrice)
+            return formatCurrency(ingredient.unitCost)
         },
     },
     {

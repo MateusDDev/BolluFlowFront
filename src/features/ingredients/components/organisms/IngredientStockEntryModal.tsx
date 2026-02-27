@@ -77,7 +77,7 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             data: {
                 name: ingredient.name,
                 baseUnit: ingredient.baseUnit,
-                unitPrice: ingredient.unitPrice,
+                unitCost: ingredient.unitCost,
                 stockQuantity: ingredient.stockQuantity + addedInBaseUnit,
                 minimumStockQuantity: ingredient.minimumStockQuantity,
             },

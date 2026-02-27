@@ -89,7 +89,7 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
 
     const convertedAvailable = ingredient.stockQuantity / selectedFactor
     const convertedMinimum = (ingredient.minimumStockQuantity ?? 0) / selectedFactor
-    const convertedReferencePrice = ingredient.unitPrice * selectedFactor
+    const convertedReferencePrice = ingredient.unitCost * selectedFactor
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,14 +155,14 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
                     </div>
 
                     <div className="rounded border p-3 grid gap-1 text-sm">
-                        <p className="text-muted-foreground">Preço de referência</p>
+                        <p className="text-muted-foreground">Custo de referência</p>
                         <p>
                             <strong>
                                 {formatCurrency(convertedReferencePrice)} por {selectedLabel}
                             </strong>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Base oficial: {formatCurrency(ingredient.unitPrice)} por{' '}
+                            Base oficial (custo): {formatCurrency(ingredient.unitCost)} por{' '}
                             {getMeasurementUnitLabel(ingredient.baseUnit)}.
                         </p>
                     </div>

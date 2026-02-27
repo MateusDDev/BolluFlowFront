@@ -36,7 +36,7 @@ export const NewIngredientModal = () => {
     const [purchasePrice, setPurchasePrice] = useState('')
     const [initialPurchaseQuantity, setInitialPurchaseQuantity] = useState('')
 
-    const [unitPrice, setUnitPrice] = useState('')
+    const [unitCost, setUnitCost] = useState('')
     const [stockQuantity, setStockQuantity] = useState<string | undefined>('')
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [localError, setLocalError] = useState('')
@@ -89,7 +89,7 @@ export const NewIngredientModal = () => {
         setConversionQuantityInBase('')
         setPurchasePrice('')
         setInitialPurchaseQuantity('')
-        setUnitPrice('')
+        setUnitCost('')
         setStockQuantity('')
         setMinimumStockQuantity('')
         setLocalError('')
@@ -99,7 +99,7 @@ export const NewIngredientModal = () => {
         e.preventDefault()
         setLocalError('')
 
-        let calculatedUnitPrice = Number(unitPrice) / 100
+        let calculatedUnitCost = Number(unitCost) / 100
         let calculatedStockQuantity = Number(stockQuantity)
 
         if (usePurchaseConversion) {
@@ -124,13 +124,13 @@ export const NewIngredientModal = () => {
                 return
             }
 
-            calculatedUnitPrice = conversionPrice / factor
+            calculatedUnitCost = conversionPrice / factor
             calculatedStockQuantity = purchaseQuantity * factor
         }
 
         if (
-            isNaN(calculatedUnitPrice) ||
-            calculatedUnitPrice <= 0 ||
+            isNaN(calculatedUnitCost) ||
+            calculatedUnitCost <= 0 ||
             isNaN(calculatedStockQuantity) ||
             calculatedStockQuantity <= 0
         ) {
@@ -141,7 +141,7 @@ export const NewIngredientModal = () => {
         const payload: CreateIngredientDataType = {
             name,
             baseUnit,
-            unitPrice: calculatedUnitPrice,
+            unitCost: calculatedUnitCost,
             stockQuantity: calculatedStockQuantity,
         }
 
@@ -293,7 +293,7 @@ export const NewIngredientModal = () => {
                                 </div>
 
                                 <p className="text-xs text-muted-foreground">
-                                    Preview: preço unitário base ≈{' '}
+                                    Preview: custo unitário base ≈{' '}
                                     {previewBaseUnitPrice.toLocaleString('pt-BR', {
                                         style: 'currency',
                                         currency: 'BRL',
@@ -312,14 +312,14 @@ export const NewIngredientModal = () => {
                     {!usePurchaseConversion && (
                         <>
                             <div className="grid gap-3">
-                                <Label>Preço unitário (base)*</Label>
+                                <Label>Custo unitário (base)*</Label>
                                 <Input
                                     placeholder="0,00"
                                     inputMode="decimal"
-                                    value={formatCurrencyFromInput(unitPrice)}
+                                    value={formatCurrencyFromInput(unitCost)}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '')
-                                        setUnitPrice(digits)
+                                        setUnitCost(digits)
                                     }}
                                     required
                                 />

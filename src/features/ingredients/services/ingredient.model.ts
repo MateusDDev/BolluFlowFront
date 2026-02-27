@@ -2,7 +2,7 @@ export interface IngredientModel {
     id: number
     name: string
     baseUnit: string
-    unitPrice: number
+    unitCost: number
     stockQuantity: number
     minimumStockQuantity?: number
     unit?: string

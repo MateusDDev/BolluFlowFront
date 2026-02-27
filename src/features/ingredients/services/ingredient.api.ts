@@ -12,7 +12,7 @@ export function getIngredientById(id: number) {
 export type CreateIngredientDataType = {
     name: string
     baseUnit: string
-    unitPrice: number
+    unitCost: number
     stockQuantity: number
     minimumStockQuantity?: number
 }

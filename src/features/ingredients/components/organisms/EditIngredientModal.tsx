@@ -35,7 +35,7 @@ interface EditIngredientModalProps {
 interface FormState {
     name: string
     baseUnit: string
-    unitPrice: string
+    unitCost: string
     stockQuantity: string
     minimumStockQuantity: string
 }
@@ -43,7 +43,7 @@ interface FormState {
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
     baseUnit: ingredient.baseUnit,
-    unitPrice: String(Math.round(ingredient.unitPrice * 100)),
+    unitCost: String(Math.round(ingredient.unitCost * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
 })
@@ -80,7 +80,7 @@ export const EditIngredientModal = ({
         const payload: UpdateIngredientDataType = {
             name: form.name,
             baseUnit: form.baseUnit,
-            unitPrice: form.unitPrice === '' ? 0 : Number(form.unitPrice) / 100,
+            unitCost: form.unitCost === '' ? 0 : Number(form.unitCost) / 100,
             stockQuantity: Number(form.stockQuantity),
         }
 
@@ -146,14 +146,14 @@ export const EditIngredientModal = ({
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Preço unitário (base)</Label>
+                        <Label>Custo unitário (base)</Label>
                         <Input
                             placeholder="0,00"
                             inputMode="decimal"
-                            value={formatCurrencyFromInput(form.unitPrice)}
+                            value={formatCurrencyFromInput(form.unitCost)}
                             onChange={(e) => {
                                 const digits = e.target.value.replace(/\D/g, '')
-                                setField('unitPrice', digits)
+                                setField('unitCost', digits)
                             }}
                         />
                     </div>
