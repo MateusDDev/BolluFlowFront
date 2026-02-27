@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -17,6 +17,7 @@ import {
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 
 type Props = {
     ingredient: IngredientModel
@@ -40,7 +41,30 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
-    }, [customConversions, ingredient.baseUnit])
+    }, [customConversions])
+
+    useEffect(() => {
+        if (!open) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedConversion(BASE_OPTION_VALUE)
+            return
+        }
+
+        if (availableConversions.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedConversion((current) => {
+                if (
+                    current !== BASE_OPTION_VALUE &&
+                    availableConversions.some(
+                        (conversion) => conversion.value === current
+                    )
+                )
+                    return current
+
+                return availableConversions[0].value
+            })
+        }
+    }, [open, availableConversions])
 
     const selectedFactor = useMemo(() => {
         if (selectedConversion === BASE_OPTION_VALUE) return 1
@@ -53,9 +77,8 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
     }, [availableConversions, selectedConversion])
 
     const selectedLabel = useMemo(() => {
-        if (selectedConversion === BASE_OPTION_VALUE) {
+        if (selectedConversion === BASE_OPTION_VALUE)
             return getMeasurementUnitLabel(ingredient.baseUnit)
-        }
 
         const selected = availableConversions.find(
             (conversion) => conversion.value === selectedConversion
@@ -66,21 +89,22 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
 
     const convertedAvailable = ingredient.stockQuantity / selectedFactor
     const convertedMinimum = (ingredient.minimumStockQuantity ?? 0) / selectedFactor
+    const convertedReferencePrice = ingredient.unitPrice * selectedFactor
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Visualizar estoque em conversão</DialogTitle>
+                    <DialogTitle>Visualizar estoque e preço de referência</DialogTitle>
                     <DialogDescription>
-                        Visualize o estoque em unidade base ou em uma conversão
-                        para facilitar leitura operacional.
+                        Quando houver conversão personalizada, ela pode ser usada
+                        como referência visual de estoque e precificação.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label>Conversão para visualização</Label>
+                        <Label>Conversão de referência</Label>
                         <Select
                             value={selectedConversion}
                             onValueChange={setSelectedConversion}
@@ -109,7 +133,9 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
 
                     <div className="rounded border p-3 grid gap-2 text-sm">
                         <p>
-                            <span className="text-muted-foreground">Estoque disponível: </span>
+                            <span className="text-muted-foreground">
+                                Estoque disponível:{' '}
+                            </span>
                             <strong>
                                 {convertedAvailable.toLocaleString('pt-BR', {
                                     maximumFractionDigits: 2,
@@ -128,10 +154,18 @@ export function IngredientStockViewModal({ ingredient, open, onOpenChange }: Pro
                         </p>
                     </div>
 
-                    <p className="text-xs text-muted-foreground">
-                        Obs.: os valores oficiais continuam salvos na unidade base,
-                        esta visão é apenas uma conversão de leitura.
-                    </p>
+                    <div className="rounded border p-3 grid gap-1 text-sm">
+                        <p className="text-muted-foreground">Preço de referência</p>
+                        <p>
+                            <strong>
+                                {formatCurrency(convertedReferencePrice)} por {selectedLabel}
+                            </strong>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            Base oficial: {formatCurrency(ingredient.unitPrice)} por{' '}
+                            {getMeasurementUnitLabel(ingredient.baseUnit)}.
+                        </p>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
