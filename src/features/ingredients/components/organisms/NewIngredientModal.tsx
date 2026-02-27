@@ -118,6 +118,11 @@ export const NewIngredientModal = () => {
         e.preventDefault()
         setLocalError('')
 
+        if (!baseUnit) {
+            setLocalError('Selecione a unidade base de cálculo.')
+            return
+        }
+
         let calculatedUnitCost = Number(unitCost) / 100
         let calculatedStockQuantity = Number(stockQuantity)
 

@@ -11,53 +11,51 @@ export type UnitConversionOption = {
     quantityInBaseUnit: number
 }
 
-const measurementUnitAliases = new Map<string, MeasurementUnitValue>([
-    ['0', 'Unit'],
-    ['1', 'Gram'],
-    ['2', 'Milliliter'],
-    ['unit', 'Unit'],
-    ['un', 'Unit'],
-    ['gram', 'Gram'],
-    ['g', 'Gram'],
-    ['milliliter', 'Milliliter'],
-    ['ml', 'Milliliter'],
-])
+const enumToMeasurementUnit: Record<string, MeasurementUnitValue> = {
+    '0': 'Unit',
+    '1': 'Gram',
+    '2': 'Milliliter',
+}
 
-const measurementUnitLabelMap = new Map<string, string>([
-    ...MEASUREMENT_UNITS.map((unit) => [unit.value, unit.label]),
-    ['un', 'Unidade (un)'],
-    ['g', 'Grama (g)'],
-    ['ml', 'Mililitro (ml)'],
-    ['kg', 'Quilograma (kg)'],
-    ['l', 'Litro (l)'],
-])
+const measurementUnitLabelMap: Record<MeasurementUnitValue, string> = {
+    Unit: 'Unidade (un)',
+    Gram: 'Grama (g)',
+    Milliliter: 'Mililitro (ml)',
+}
 
 export const normalizeMeasurementUnit = (
     unit: string | number | null | undefined
 ): MeasurementUnitValue => {
-    const normalized = String(unit ?? '').trim()
+    const rawUnit = String(unit ?? '').trim()
 
-    if (!normalized) return 'Unit'
+    if (!rawUnit) return 'Unit'
 
-    return measurementUnitAliases.get(normalized.toLowerCase()) ?? 'Unit'
+    if (rawUnit in enumToMeasurementUnit) {
+        return enumToMeasurementUnit[rawUnit]
+    }
+
+    const matchedUnit = MEASUREMENT_UNITS.find(
+        (measurementUnit) =>
+            measurementUnit.value.toLowerCase() === rawUnit.toLowerCase()
+    )
+
+    return matchedUnit?.value ?? 'Unit'
 }
 
-export const getMeasurementUnitLabel = (unit: string | number) => {
-    const normalized = normalizeMeasurementUnit(unit)
-    return measurementUnitLabelMap.get(normalized) ?? normalized
-}
+export const getMeasurementUnitLabel = (unit: string | number) =>
+    measurementUnitLabelMap[normalizeMeasurementUnit(unit)]
 
-export const isMeasurementUnitOption = (unit: string | number) => {
-    const normalized = normalizeMeasurementUnit(unit)
-    return MEASUREMENT_UNITS.some((option) => option.value === normalized)
-}
-
+export const isMeasurementUnitOption = (unit: string | number) =>
+    MEASUREMENT_UNITS.some(
+        (measurementUnit) => measurementUnit.value === normalizeMeasurementUnit(unit)
+    )
 
 export const getBaseUnitEnumValue = (unit: string | number) => {
-    const normalized = normalizeMeasurementUnit(unit)
+    const normalizedUnit = normalizeMeasurementUnit(unit)
 
     return (
-        MEASUREMENT_UNITS.find((option) => option.value === normalized)?.enumValue ?? 0
+        MEASUREMENT_UNITS.find((measurementUnit) => measurementUnit.value === normalizedUnit)
+            ?.enumValue ?? 0
     )
 }
 
