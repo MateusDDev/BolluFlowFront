@@ -18,19 +18,28 @@ import {
     SelectTrigger,
     SelectValue,
 } from 'ui/select'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { MEASUREMENT_UNITS } from '@/features/ingredients/services/measurementUnits'
+import { createIngredientConversion } from '@/features/ingredients/services/ingredientConversion.api'
 
 export const NewIngredientModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [baseUnit, setBaseUnit] = useState('')
+
+    const [usePurchaseConversion, setUsePurchaseConversion] = useState(false)
+    const [conversionName, setConversionName] = useState('')
+    const [conversionQuantityInBase, setConversionQuantityInBase] = useState('')
+    const [purchasePrice, setPurchasePrice] = useState('')
+    const [initialPurchaseQuantity, setInitialPurchaseQuantity] = useState('')
+
     const [unitPrice, setUnitPrice] = useState('')
-    const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [stockQuantity, setStockQuantity] = useState<string | undefined>('')
+    const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
+    const [localError, setLocalError] = useState('')
 
     const {
         mutateAsync: createIngredient,
@@ -38,28 +47,117 @@ export const NewIngredientModal = () => {
         error,
     } = useCreateIngredient()
 
+    const parsedConversionFactor = Number(conversionQuantityInBase.replace(',', '.'))
+    const parsedPurchasePrice = Number(purchasePrice) / 100
+    const parsedInitialPurchaseQuantity = Number(
+        initialPurchaseQuantity.replace(',', '.')
+    )
+
+    const previewBaseUnitPrice = useMemo(() => {
+        if (
+            !usePurchaseConversion ||
+            isNaN(parsedConversionFactor) ||
+            parsedConversionFactor <= 0 ||
+            isNaN(parsedPurchasePrice)
+        )
+            return 0
+
+        return parsedPurchasePrice / parsedConversionFactor
+    }, [usePurchaseConversion, parsedConversionFactor, parsedPurchasePrice])
+
+    const previewInitialStockInBase = useMemo(() => {
+        if (
+            !usePurchaseConversion ||
+            isNaN(parsedConversionFactor) ||
+            parsedConversionFactor <= 0 ||
+            isNaN(parsedInitialPurchaseQuantity)
+        )
+            return 0
+
+        return parsedInitialPurchaseQuantity * parsedConversionFactor
+    }, [
+        usePurchaseConversion,
+        parsedConversionFactor,
+        parsedInitialPurchaseQuantity,
+    ])
+
     const resetForm = () => {
         setName('')
         setBaseUnit('')
+        setUsePurchaseConversion(false)
+        setConversionName('')
+        setConversionQuantityInBase('')
+        setPurchasePrice('')
+        setInitialPurchaseQuantity('')
         setUnitPrice('')
-        setMinimumStockQuantity('')
         setStockQuantity('')
+        setMinimumStockQuantity('')
+        setLocalError('')
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        setLocalError('')
+
+        let calculatedUnitPrice = Number(unitPrice) / 100
+        let calculatedStockQuantity = Number(stockQuantity)
+
+        if (usePurchaseConversion) {
+            const factor = Number(conversionQuantityInBase.replace(',', '.'))
+            const conversionPrice = Number(purchasePrice) / 100
+            const purchaseQuantity = Number(initialPurchaseQuantity.replace(',', '.'))
+
+            if (!conversionName.trim()) {
+                setLocalError('Informe o nome da conversão de compra.')
+                return
+            }
+
+            if (
+                isNaN(factor) ||
+                factor <= 0 ||
+                isNaN(conversionPrice) ||
+                conversionPrice <= 0 ||
+                isNaN(purchaseQuantity) ||
+                purchaseQuantity <= 0
+            ) {
+                setLocalError('Preencha os dados da compra inicial corretamente.')
+                return
+            }
+
+            calculatedUnitPrice = conversionPrice / factor
+            calculatedStockQuantity = purchaseQuantity * factor
+        }
+
+        if (
+            isNaN(calculatedUnitPrice) ||
+            calculatedUnitPrice <= 0 ||
+            isNaN(calculatedStockQuantity) ||
+            calculatedStockQuantity <= 0
+        ) {
+            setLocalError('Preço unitário e estoque inicial precisam ser maiores que zero.')
+            return
+        }
 
         const payload: CreateIngredientDataType = {
             name,
             baseUnit,
-            unitPrice: unitPrice === '' ? 0 : Number(unitPrice) / 100,
-            stockQuantity: Number(stockQuantity),
+            unitPrice: calculatedUnitPrice,
+            stockQuantity: calculatedStockQuantity,
         }
 
         if (minimumStockQuantity !== '')
             payload.minimumStockQuantity = Number(minimumStockQuantity)
 
-        await createIngredient(payload)
+        const createdIngredient = await createIngredient(payload)
+
+        if (usePurchaseConversion) {
+            await createIngredientConversion(createdIngredient.id, {
+                name: conversionName.trim(),
+                quantityInBaseUnit: Number(
+                    conversionQuantityInBase.replace(',', '.')
+                ),
+            })
+        }
 
         resetForm()
         setOpen(false)
@@ -71,11 +169,12 @@ export const NewIngredientModal = () => {
                 <Button variant="outline">Novo ingrediente</Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[560px]">
                 <DialogHeader>
                     <DialogTitle>Novo ingrediente</DialogTitle>
                     <DialogDescription>
-                        Preencha os dados do ingrediente e clique em salvar.
+                        Você pode cadastrar direto na unidade base ou já informar
+                        uma conversão de compra (ex: cartela).
                     </DialogDescription>
                 </DialogHeader>
 
@@ -92,11 +191,7 @@ export const NewIngredientModal = () => {
 
                     <div className="grid gap-3">
                         <Label>Unidade base de cálculo*</Label>
-                        <Select
-                            value={baseUnit}
-                            onValueChange={setBaseUnit}
-                            required
-                        >
+                        <Select value={baseUnit} onValueChange={setBaseUnit} required>
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecione a unidade" />
                             </SelectTrigger>
@@ -114,31 +209,135 @@ export const NewIngredientModal = () => {
                         </Select>
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>Preço unitário (base)*</Label>
-                        <Input
-                            placeholder="0,00"
-                            inputMode="decimal"
-                            value={formatCurrencyFromInput(unitPrice)}
-                            onChange={(e) => {
-                                const digits = e.target.value.replace(/\D/g, '')
-                                setUnitPrice(digits)
-                            }}
-                            required
-                        />
+                    <div className="rounded-md border p-3 grid gap-3">
+                        <div className="flex items-center justify-between">
+                            <Label>Cadastro pela unidade de compra</Label>
+                            <Button
+                                type="button"
+                                variant={usePurchaseConversion ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setUsePurchaseConversion((prev) => !prev)}
+                            >
+                                {usePurchaseConversion ? 'Ativado' : 'Ativar'}
+                            </Button>
+                        </div>
+
+                        {usePurchaseConversion ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div className="grid gap-2">
+                                        <Label>Nome da compra*</Label>
+                                        <Input
+                                            placeholder="Ex: cartela"
+                                            value={conversionName}
+                                            onChange={(e) =>
+                                                setConversionName(e.target.value)
+                                            }
+                                            required={usePurchaseConversion}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Qtd em unidade base*</Label>
+                                        <Input
+                                            inputMode="decimal"
+                                            placeholder="Ex: 30"
+                                            value={conversionQuantityInBase}
+                                            onChange={(e) =>
+                                                setConversionQuantityInBase(
+                                                    e.target.value.replace(
+                                                        /[^\d,.]/g,
+                                                        ''
+                                                    )
+                                                )
+                                            }
+                                            required={usePurchaseConversion}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div className="grid gap-2">
+                                        <Label>Preço da compra*</Label>
+                                        <Input
+                                            placeholder="0,00"
+                                            inputMode="decimal"
+                                            value={formatCurrencyFromInput(purchasePrice)}
+                                            onChange={(e) => {
+                                                const digits = e.target.value.replace(
+                                                    /\D/g,
+                                                    ''
+                                                )
+                                                setPurchasePrice(digits)
+                                            }}
+                                            required={usePurchaseConversion}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label>Qtd comprada inicial*</Label>
+                                        <Input
+                                            inputMode="decimal"
+                                            placeholder="Ex: 2"
+                                            value={initialPurchaseQuantity}
+                                            onChange={(e) =>
+                                                setInitialPurchaseQuantity(
+                                                    e.target.value.replace(
+                                                        /[^\d,.]/g,
+                                                        ''
+                                                    )
+                                                )
+                                            }
+                                            required={usePurchaseConversion}
+                                        />
+                                    </div>
+                                </div>
+
+                                <p className="text-xs text-muted-foreground">
+                                    Preview: preço unitário base ≈{' '}
+                                    {previewBaseUnitPrice.toLocaleString('pt-BR', {
+                                        style: 'currency',
+                                        currency: 'BRL',
+                                    })}{' '}
+                                    • estoque inicial ≈{' '}
+                                    {previewInitialStockInBase.toLocaleString('pt-BR')}
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Desativado: você cadastra diretamente preço e estoque na unidade base.
+                            </p>
+                        )}
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>Quantidade em estoque*</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            placeholder="20"
-                            value={stockQuantity}
-                            onChange={(e) => setStockQuantity(e.target.value)}
-                            required
-                        />
-                    </div>
+                    {!usePurchaseConversion && (
+                        <>
+                            <div className="grid gap-3">
+                                <Label>Preço unitário (base)*</Label>
+                                <Input
+                                    placeholder="0,00"
+                                    inputMode="decimal"
+                                    value={formatCurrencyFromInput(unitPrice)}
+                                    onChange={(e) => {
+                                        const digits = e.target.value.replace(/\D/g, '')
+                                        setUnitPrice(digits)
+                                    }}
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid gap-3">
+                                <Label>Quantidade em estoque*</Label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="20"
+                                    value={stockQuantity}
+                                    onChange={(e) => setStockQuantity(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div className="grid gap-3">
                         <Label>Estoque mínimo</Label>
@@ -147,9 +346,7 @@ export const NewIngredientModal = () => {
                             min={0}
                             placeholder="19"
                             value={minimumStockQuantity}
-                            onChange={(e) =>
-                                setMinimumStockQuantity(e.target.value)
-                            }
+                            onChange={(e) => setMinimumStockQuantity(e.target.value)}
                         />
                     </div>
 
@@ -170,9 +367,9 @@ export const NewIngredientModal = () => {
                             </Button>
                         </div>
 
-                        {error && (
+                        {(error || localError) && (
                             <p className="text-sm text-red-500">
-                                {error.message}
+                                {localError || error?.message}
                             </p>
                         )}
                     </DialogFooter>
