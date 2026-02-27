@@ -11,10 +11,18 @@
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
 import React, { useState } from 'react'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
+import { MEASUREMENT_UNITS } from '@/features/ingredients/services/measurementUnits'
 
 export const NewIngredientModal = () => {
     const [open, setOpen] = useState(false)
@@ -40,8 +48,6 @@ export const NewIngredientModal = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-
-        console.log(unitPrice)
 
         const payload: CreateIngredientDataType = {
             name,
@@ -85,17 +91,31 @@ export const NewIngredientModal = () => {
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Unidade de medida*</Label>
-                        <Input
-                            placeholder="Kg, g, un, etc."
+                        <Label>Unidade base de cálculo*</Label>
+                        <Select
                             value={unit}
-                            onChange={(e) => setUnit(e.target.value)}
+                            onValueChange={setUnit}
                             required
-                        />
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione a unidade" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                {MEASUREMENT_UNITS.map((measurementUnit) => (
+                                    <SelectItem
+                                        key={measurementUnit.value}
+                                        value={measurementUnit.value}
+                                    >
+                                        {measurementUnit.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Preço unitário*</Label>
+                        <Label>Preço unitário (base)*</Label>
                         <Input
                             placeholder="0,00"
                             inputMode="decimal"
