@@ -24,6 +24,7 @@ import { IngredientModel } from '@/features/ingredients/services/ingredient.mode
 import {
     isMeasurementUnitOption,
     MEASUREMENT_UNITS,
+    normalizeMeasurementUnit,
 } from '@/features/ingredients/services/measurementUnits'
 
 interface EditIngredientModalProps {
@@ -42,7 +43,7 @@ interface FormState {
 
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
-    baseUnit: ingredient.baseUnit,
+    baseUnit: normalizeMeasurementUnit(ingredient.baseUnit),
     unitCost: String(Math.round(ingredient.unitCost * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',

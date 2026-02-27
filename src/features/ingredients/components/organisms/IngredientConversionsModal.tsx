@@ -157,7 +157,7 @@ export function IngredientConversionsModal({
                                 }
                             />
                             <Input
-                                placeholder={`Qtd em ${ingredient.baseUnit}`}
+                                placeholder={`Qtd em ${getMeasurementUnitLabel(ingredient.baseUnit)}`}
                                 inputMode="decimal"
                                 value={newConversionQuantity}
                                 onChange={(e) =>
