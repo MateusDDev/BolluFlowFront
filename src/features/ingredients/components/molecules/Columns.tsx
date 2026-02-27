@@ -5,6 +5,7 @@ import { IngredientActions } from '@/features/ingredients/components/atoms/Ingre
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { IngredientReferenceViewCell } from '@/features/ingredients/components/molecules/IngredientReferenceViewCell'
 
 export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
     {
@@ -44,6 +45,15 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
 
             return formatCurrency(ingredient.unitCost)
         },
+    },
+    {
+        id: 'reference',
+        header: 'Referência de compra',
+        cell: ({ row }) => (
+            <IngredientReferenceViewCell
+                ingredient={row.original as IngredientModel}
+            />
+        ),
     },
     {
         id: 'actions',
