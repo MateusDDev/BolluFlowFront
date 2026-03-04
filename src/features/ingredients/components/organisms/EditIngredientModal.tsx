@@ -9,11 +9,23 @@ import {
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
 import React, { useEffect, useState } from 'react'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { UpdateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import {
+    isMeasurementUnitOption,
+    MEASUREMENT_UNITS,
+    normalizeMeasurementUnit,
+} from '@/features/ingredients/services/measurementUnits'
 
 interface EditIngredientModalProps {
     ingredient: IngredientModel
@@ -23,16 +35,16 @@ interface EditIngredientModalProps {
 
 interface FormState {
     name: string
-    unit: string
-    unitPrice: string
+    baseUnit: string
+    unitCost: string
     stockQuantity: string
     minimumStockQuantity: string
 }
 
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
-    unit: ingredient.unit,
-    unitPrice: String(Math.round(ingredient.unitPrice * 100)),
+    baseUnit: normalizeMeasurementUnit(ingredient.baseUnit),
+    unitCost: String(Math.round(ingredient.unitCost * 100)),
     stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
 })
@@ -68,8 +80,8 @@ export const EditIngredientModal = ({
 
         const payload: UpdateIngredientDataType = {
             name: form.name,
-            unit: form.unit,
-            unitPrice: form.unitPrice === '' ? 0 : Number(form.unitPrice) / 100,
+            baseUnit: form.baseUnit,
+            unitCost: form.unitCost === '' ? 0 : Number(form.unitCost) / 100,
             stockQuantity: Number(form.stockQuantity),
         }
 
@@ -90,7 +102,7 @@ export const EditIngredientModal = ({
                 <DialogHeader>
                     <DialogTitle>Editar ingrediente</DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        Atualize os dados do ingrediente e clique em salvar.
+                        Atualize os dados base do ingrediente.
                     </p>
                 </DialogHeader>
 
@@ -104,22 +116,45 @@ export const EditIngredientModal = ({
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Unidade de medida</Label>
-                        <Input
-                            value={form.unit}
-                            onChange={(e) => setField('unit', e.target.value)}
-                        />
+                        <Label>Unidade base de cálculo</Label>
+                        <Select
+                            value={form.baseUnit}
+                            onValueChange={(value) => setField('baseUnit', value)}
+                            required
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione a unidade" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                {MEASUREMENT_UNITS.map((measurementUnit) => (
+                                    <SelectItem
+                                        key={measurementUnit.value}
+                                        value={measurementUnit.value}
+                                    >
+                                        {measurementUnit.label}
+                                    </SelectItem>
+                                ))}
+
+                                {form.baseUnit &&
+                                    !isMeasurementUnitOption(form.baseUnit) && (
+                                        <SelectItem value={form.baseUnit}>
+                                            {form.baseUnit}
+                                        </SelectItem>
+                                    )}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Preço unitário</Label>
+                        <Label>Custo unitário (base)</Label>
                         <Input
                             placeholder="0,00"
                             inputMode="decimal"
-                            value={formatCurrencyFromInput(form.unitPrice)}
+                            value={formatCurrencyFromInput(form.unitCost)}
                             onChange={(e) => {
                                 const digits = e.target.value.replace(/\D/g, '')
-                                setField('unitPrice', digits)
+                                setField('unitCost', digits)
                             }}
                         />
                     </div>
@@ -161,9 +196,7 @@ export const EditIngredientModal = ({
                             </DialogClose>
 
                             <Button type="submit" disabled={isPending}>
-                                {isPending
-                                    ? 'Salvando...'
-                                    : 'Salvar alterações'}
+                                {isPending ? 'Salvando...' : 'Salvar alterações'}
                             </Button>
                         </div>
 

@@ -29,6 +29,7 @@ import { useCreateRecipeIngredient } from '@/features/recipes/details/hooks/muta
 import { CreateRecipeIngredientDataType } from '@/features/recipes/services/recipe.api'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 export function NewRecipeIngredientModal() {
     const { id } = useParams<{ id: string }>()
@@ -143,9 +144,9 @@ export function NewRecipeIngredientModal() {
                         <div className="flex justify-between items-center">
                             <Label>Quantidade usada*</Label>
 
-                            {selectedIngredient?.unit && (
+                            {selectedIngredient?.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {selectedIngredient.unit}
+                                    {getMeasurementUnitLabel(selectedIngredient.baseUnit)}
                                 </span>
                             )}
                         </div>

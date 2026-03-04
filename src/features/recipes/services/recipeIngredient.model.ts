@@ -2,7 +2,8 @@
     recipeId: number
     ingredientId: number
     name: string
-    unit: string
+    baseUnit: string
+    unit?: string
     unitPrice: number
     stockQuantity: number
     minimumStockQuantity?: number

@@ -15,6 +15,7 @@ import { Input } from 'ui/input'
 
 import { useUpdateRecipeIngredient } from '@/features/recipes/details/hooks/mutations/useUpdateRecipeIngredient'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
 
 interface EditRecipeIngredientModalProps {
@@ -80,9 +81,9 @@ export function EditRecipeIngredientModal({
                         <div className="flex justify-between items-center">
                             <Label>Quantidade usada*</Label>
 
-                            {recipeIngredient.unit && (
+                            {recipeIngredient.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {recipeIngredient.unit}
+                                    {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
                                 </span>
                             )}
                         </div>

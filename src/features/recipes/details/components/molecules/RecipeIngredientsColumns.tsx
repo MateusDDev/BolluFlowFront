@@ -7,6 +7,7 @@ import {
     formatQuantityDisplay,
 } from '@/shared/helpers/formatHelper'
 import { RecipeIngredientsActions } from '@/features/recipes/details/components/atoms/RecipeIngredientsActions'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
     {
@@ -33,7 +34,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             return (
                 <span>
-                    {recipeIngredient.stockQuantity} {recipeIngredient.unit}
+                    {recipeIngredient.stockQuantity} {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
                 </span>
             )
         },

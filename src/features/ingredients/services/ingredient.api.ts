@@ -1,5 +1,6 @@
-﻿import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api/client'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
 
 export function getIngredients() {
     return apiClient<IngredientModel[]>('/ingredients', 'GET')
@@ -11,20 +12,34 @@ export function getIngredientById(id: number) {
 
 export type CreateIngredientDataType = {
     name: string
-    unit: string
-    unitPrice: number
+    baseUnit: string | number
+    unitCost: number
     stockQuantity: number
     minimumStockQuantity?: number
 }
 
 export function createIngredient(data: CreateIngredientDataType) {
-    return apiClient<IngredientModel>('/ingredients', 'POST', data)
+    const normalizedUnit = normalizeMeasurementUnit(data.baseUnit)
+
+    return apiClient<IngredientModel>('/ingredients', 'POST', {
+        name: data.name,
+        unit: normalizedUnit,
+        unitCost: data.unitCost,
+        stockQuantity: data.stockQuantity,
+        minimumStockQuantity: data.minimumStockQuantity,
+    })
 }
 
 export type UpdateIngredientDataType = Partial<Omit<IngredientModel, 'id'>>
 
 export function updateIngredient(id: number, data: UpdateIngredientDataType) {
-    return apiClient<IngredientModel>(`/ingredients/${id}`, 'PUT', data)
+    return apiClient<IngredientModel>(`/ingredients/${id}`, 'PUT', {
+        ...data,
+        ...(data.baseUnit !== undefined
+            ? { unit: normalizeMeasurementUnit(data.baseUnit) }
+            : {}),
+        baseUnit: undefined,
+    })
 }
 
 export function deleteIngredient(id: number) {

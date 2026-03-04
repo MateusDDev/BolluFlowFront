@@ -1,9 +1,11 @@
-﻿import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { Button } from 'ui/button'
 import { ArrowUpDown } from 'lucide-react'
 import { IngredientActions } from '@/features/ingredients/components/atoms/IngredientActions'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import { IngredientReferenceSelectorCell } from '@/features/ingredients/components/molecules/IngredientReferenceSelectorCell'
+import { IngredientStockDisplayCell } from '@/features/ingredients/components/molecules/IngredientStockDisplayCell'
+import { IngredientCostDisplayCell } from '@/features/ingredients/components/molecules/IngredientCostDisplayCell'
 
 export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
     {
@@ -23,25 +25,42 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         },
     },
     {
-        accessorKey: 'unit',
-        header: 'Unidade de medida',
+        accessorKey: 'baseUnit',
+        header: 'Unidade / referência',
+        cell: ({ row }) => (
+            <IngredientReferenceSelectorCell
+                ingredient={row.original as IngredientModel}
+            />
+        ),
     },
     {
         accessorKey: 'stockQuantity',
         header: 'Estoque disponível',
+        cell: ({ row }) => (
+            <IngredientStockDisplayCell
+                ingredient={row.original as IngredientModel}
+                value={row.original.stockQuantity}
+            />
+        ),
     },
     {
         accessorKey: 'minimumStockQuantity',
         header: 'Estoque mínimo',
+        cell: ({ row }) => (
+            <IngredientStockDisplayCell
+                ingredient={row.original as IngredientModel}
+                value={row.original.minimumStockQuantity ?? 0}
+            />
+        ),
     },
     {
-        accessorKey: 'unitPrice',
-        header: 'Preço',
-        cell: ({ row }) => {
-            const ingredient = row.original as IngredientModel
-
-            return formatCurrency(ingredient.unitPrice)
-        },
+        accessorKey: 'unitCost',
+        header: 'Custo',
+        cell: ({ row }) => (
+            <IngredientCostDisplayCell
+                ingredient={row.original as IngredientModel}
+            />
+        ),
     },
     {
         id: 'actions',
