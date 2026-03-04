@@ -1,9 +1,10 @@
-﻿import {
-    Home,
-    UsersIcon,
+import {
     ChefHatIcon,
-    WheatIcon,
+    Home,
     NotepadTextIcon,
+    PackageIcon,
+    UsersIcon,
+    WheatIcon,
 } from 'lucide-react'
 
 export const navItems = [
@@ -21,6 +22,11 @@ export const navItems = [
         title: 'Receitas',
         url: '/recipes',
         icon: ChefHatIcon,
+    },
+    {
+        title: 'Produtos',
+        url: '/products',
+        icon: PackageIcon,
     },
     {
         title: 'Ingredientes',

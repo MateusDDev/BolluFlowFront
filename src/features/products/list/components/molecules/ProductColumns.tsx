@@ -1,0 +1,49 @@
+import { ColumnDef } from '@tanstack/react-table'
+import { ArrowUpDown } from 'lucide-react'
+import { Button } from 'ui/button'
+import { ProductModel } from '@/features/products/services/product.model'
+import { Badge } from 'ui/badge'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
+
+export const productColumns: ColumnDef<ProductModel>[] = [
+    {
+        accessorKey: 'name',
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() =>
+                        column.toggleSorting(column.getIsSorted() === 'asc')
+                    }
+                >
+                    Nome
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+    },
+    {
+        accessorKey: 'stockQuantity',
+        header: 'Estoque',
+    },
+    {
+        accessorKey: 'salePrice',
+        header: 'Preco de venda',
+        cell: ({ row }) => {
+            const product = row.original as ProductModel
+            return <span>{formatCurrency(product.salePrice)}</span>
+        },
+    },
+    {
+        accessorKey: 'isActive',
+        header: 'Status',
+        cell: ({ row }) => {
+            const product = row.original as ProductModel
+            return (
+                <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                    {product.isActive ? 'Ativo' : 'Inativo'}
+                </Badge>
+            )
+        },
+    },
+]

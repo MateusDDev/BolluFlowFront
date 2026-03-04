@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
@@ -26,10 +26,7 @@ import {
 
 import { useGetIngredients } from '@/features/recipes/details/hooks/queries/useGetIngredients'
 import { useCreateRecipeIngredient } from '@/features/recipes/details/hooks/mutations/useCreateRecipeIngredient'
-import {
-    CreateRecipeIngredientDataType,
-    RecipeComponentCatalogItem,
-} from '@/features/recipes/services/recipe.api'
+import { CreateRecipeIngredientDataType } from '@/features/recipes/services/recipe.api'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
@@ -39,10 +36,10 @@ export function NewRecipeIngredientModal() {
     const recipeId = Number(id)
 
     const [open, setOpen] = useState(false)
-    const [componentId, setComponentId] = useState('')
+    const [ingredientId, setIngredientId] = useState('')
     const [quantityUsed, setQuantityUsed] = useState('')
 
-    const { data: components, isLoading } = useGetIngredients(recipeId)
+    const { data: ingredients, isLoading } = useGetIngredients()
     const { data: recipeIngredients } = useGetRecipeIngredients(Number(id))
     const {
         mutateAsync: createRecipeIngredient,
@@ -51,31 +48,22 @@ export function NewRecipeIngredientModal() {
     } = useCreateRecipeIngredient()
 
     const resetForm = () => {
-        setComponentId('')
+        setIngredientId('')
         setQuantityUsed('')
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        if (!componentId || !quantityUsed) return
+        if (!ingredientId || !quantityUsed) return
 
         const normalizedQuantity = Number(quantityUsed.replace(',', '.'))
 
         if (isNaN(normalizedQuantity) || normalizedQuantity <= 0) return
 
-        const selectedComponent = components?.find(
-            (component) => component.id.toString() === componentId
-        )
-
-        if (!selectedComponent) return
-
         const payload: CreateRecipeIngredientDataType = {
+            ingredientId: Number(ingredientId),
             quantityUsed: normalizedQuantity,
-            componentType: selectedComponent.sourceType,
-            ...(selectedComponent.sourceType === 'Ingredient'
-                ? { ingredientId: selectedComponent.id }
-                : { componentRecipeId: selectedComponent.id }),
         }
 
         await createRecipeIngredient({
@@ -87,22 +75,17 @@ export function NewRecipeIngredientModal() {
         setOpen(false)
     }
 
-    const selectedComponent = components?.find(
-        (component) => component.id.toString() === componentId
+    const selectedIngredient = ingredients?.find(
+        (ingredient) => ingredient.id.toString() === ingredientId
     )
 
-    const usedComponentIds = recipeIngredients?.map((ingredient) =>
-        ingredient.componentType === 'Recipe'
-            ? ingredient.componentRecipeId
-            : ingredient.ingredientId
+    const usedIngredientIds = recipeIngredients?.map(
+        (ingredient) => ingredient.ingredientId
     )
 
-    const availableComponents = components?.filter(
-        (component) => !usedComponentIds?.includes(component.id)
+    const availableIngredients = ingredients?.filter(
+        (ingredient) => !usedIngredientIds?.includes(ingredient.id)
     )
-
-    const getComponentLabel = (component: RecipeComponentCatalogItem) =>
-        `${component.name} (${component.sourceType === 'Ingredient' ? 'Insumo' : 'Receita'})`
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -112,44 +95,44 @@ export function NewRecipeIngredientModal() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Adicionar componente</Button>
+                <Button variant="outline">Adicionar ingrediente</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Adicionar componente</DialogTitle>
+                    <DialogTitle>Adicionar ingrediente</DialogTitle>
                     <DialogDescription>
-                        Selecione um insumo ou uma receita intermediaria para
-                        compor a receita.
+                        Selecione o ingrediente e informe a quantidade usada na
+                        receita.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-3">
-                        <Label>Componente*</Label>
+                        <Label>Ingrediente*</Label>
 
                         <Select
-                            value={componentId}
-                            onValueChange={setComponentId}
+                            value={ingredientId}
+                            onValueChange={setIngredientId}
                             disabled={isLoading}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione um componente" />
+                                <SelectValue placeholder="Selecione um ingrediente" />
                             </SelectTrigger>
 
                             <SelectContent>
-                                {availableComponents?.length ? (
-                                    availableComponents.map((component) => (
+                                {availableIngredients?.length ? (
+                                    availableIngredients.map((ingredient) => (
                                         <SelectItem
-                                            key={component.id}
-                                            value={component.id.toString()}
+                                            key={ingredient.id}
+                                            value={ingredient.id.toString()}
                                         >
-                                            {getComponentLabel(component)}
+                                            {ingredient.name}
                                         </SelectItem>
                                     ))
                                 ) : (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os componentes ja foram
+                                        Todos os ingredientes já foram
                                         adicionados
                                     </div>
                                 )}
@@ -161,11 +144,9 @@ export function NewRecipeIngredientModal() {
                         <div className="flex justify-between items-center">
                             <Label>Quantidade usada*</Label>
 
-                            {selectedComponent?.baseUnit && (
+                            {selectedIngredient?.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(
-                                        selectedComponent.baseUnit
-                                    )}
+                                    {getMeasurementUnitLabel(selectedIngredient.baseUnit)}
                                 </span>
                             )}
                         </div>
@@ -199,7 +180,7 @@ export function NewRecipeIngredientModal() {
                             <Button
                                 type="submit"
                                 disabled={
-                                    isPending || !componentId || !quantityUsed
+                                    isPending || !ingredientId || !quantityUsed
                                 }
                             >
                                 {isPending ? 'Salvando...' : 'Adicionar'}

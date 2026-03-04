@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/client'
+﻿import { apiClient } from '@/shared/api/client'
 import {
     OrderItemModel,
     OrderModel,
@@ -17,8 +17,7 @@ export function getOrderItems(id: number) {
 }
 
 export type CreateOrderItemDataType = {
-    recipeId?: number
-    productId?: number
+    recipeId: number
     quantity: number
 }
 
@@ -26,8 +25,6 @@ export function createOrderItem(
     orderId: number,
     data: CreateOrderItemDataType[]
 ) {
-    // BACKEND: accept productId as first class field in order items.
-    // During migration, allow recipeId for legacy clients.
     return apiClient(`/orders/${orderId}/items`, 'POST', data)
 }
 
@@ -73,7 +70,6 @@ export function cancelOrder(id: number) {
 }
 
 export function deliverOrder(id: number) {
-    // BACKEND: when delivering an order, decrement product stock using product composition.
     return apiClient(`/orders/${id}/deliver`, 'POST')
 }
 

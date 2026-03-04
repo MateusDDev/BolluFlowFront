@@ -1,10 +1,6 @@
-export type RecipeComponentType = 'Ingredient' | 'Recipe'
-
-export type RecipeIngredientModel = {
+﻿export type RecipeIngredientModel = {
     recipeId: number
     ingredientId: number
-    componentType?: RecipeComponentType
-    componentRecipeId?: number
     name: string
     baseUnit: string
     unit?: string

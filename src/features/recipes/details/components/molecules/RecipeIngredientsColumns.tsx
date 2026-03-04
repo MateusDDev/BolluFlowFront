@@ -1,4 +1,4 @@
-import { ColumnDef } from '@tanstack/react-table'
+﻿import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
@@ -20,7 +20,7 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
                         column.toggleSorting(column.getIsSorted() === 'asc')
                     }
                 >
-                    Componente
+                    Ingrediente
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -34,15 +34,14 @@ export const recipeIngredientsColumns: ColumnDef<RecipeIngredientModel>[] = [
 
             return (
                 <span>
-                    {recipeIngredient.stockQuantity}{' '}
-                    {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
+                    {recipeIngredient.stockQuantity} {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
                 </span>
             )
         },
     },
     {
         accessorKey: 'unitPrice',
-        header: 'Custo Unitario',
+        header: 'Custo Unitário',
         cell: ({ row }) => {
             const recipeIngredient = row.original as RecipeIngredientModel
 

@@ -1,4 +1,4 @@
-export type OrderStatus =
+﻿export type OrderStatus =
     | 'Pending'
     | 'InProduction'
     | 'Ready'
@@ -56,16 +56,10 @@ interface OrderItemRecipeModel {
     name: string
 }
 
-interface OrderItemProductModel {
-    id: number
-    name: string
-}
-
 export interface OrderItemModel {
     id: number
     orderId: number
-    recipe?: OrderItemRecipeModel
-    product?: OrderItemProductModel
+    recipe: OrderItemRecipeModel
     quantity: number
     unitPrice: number
     totalPrice: number

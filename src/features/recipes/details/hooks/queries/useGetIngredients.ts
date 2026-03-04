@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import { getRecipeComponentCatalog } from '@/features/recipes/services/recipe.api'
+﻿import { useQuery } from '@tanstack/react-query'
+import { getIngredients } from '@/features/ingredients/services/ingredient.api'
 
-export function useGetIngredients(recipeId: number) {
+export function useGetIngredients() {
     return useQuery({
-        queryKey: ['recipeComponentsCatalog', recipeId],
-        queryFn: async () => getRecipeComponentCatalog(recipeId),
+        queryKey: ['recipeIngredients'],
+
+        queryFn: async () => await getIngredients(),
     })
 }
