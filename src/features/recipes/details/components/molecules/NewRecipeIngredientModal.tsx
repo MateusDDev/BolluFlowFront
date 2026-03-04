@@ -95,14 +95,14 @@ export function NewRecipeIngredientModal() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Adicionar ingrediente</Button>
+                <Button variant="outline">Adicionar insumo</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Adicionar ingrediente</DialogTitle>
+                    <DialogTitle>Adicionar insumo</DialogTitle>
                     <DialogDescription>
-                        Selecione o ingrediente e informe a quantidade usada na
+                        Selecione o insumo e informe a quantidade usada na
                         receita.
                     </DialogDescription>
                 </DialogHeader>
@@ -117,7 +117,7 @@ export function NewRecipeIngredientModal() {
                             disabled={isLoading}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione um ingrediente" />
+                                <SelectValue placeholder="Selecione um insumo" />
                             </SelectTrigger>
 
                             <SelectContent>
@@ -132,8 +132,7 @@ export function NewRecipeIngredientModal() {
                                     ))
                                 ) : (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os ingredientes já foram
-                                        adicionados
+                                        Todos os insumos já foram adicionados
                                     </div>
                                 )}
                             </SelectContent>
@@ -146,7 +145,9 @@ export function NewRecipeIngredientModal() {
 
                             {selectedIngredient?.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(selectedIngredient.baseUnit)}
+                                    {getMeasurementUnitLabel(
+                                        selectedIngredient.baseUnit
+                                    )}
                                 </span>
                             )}
                         </div>

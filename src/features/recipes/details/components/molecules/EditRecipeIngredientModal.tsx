@@ -72,7 +72,7 @@ export function EditRecipeIngredientModal({
                 <DialogHeader>
                     <DialogTitle>Editar quantidade</DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        Atualize a quantidade usada do ingrediente selecionado.
+                        Atualize a quantidade usada do insumo selecionado.
                     </p>
                 </DialogHeader>
 
@@ -83,7 +83,9 @@ export function EditRecipeIngredientModal({
 
                             {recipeIngredient.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(recipeIngredient.baseUnit)}
+                                    {getMeasurementUnitLabel(
+                                        recipeIngredient.baseUnit
+                                    )}
                                 </span>
                             )}
                         </div>

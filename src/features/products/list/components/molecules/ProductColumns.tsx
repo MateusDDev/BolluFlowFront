@@ -1,9 +1,10 @@
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, EyeIcon } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from 'ui/button'
-import { ProductModel } from '@/features/products/services/product.model'
 import { Badge } from 'ui/badge'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { ProductModel } from '@/features/products/services/product.model'
 
 export const productColumns: ColumnDef<ProductModel>[] = [
     {
@@ -27,11 +28,11 @@ export const productColumns: ColumnDef<ProductModel>[] = [
         header: 'Estoque',
     },
     {
-        accessorKey: 'salePrice',
+        accessorKey: 'finalPrice',
         header: 'Preco de venda',
         cell: ({ row }) => {
             const product = row.original as ProductModel
-            return <span>{formatCurrency(product.salePrice)}</span>
+            return <span>{formatCurrency(product.finalPrice)}</span>
         },
     },
     {
@@ -43,6 +44,18 @@ export const productColumns: ColumnDef<ProductModel>[] = [
                 <Badge variant={product.isActive ? 'default' : 'secondary'}>
                     {product.isActive ? 'Ativo' : 'Inativo'}
                 </Badge>
+            )
+        },
+    },
+    {
+        id: 'actions',
+        cell: ({ row }) => {
+            const product = row.original as ProductModel
+
+            return (
+                <Link href={`/products/${product.id}`}>
+                    <EyeIcon className="text-primary h-5 w-5 cursor-pointer hover:text-secondary" />
+                </Link>
             )
         },
     },

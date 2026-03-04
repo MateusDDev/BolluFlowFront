@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useState } from 'react'
 import { ColumnFiltersState } from '@tanstack/react-table'
@@ -16,12 +16,12 @@ export const OrderItemsTable = () => {
     const orderId = Number(id)
 
     const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { data: orderRecipes, isLoading, error } = useGetOrderItems(orderId)
+    const { data: orderItems, isLoading, error } = useGetOrderItems(orderId)
     const [searchValue, setSearchValue] = useState<string>('')
 
-    if (isLoading) return <p>Carregando receitas...</p>
+    if (isLoading) return <p>Carregando produtos...</p>
 
-    if (error) return <p>Não foi possível carregar as receitas</p>
+    if (error) return <p>Nao foi possivel carregar os produtos</p>
 
     return (
         <section className="container mx-auto py-10">
@@ -37,7 +37,9 @@ export const OrderItemsTable = () => {
                         type="submit"
                         variant="secondary"
                         onClick={() =>
-                            setFilters([{ id: 'name', value: searchValue }])
+                            setFilters([
+                                { id: 'product.name', value: searchValue },
+                            ])
                         }
                     >
                         <Search className="text-primary" />
@@ -49,8 +51,8 @@ export const OrderItemsTable = () => {
             <div>
                 <DataTable
                     columns={orderItemsColumns}
-                    data={orderRecipes ?? []}
-                    noDataMessage="Nenhuma receita encontrada"
+                    data={orderItems ?? []}
+                    noDataMessage="Nenhum produto encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
                 />

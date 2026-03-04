@@ -3,9 +3,14 @@ export type ProductComponentType = 'Ingredient' | 'Recipe'
 export interface ProductModel {
     id: number
     name: string
-    isActive: boolean
-    stockQuantity: number
     salePrice: number
+    stockQuantity: number
+    minimumStockQuantity?: number
+    indirectCostPercentage: number
+    markupPercentage: number
+    finalPrice: number
+    discountPercentage: number
+    isActive: boolean
 }
 
 export interface ProductComponentModel {
@@ -16,7 +21,7 @@ export interface ProductComponentModel {
     recipeId?: number
     name: string
     baseUnit: string
-    quantityUsed: number
     unitPrice: number
     stockQuantity: number
+    quantityUsed: number
 }

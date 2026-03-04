@@ -1,4 +1,4 @@
-﻿import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
@@ -7,7 +7,7 @@ import { OrderItemsActions } from '@/features/orders/details/components/atoms/Or
 
 export const orderItemsColumns: ColumnDef<OrderItemModel>[] = [
     {
-        accessorKey: 'recipe.name',
+        accessorKey: 'product.name',
         header: ({ column }) => {
             return (
                 <Button
@@ -16,7 +16,7 @@ export const orderItemsColumns: ColumnDef<OrderItemModel>[] = [
                         column.toggleSorting(column.getIsSorted() === 'asc')
                     }
                 >
-                    Item
+                    Produto
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -28,7 +28,7 @@ export const orderItemsColumns: ColumnDef<OrderItemModel>[] = [
     },
     {
         accessorKey: 'unitPrice',
-        header: 'Preço Unitário',
+        header: 'Preco Unitario',
         cell: ({ row }) => {
             const orderItem = row.original as OrderItemModel
 

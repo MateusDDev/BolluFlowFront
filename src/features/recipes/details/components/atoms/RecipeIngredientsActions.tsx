@@ -55,12 +55,12 @@ export function RecipeIngredientsActions({ recipeIngredient }: Props) {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                        Editar ingrediente
+                        Editar insumo
                     </DropdownMenuItem>
 
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
-                            Excluir ingrediente
+                            Excluir insumo
                         </DropdownMenuItem>
                     </AlertDialogTrigger>
                 </DropdownMenuContent>
@@ -75,7 +75,7 @@ export function RecipeIngredientsActions({ recipeIngredient }: Props) {
 
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir ingrediente?</AlertDialogTitle>
+                    <AlertDialogTitle>Excluir insumo?</AlertDialogTitle>
                     <AlertDialogDescription>
                         Esta ação não pode ser desfeita.
                     </AlertDialogDescription>

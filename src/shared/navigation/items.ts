@@ -29,7 +29,7 @@ export const navItems = [
         icon: PackageIcon,
     },
     {
-        title: 'Ingredientes',
+        title: 'Insumos',
         url: '/ingredients',
         icon: WheatIcon,
     },
