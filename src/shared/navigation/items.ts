@@ -29,8 +29,13 @@ export const navItems = [
         icon: PackageIcon,
     },
     {
-        title: 'Insumos',
+        title: 'Ingredientes',
         url: '/ingredients',
+        icon: WheatIcon,
+    },
+    {
+        title: 'Insumos',
+        url: '/supplies',
         icon: WheatIcon,
     },
     {

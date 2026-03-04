@@ -95,14 +95,14 @@ export function NewRecipeIngredientModal() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Adicionar insumo</Button>
+                <Button variant="outline">Adicionar ingrediente</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Adicionar insumo</DialogTitle>
+                    <DialogTitle>Adicionar ingrediente</DialogTitle>
                     <DialogDescription>
-                        Selecione o insumo e informe a quantidade usada na
+                        Selecione o ingrediente e informe a quantidade usada na
                         receita.
                     </DialogDescription>
                 </DialogHeader>
@@ -117,7 +117,7 @@ export function NewRecipeIngredientModal() {
                             disabled={isLoading}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione um insumo" />
+                                <SelectValue placeholder="Selecione um ingrediente" />
                             </SelectTrigger>
 
                             <SelectContent>
@@ -132,7 +132,8 @@ export function NewRecipeIngredientModal() {
                                     ))
                                 ) : (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os insumos já foram adicionados
+                                        Todos os ingredientes já foram
+                                        adicionados
                                     </div>
                                 )}
                             </SelectContent>

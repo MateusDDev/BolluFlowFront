@@ -72,7 +72,7 @@ export function EditRecipeIngredientModal({
                 <DialogHeader>
                     <DialogTitle>Editar quantidade</DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        Atualize a quantidade usada do insumo selecionado.
+                        Atualize a quantidade usada do ingrediente selecionado.
                     </p>
                 </DialogHeader>
 

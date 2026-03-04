@@ -24,9 +24,9 @@ export function RecipeIngredientsTable({
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const [searchValue, setSearchValue] = useState<string>('')
 
-    if (isLoading) return <p>Carregando insumos...</p>
+    if (isLoading) return <p>Carregando ingredientes...</p>
 
-    if (error) return <p>Não foi possível carregar os insumos</p>
+    if (error) return <p>Não foi possível carregar os ingredientes</p>
 
     return (
         <section className="container mx-auto py-10">
@@ -54,7 +54,7 @@ export function RecipeIngredientsTable({
                 <DataTable
                     columns={recipeIngredientsColumns}
                     data={recipeIngredients ?? []}
-                    noDataMessage="Nenhum insumo encontrado"
+                    noDataMessage="Nenhum ingrediente encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
                 />

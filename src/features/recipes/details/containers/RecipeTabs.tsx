@@ -32,7 +32,9 @@ export function RecipeTabs() {
                 <div className="flex justify-between items-center">
                     <TabsList>
                         <TabsTrigger value="details">Detalhes</TabsTrigger>
-                        <TabsTrigger value="ingredients">Insumos</TabsTrigger>
+                        <TabsTrigger value="ingredients">
+                            Ingredientes
+                        </TabsTrigger>
                         <TabsTrigger value="pricing">Precificação</TabsTrigger>
                     </TabsList>
                     <BackButton className="[&_svg]:size-6" />
