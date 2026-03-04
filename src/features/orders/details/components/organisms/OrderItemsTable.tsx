@@ -16,12 +16,12 @@ export const OrderItemsTable = () => {
     const orderId = Number(id)
 
     const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { data: orderRecipes, isLoading, error } = useGetOrderItems(orderId)
+    const { data: orderItems, isLoading, error } = useGetOrderItems(orderId)
     const [searchValue, setSearchValue] = useState<string>('')
 
-    if (isLoading) return <p>Carregando receitas...</p>
+    if (isLoading) return <p>Carregando itens...</p>
 
-    if (error) return <p>Não foi possível carregar as receitas</p>
+    if (error) return <p>Não foi possível carregar os itens</p>
 
     return (
         <section className="container mx-auto py-10">
@@ -37,7 +37,7 @@ export const OrderItemsTable = () => {
                         type="submit"
                         variant="secondary"
                         onClick={() =>
-                            setFilters([{ id: 'name', value: searchValue }])
+                            setFilters([{ id: 'itemName', value: searchValue }])
                         }
                     >
                         <Search className="text-primary" />
@@ -49,8 +49,8 @@ export const OrderItemsTable = () => {
             <div>
                 <DataTable
                     columns={orderItemsColumns}
-                    data={orderRecipes ?? []}
-                    noDataMessage="Nenhuma receita encontrada"
+                    data={orderItems ?? []}
+                    noDataMessage="Nenhum item encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
                 />
