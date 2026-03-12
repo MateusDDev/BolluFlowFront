@@ -226,18 +226,23 @@ export function NewSupplyModal() {
                         </Select>
                     </div>
 
-                    <div className="rounded-md border p-4 space-y-3">
+                    <div className="rounded-md border p-3 grid gap-3">
                         <div className="flex items-center justify-between">
-                            <Label>
-                                Entrada inicial por conversao de compra
-                            </Label>
-                            <input
-                                type="checkbox"
-                                checked={usePurchaseConversion}
-                                onChange={(e) =>
-                                    setUsePurchaseConversion(e.target.checked)
+                            <Label>Cadastro pela unidade de compra</Label>
+                            <Button
+                                type="button"
+                                variant={
+                                    usePurchaseConversion
+                                        ? 'default'
+                                        : 'outline'
                                 }
-                            />
+                                size="sm"
+                                onClick={() =>
+                                    setUsePurchaseConversion((prev) => !prev)
+                                }
+                            >
+                                {usePurchaseConversion ? 'Ativado' : 'Ativar'}
+                            </Button>
                         </div>
 
                         {usePurchaseConversion ? (
@@ -332,46 +337,50 @@ export function NewSupplyModal() {
                                 </div>
                             </>
                         ) : (
-                            <>
-                                <div className="grid gap-3">
-                                    <Label>Custo unitario*</Label>
-                                    <Input
-                                        type="text"
-                                        value={formatCurrencyFromInput(
-                                            unitCost
-                                        )}
-                                        onChange={(e) => {
-                                            const digits =
-                                                e.target.value.replace(
-                                                    /\D/g,
-                                                    ''
-                                                )
-                                            setUnitCost(digits)
-                                        }}
-                                        required={!usePurchaseConversion}
-                                    />
-                                </div>
-
-                                <div className="grid gap-3">
-                                    <Label>Estoque inicial*</Label>
-                                    <Input
-                                        inputMode="decimal"
-                                        placeholder="Ex: 100"
-                                        value={stockQuantity}
-                                        onChange={(e) =>
-                                            setStockQuantity(
-                                                e.target.value.replace(
-                                                    /[^\d,.]/g,
-                                                    ''
-                                                )
-                                            )
-                                        }
-                                        required={!usePurchaseConversion}
-                                    />
-                                </div>
-                            </>
+                            <p className="text-xs text-muted-foreground">
+                                Desativado: voce cadastra diretamente custo e
+                                estoque na unidade base.
+                            </p>
                         )}
                     </div>
+
+                    {!usePurchaseConversion && (
+                        <>
+                            <div className="grid gap-3">
+                                <Label>Custo unitario*</Label>
+                                <Input
+                                    type="text"
+                                    value={formatCurrencyFromInput(unitCost)}
+                                    onChange={(e) => {
+                                        const digits = e.target.value.replace(
+                                            /\D/g,
+                                            ''
+                                        )
+                                        setUnitCost(digits)
+                                    }}
+                                    required={!usePurchaseConversion}
+                                />
+                            </div>
+
+                            <div className="grid gap-3">
+                                <Label>Estoque inicial*</Label>
+                                <Input
+                                    inputMode="decimal"
+                                    placeholder="Ex: 100"
+                                    value={stockQuantity}
+                                    onChange={(e) =>
+                                        setStockQuantity(
+                                            e.target.value.replace(
+                                                /[^\d,.]/g,
+                                                ''
+                                            )
+                                        )
+                                    }
+                                    required={!usePurchaseConversion}
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div className="grid gap-3">
                         <Label>Estoque minimo</Label>

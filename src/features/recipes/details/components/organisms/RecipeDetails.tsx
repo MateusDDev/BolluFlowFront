@@ -1,18 +1,21 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { InfoIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 import { Button } from 'ui/button'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
 import { Switch } from 'ui/switch'
+import { Tooltip, TooltipContent, TooltipTrigger } from 'ui/tooltip'
 
 import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe'
 import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpdateRecipe'
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 
 interface FormState {
@@ -21,6 +24,7 @@ interface FormState {
     hours: string
     minutes: string
     isActive: boolean
+    finalPrice: string
 }
 
 const minutesToHoursAndMinutes = (total?: number) => {
@@ -50,6 +54,7 @@ const mapRecipeToForm = (recipe: RecipeModel): FormState => {
         hours,
         minutes,
         isActive: recipe.isActive,
+        finalPrice: Math.round(recipe.finalPrice * 100).toString(),
     }
 }
 
@@ -106,6 +111,8 @@ export function RecipeDetails() {
             name: form.name,
             category: form.category,
             isActive: form.isActive,
+            finalPrice:
+                form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
         }
 
         const totalMinutes = hoursAndMinutesToMinutes(form.hours, form.minutes)
@@ -209,15 +216,34 @@ export function RecipeDetails() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Custo estimado da receita</Label>
+                        <Label className="flex items-center gap-2">
+                            Custo estimado da receita
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <button type="button">
+                                        <InfoIcon className="w-4 h-4 text-primary-foreground" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        Soma dos valores de todos os
+                                        ingredientes usados na receita.
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </Label>
                         <Input value={formatCurrency(estimatedCost)} disabled />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Preco de referencia</Label>
+                        <Label>Preco final</Label>
                         <Input
-                            value={formatCurrency(recipe.finalPrice)}
-                            disabled
+                            type="text"
+                            value={formatCurrencyFromInput(form.finalPrice)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '')
+                                setField('finalPrice', digits)
+                            }}
                         />
                     </div>
                 </div>

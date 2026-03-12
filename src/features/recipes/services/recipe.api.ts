@@ -48,6 +48,7 @@ export type UpdateRecipeDataType = {
     category?: string
     preparationTime?: number
     isActive?: boolean
+    finalPrice?: number
 }
 
 export function updateRecipe(id: number, data: UpdateRecipeDataType) {
