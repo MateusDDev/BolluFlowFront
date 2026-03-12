@@ -14,6 +14,7 @@ import { Input } from 'ui/input'
 import React, { useState } from 'react'
 import { useCreateProduct } from '@/features/products/list/hooks/mutations/useCreateProduct'
 import { CreateProductDataType } from '@/features/products/services/product.api'
+import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 
 export const NewProductModal = () => {
     const [open, setOpen] = useState(false)
@@ -35,7 +36,7 @@ export const NewProductModal = () => {
         }
 
         if (salePrice) {
-            payload.salePrice = Number(salePrice.replace(',', '.'))
+            payload.salePrice = Number(salePrice) / 100
         }
 
         await createProduct(payload)
@@ -75,9 +76,12 @@ export const NewProductModal = () => {
                         <Input
                             type="text"
                             inputMode="decimal"
-                            placeholder="Ex: 45,90"
-                            value={salePrice}
-                            onChange={(e) => setSalePrice(e.target.value)}
+                            placeholder="R$ 0,00"
+                            value={formatCurrencyFromInput(salePrice)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '')
+                                setSalePrice(digits)
+                            }}
                         />
                     </div>
 

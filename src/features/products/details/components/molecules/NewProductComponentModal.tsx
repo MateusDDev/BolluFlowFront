@@ -35,6 +35,15 @@ function buildCatalogValue(item: ProductComponentCatalogItem) {
     return `${item.sourceType}:${item.id}`
 }
 
+const sourceTypeLabel: Record<
+    ProductComponentCatalogItem['sourceType'],
+    string
+> = {
+    Recipe: 'Receita',
+    Ingredient: 'Ingrediente',
+    Supply: 'Insumo',
+}
+
 export function NewProductComponentModal() {
     const { id } = useParams<{ id: string }>()
     const productId = Number(id)
@@ -126,7 +135,8 @@ export function NewProductComponentModal() {
                                             key={buildCatalogValue(item)}
                                             value={buildCatalogValue(item)}
                                         >
-                                            {item.name} ({item.sourceType})
+                                            {item.name} (
+                                            {sourceTypeLabel[item.sourceType]})
                                         </SelectItem>
                                     ))
                                 ) : (
