@@ -1,4 +1,4 @@
-﻿import { apiClient } from '@/shared/api/client'
+import { apiClient } from '@/shared/api/client'
 import {
     OrderItemModel,
     OrderModel,
@@ -17,7 +17,7 @@ export function getOrderItems(id: number) {
 }
 
 export type CreateOrderItemDataType = {
-    recipeId: number
+    productId: number
     quantity: number
 }
 

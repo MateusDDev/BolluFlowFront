@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useState } from 'react'
 import {
@@ -21,34 +21,35 @@ import {
     SelectValue,
 } from 'ui/select'
 import { useCreateOrderItem } from '@/features/orders/details/hooks/mutations/useCreateOrderItem'
-import { useGetRecipes } from '@/features/recipes/list/hooks/queries/useGetRecipes'
 import { CreateOrderItemDataType } from '@/features/orders/services/order.api'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
 import { Input } from 'ui/input'
 import { useParams } from 'next/navigation'
 import { useGetOrderItems } from '@/features/orders/details/hooks/queries/useGetOrderItems'
+import { useGetProducts } from '@/features/products/list/hooks/queries/useGetProducts'
 
 export function NewOrderItemModal() {
     const { id } = useParams<{ id: string }>()
     const orderId = Number(id)
 
     const [open, setOpen] = useState(false)
-    const [recipeId, setRecipeId] = useState('')
+    const [productId, setProductId] = useState('')
     const [quantity, setQuantity] = useState('')
 
-    const { data: recipes, isLoading } = useGetRecipes()
+    const { data: products, isLoading } = useGetProducts()
     const { mutateAsync: createItem, isPending, error } = useCreateOrderItem()
     const { data: orderItems } = useGetOrderItems(orderId)
 
     const resetForm = () => {
-        setRecipeId('')
+        setProductId('')
+        setQuantity('')
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         const payload: CreateOrderItemDataType = {
-            recipeId: Number(recipeId),
+            productId: Number(productId),
             quantity: Number(quantity),
         }
 
@@ -61,10 +62,10 @@ export function NewOrderItemModal() {
         setOpen(false)
     }
 
-    const usedRecipeIds = orderItems?.map((item) => item.recipe.id)
+    const usedProductIds = orderItems?.map((item) => item.product.id)
 
-    const availableRecipes = recipes?.filter(
-        (recipe) => !usedRecipeIds?.includes(recipe.id)
+    const availableProducts = products?.filter(
+        (product) => !usedProductIds?.includes(product.id)
     )
 
     return (
@@ -77,36 +78,37 @@ export function NewOrderItemModal() {
                 <DialogHeader>
                     <DialogTitle>Adicionar item</DialogTitle>
                     <DialogDescription>
-                        Selecione a receita que deseja adicionar ao pedido.
+                        Selecione o produto final que deseja adicionar ao
+                        pedido.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-3">
-                        <Label>Receita</Label>
+                        <Label>Produto</Label>
 
                         <Select
-                            value={recipeId}
-                            onValueChange={setRecipeId}
+                            value={productId}
+                            onValueChange={setProductId}
                             disabled={isLoading}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma receita" />
+                                <SelectValue placeholder="Selecione um produto" />
                             </SelectTrigger>
 
                             <SelectContent>
-                                {availableRecipes?.length ? (
-                                    availableRecipes.map((recipe) => (
+                                {availableProducts?.length ? (
+                                    availableProducts.map((product) => (
                                         <SelectItem
-                                            key={recipe.id}
-                                            value={recipe.id.toString()}
+                                            key={product.id}
+                                            value={product.id.toString()}
                                         >
-                                            {recipe.name}
+                                            {product.name}
                                         </SelectItem>
                                     ))
                                 ) : (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todas as receitas já foram adicionadas
+                                        Todos os produtos ja foram adicionados
                                     </div>
                                 )}
                             </SelectContent>
@@ -137,7 +139,7 @@ export function NewOrderItemModal() {
 
                             <Button
                                 type="submit"
-                                disabled={!recipeId || isPending}
+                                disabled={!productId || isPending}
                             >
                                 {isPending ? 'Adicionando...' : 'Adicionar'}
                             </Button>

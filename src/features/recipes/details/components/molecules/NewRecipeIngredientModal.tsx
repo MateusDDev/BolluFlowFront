@@ -146,7 +146,9 @@ export function NewRecipeIngredientModal() {
 
                             {selectedIngredient?.baseUnit && (
                                 <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(selectedIngredient.baseUnit)}
+                                    {getMeasurementUnitLabel(
+                                        selectedIngredient.baseUnit
+                                    )}
                                 </span>
                             )}
                         </div>

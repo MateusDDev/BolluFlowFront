@@ -1,18 +1,22 @@
-﻿'use client'
+'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { InfoIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 import { Button } from 'ui/button'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
 import { Switch } from 'ui/switch'
+import { Tooltip, TooltipContent, TooltipTrigger } from 'ui/tooltip'
 
 import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe'
 import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpdateRecipe'
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
+import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 
 interface FormState {
     name: string
@@ -20,6 +24,7 @@ interface FormState {
     hours: string
     minutes: string
     isActive: boolean
+    finalPrice: string
 }
 
 const minutesToHoursAndMinutes = (total?: number) => {
@@ -49,6 +54,7 @@ const mapRecipeToForm = (recipe: RecipeModel): FormState => {
         hours,
         minutes,
         isActive: recipe.isActive,
+        finalPrice: Math.round(recipe.finalPrice * 100).toString(),
     }
 }
 
@@ -57,6 +63,7 @@ export function RecipeDetails() {
     const recipeId = Number(id)
 
     const { data: recipe, isLoading } = useGetRecipe(recipeId)
+    const { data: recipeIngredients } = useGetRecipeIngredients(recipeId)
     const { mutateAsync: updateRecipe, isPending } = useUpdateRecipe()
 
     const [form, setForm] = useState<FormState | null>(null)
@@ -79,6 +86,15 @@ export function RecipeDetails() {
         return JSON.stringify(form) !== JSON.stringify(initialForm)
     }, [form, initialForm])
 
+    const estimatedCost = useMemo(() => {
+        if (!recipeIngredients?.length) return 0
+
+        return recipeIngredients.reduce(
+            (total, item) => total + item.unitPrice * item.quantityUsed,
+            0
+        )
+    }, [recipeIngredients])
+
     if (isLoading || !recipe || !form) return null
 
     const setField = <K extends keyof FormState>(
@@ -95,6 +111,8 @@ export function RecipeDetails() {
             name: form.name,
             category: form.category,
             isActive: form.isActive,
+            finalPrice:
+                form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
         }
 
         const totalMinutes = hoursAndMinutesToMinutes(form.hours, form.minutes)
@@ -118,9 +136,9 @@ export function RecipeDetails() {
                     Informações básicas
                 </h3>
 
-                <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Nome da receita</Label>
+                        <Label>Nome</Label>
                         <Input
                             value={form.name}
                             onChange={(e) => setField('name', e.target.value)}
@@ -137,10 +155,10 @@ export function RecipeDetails() {
                         />
                     </div>
 
-                    <div className="grid gap-3">
+                    <div className="grid gap-2">
                         <Label>Tempo de preparo</Label>
 
-                        <div className="flex w-full gap-2">
+                        <div className="flex gap-2">
                             <div className="w-full">
                                 <Label className="text-sm font-medium text-muted-foreground">
                                     Horas
@@ -193,33 +211,39 @@ export function RecipeDetails() {
 
             <section className="space-y-4 border-t pt-6">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Precificação
+                    Informacoes de custo
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Margem de lucro (%)</Label>
-                        <Input value={recipe.markupPercentage} disabled />
+                        <Label className="flex items-center gap-2">
+                            Custo estimado da receita
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <button type="button">
+                                        <InfoIcon className="w-4 h-4 text-primary-foreground" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        Soma dos valores de todos os
+                                        ingredientes usados na receita.
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </Label>
+                        <Input value={formatCurrency(estimatedCost)} disabled />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Custo indireto (%)</Label>
-                        <Input value={recipe.indirectCostPercentage} disabled />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Desconto (%)</Label>
+                        <Label>Preco final</Label>
                         <Input
-                            value={recipe.discountPercentage ?? '-'}
-                            disabled
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Preço final</Label>
-                        <Input
-                            value={formatCurrency(recipe.finalPrice)}
-                            disabled
+                            type="text"
+                            value={formatCurrencyFromInput(form.finalPrice)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '')
+                                setField('finalPrice', digits)
+                            }}
                         />
                     </div>
                 </div>

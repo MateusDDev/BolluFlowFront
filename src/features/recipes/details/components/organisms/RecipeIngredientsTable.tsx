@@ -54,7 +54,7 @@ export function RecipeIngredientsTable({
                 <DataTable
                     columns={recipeIngredientsColumns}
                     data={recipeIngredients ?? []}
-                    noDataMessage="Nenhuma receita encontrada"
+                    noDataMessage="Nenhum ingrediente encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
                 />
