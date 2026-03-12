@@ -55,8 +55,8 @@ export const NewProductModal = () => {
                 <DialogHeader>
                     <DialogTitle>Novo produto final</DialogTitle>
                     <DialogDescription>
-                        Crie o produto final. A composicao de receitas e insumos
-                        sera vinculada no backend pelos endpoints de components.
+                        Um produto final é composto por receitas, insumos e
+                        ingredientes.
                     </DialogDescription>
                 </DialogHeader>
 
