@@ -1,9 +1,8 @@
 import { apiClient } from '@/shared/api/client'
-import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
+import { SupplyModel } from '@/features/supplies/services/supply.model'
 
 export function getSupplies() {
-    // BACKEND: criar entidade de insumos separada de ingredientes.
     return apiClient<SupplyModel[]>('/supplies', 'GET')
 }
 

@@ -23,6 +23,8 @@ import { MoreHorizontal } from 'lucide-react'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { EditSupplyModal } from '@/features/supplies/components/organisms/EditSupplyModal'
 import { useDeleteSupply } from '@/features/supplies/hooks/mutations/useDeleteSupply'
+import { SupplyConversionsModal } from '@/features/supplies/components/organisms/SupplyConversionsModal'
+import { SupplyStockEntryModal } from '@/features/supplies/components/organisms/SupplyStockEntryModal'
 
 type Props = {
     supply: SupplyModel
@@ -30,6 +32,9 @@ type Props = {
 
 export function SupplyActions({ supply }: Props) {
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isConversionsOpen, setIsConversionsOpen] = useState(false)
+    const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
+
     const { mutateAsync, isPending } = useDeleteSupply()
 
     const handleDelete = async () => {
@@ -51,6 +56,14 @@ export function SupplyActions({ supply }: Props) {
                     <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
                         Editar insumo
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => setIsConversionsOpen(true)}
+                    >
+                        Gerenciar conversoes
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
+                        Entrada de estoque por conversao
+                    </DropdownMenuItem>
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
                             Excluir insumo
@@ -63,6 +76,18 @@ export function SupplyActions({ supply }: Props) {
                 supply={supply}
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
+            />
+
+            <SupplyConversionsModal
+                supply={supply}
+                open={isConversionsOpen}
+                onOpenChange={setIsConversionsOpen}
+            />
+
+            <SupplyStockEntryModal
+                supply={supply}
+                open={isStockEntryOpen}
+                onOpenChange={setIsStockEntryOpen}
             />
 
             <AlertDialogContent>

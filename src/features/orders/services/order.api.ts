@@ -25,7 +25,6 @@ export function createOrderItem(
     orderId: number,
     data: CreateOrderItemDataType[]
 ) {
-    // BACKEND: item de pedido agora deve aceitar apenas productId.
     return apiClient(`/orders/${orderId}/items`, 'POST', data)
 }
 
@@ -71,7 +70,6 @@ export function cancelOrder(id: number) {
 }
 
 export function deliverOrder(id: number) {
-    // BACKEND: ao entregar pedido, dar baixa no estoque do produto e dos insumos/receitas agregados.
     return apiClient(`/orders/${id}/deliver`, 'POST')
 }
 

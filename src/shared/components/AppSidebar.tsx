@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import {
     Sidebar,
@@ -13,7 +13,7 @@ import {
     useSidebar,
 } from '@/shared/components/ui/sidebar'
 import Link from 'next/link'
-import { navItems } from '@/shared/navigation/items'
+import { navItems, navSections } from '@/shared/navigation/items'
 import { useMe } from '@/features/login/hooks/useMe'
 
 const AppSidebar = () => {
@@ -33,23 +33,35 @@ const AppSidebar = () => {
             </SidebarHeader>
 
             <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {navItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <Link href={item.url}>
-                                            <item.icon className="text-primary" />
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                {navSections.map((section) => {
+                    const items = navItems.filter(
+                        (item) => item.section === section.key
+                    )
+
+                    if (!items.length) return null
+
+                    return (
+                        <SidebarGroup key={section.key}>
+                            <SidebarGroupLabel>
+                                {section.title}
+                            </SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {items.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild>
+                                                <Link href={item.url}>
+                                                    <item.icon className="text-primary" />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    )
+                })}
             </SidebarContent>
         </Sidebar>
     )

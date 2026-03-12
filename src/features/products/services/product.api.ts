@@ -13,17 +13,14 @@ export type ProductComponentCatalogItem = {
 }
 
 export function getProducts() {
-    // BACKEND: endpoint principal de produtos finais (sem misturar com receitas).
     return apiClient<ProductModel[]>('/products', 'GET')
 }
 
 export function getProductById(id: number) {
-    // BACKEND: retornar campos de detalhes e precificacao do produto final.
     return apiClient<ProductModel>(`/products/${id}`, 'GET')
 }
 
 export function getProductComponents(productId: number) {
-    // BACKEND: listar composicao do produto final (receitas + insumos) na mesma resposta.
     return apiClient<ProductComponentModel[]>(
         `/products/${productId}/components`,
         'GET'
@@ -31,7 +28,6 @@ export function getProductComponents(productId: number) {
 }
 
 export function getProductComponentCatalog(productId: number) {
-    // BACKEND: catalogo para adicao de componente no produto (insumos e receitas ativas).
     return apiClient<ProductComponentCatalogItem[]>(
         `/products/${productId}/components/catalog`,
         'GET'
@@ -44,13 +40,13 @@ export type CreateProductDataType = {
 }
 
 export function createProduct(data: CreateProductDataType) {
-    // BACKEND: criar produto final de forma independente da entidade receita.
     return apiClient<ProductModel>('/products', 'POST', data)
 }
 
 export type UpdateProductDataType = {
     name?: string
     isActive?: boolean
+    stockQuantity?: number
     minimumStockQuantity?: number
 }
 
@@ -69,7 +65,6 @@ export function updateProductPricing(
     id: number,
     data: UpdateProductPricingDataType
 ) {
-    // BACKEND: mesma ideia de precificacao da receita, porem aplicada ao produto final.
     return apiClient<ProductModel>(`/products/${id}/pricing`, 'PATCH', data)
 }
 
@@ -77,6 +72,7 @@ export type CreateProductComponentDataType = {
     componentType: ProductComponentType
     recipeId?: number
     ingredientId?: number
+    supplyId?: number
     quantityUsed: number
 }
 
@@ -84,7 +80,6 @@ export function createProductComponent(
     productId: number,
     data: CreateProductComponentDataType
 ) {
-    // BACKEND: aceitar componentType para vincular receita ou insumo ao produto final.
     return apiClient<ProductComponentModel>(
         `/products/${productId}/components`,
         'POST',

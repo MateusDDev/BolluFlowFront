@@ -26,14 +26,21 @@ import { formatQuantityInput } from '@/shared/helpers/formatHelper'
 import { useGetProductComponentCatalog } from '@/features/products/details/hooks/queries/useGetProductComponentCatalog'
 import { useGetProductComponents } from '@/features/products/details/hooks/queries/useGetProductComponents'
 import { useCreateProductComponent } from '@/features/products/details/hooks/mutations/useCreateProductComponent'
-import { CreateProductComponentDataType } from '@/features/products/services/product.api'
+import {
+    CreateProductComponentDataType,
+    ProductComponentCatalogItem,
+} from '@/features/products/services/product.api'
+
+function buildCatalogValue(item: ProductComponentCatalogItem) {
+    return `${item.sourceType}:${item.id}`
+}
 
 export function NewProductComponentModal() {
     const { id } = useParams<{ id: string }>()
     const productId = Number(id)
 
     const [open, setOpen] = useState(false)
-    const [componentId, setComponentId] = useState('')
+    const [selectedCatalogValue, setSelectedCatalogValue] = useState('')
     const [quantityUsed, setQuantityUsed] = useState('')
 
     const { data: catalog, isLoading } =
@@ -42,7 +49,8 @@ export function NewProductComponentModal() {
     const { mutateAsync, isPending, error } = useCreateProductComponent()
 
     const usedKeys = components?.map(
-        (item) => `${item.componentType}-${item.ingredientId ?? item.recipeId}`
+        (item) =>
+            `${item.componentType}-${item.ingredientId ?? item.recipeId ?? item.supplyId}`
     )
 
     const availableCatalog = catalog?.filter(
@@ -50,7 +58,7 @@ export function NewProductComponentModal() {
     )
 
     const reset = () => {
-        setComponentId('')
+        setSelectedCatalogValue('')
         setQuantityUsed('')
     }
 
@@ -58,11 +66,12 @@ export function NewProductComponentModal() {
         e.preventDefault()
 
         const quantity = Number(quantityUsed.replace(',', '.'))
-        if (!componentId || isNaN(quantity) || quantity <= 0) return
+        if (!selectedCatalogValue || isNaN(quantity) || quantity <= 0) return
 
         const selected = catalog?.find(
-            (item) => item.id.toString() === componentId
+            (item) => buildCatalogValue(item) === selectedCatalogValue
         )
+
         if (!selected) return
 
         const payload: CreateProductComponentDataType = {
@@ -70,7 +79,9 @@ export function NewProductComponentModal() {
             quantityUsed: quantity,
             ...(selected.sourceType === 'Ingredient'
                 ? { ingredientId: selected.id }
-                : { recipeId: selected.id }),
+                : selected.sourceType === 'Supply'
+                  ? { supplyId: selected.id }
+                  : { recipeId: selected.id }),
         }
 
         await mutateAsync({
@@ -92,8 +103,8 @@ export function NewProductComponentModal() {
                 <DialogHeader>
                     <DialogTitle>Adicionar componente</DialogTitle>
                     <DialogDescription>
-                        Escolha um insumo ou uma receita para compor o produto
-                        final.
+                        Escolha uma receita, ingrediente ou insumo para compor o
+                        produto final.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -101,8 +112,8 @@ export function NewProductComponentModal() {
                     <div className="grid gap-3">
                         <Label>Componente</Label>
                         <Select
-                            value={componentId}
-                            onValueChange={setComponentId}
+                            value={selectedCatalogValue}
+                            onValueChange={setSelectedCatalogValue}
                             disabled={isLoading}
                         >
                             <SelectTrigger>
@@ -112,14 +123,10 @@ export function NewProductComponentModal() {
                                 {availableCatalog?.length ? (
                                     availableCatalog.map((item) => (
                                         <SelectItem
-                                            key={`${item.sourceType}-${item.id}`}
-                                            value={item.id.toString()}
+                                            key={buildCatalogValue(item)}
+                                            value={buildCatalogValue(item)}
                                         >
-                                            {item.name} (
-                                            {item.sourceType === 'Recipe'
-                                                ? 'Receita'
-                                                : 'Insumo'}
-                                            )
+                                            {item.name} ({item.sourceType})
                                         </SelectItem>
                                     ))
                                 ) : (
@@ -162,7 +169,9 @@ export function NewProductComponentModal() {
                             <Button
                                 type="submit"
                                 disabled={
-                                    isPending || !componentId || !quantityUsed
+                                    isPending ||
+                                    !selectedCatalogValue ||
+                                    !quantityUsed
                                 }
                             >
                                 {isPending ? 'Salvando...' : 'Adicionar'}

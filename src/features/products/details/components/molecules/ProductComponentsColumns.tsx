@@ -32,7 +32,11 @@ export const productComponentsColumns: ColumnDef<ProductComponentModel>[] = [
             const item = row.original
             return (
                 <Badge variant="outline">
-                    {item.componentType === 'Recipe' ? 'Receita' : 'Insumo'}
+                    {item.componentType === 'Recipe'
+                        ? 'Receita'
+                        : item.componentType === 'Ingredient'
+                          ? 'Ingrediente'
+                          : 'Insumo'}
                 </Badge>
             )
         },

@@ -1,4 +1,4 @@
-export type ProductComponentType = 'Ingredient' | 'Recipe'
+export type ProductComponentType = 'Ingredient' | 'Recipe' | 'Supply'
 
 export interface ProductModel {
     id: number
@@ -19,6 +19,7 @@ export interface ProductComponentModel {
     componentType: ProductComponentType
     ingredientId?: number
     recipeId?: number
+    supplyId?: number
     name: string
     baseUnit: string
     unitPrice: number

@@ -1,26 +1,23 @@
 # Prompt para backend (Produtos + Ingredientes + Insumos)
 
-Quero que você implemente no backend o domínio completo de **Produto Final** separado de **Receita**, mantendo **Ingredientes** como estão e criando **Insumos** como uma nova entidade separada.
+Quero que você implemente no backend o domínio de **Produto Final** separado de **Receita**, mantendo **Ingredientes** e adicionando **Insumos** com conversões próprias.
 
 ## Objetivo funcional
 
 1. Receita continua existindo e não é produto final.
 2. Produto final é a entidade vendida no pedido.
 3. Ingredientes continuam sendo ingredientes alimentícios.
-4. Insumos são uma nova entidade para itens operacionais/embalagem (ex: colher plástica, embalagem, etiqueta, fita).
-5. Produto final pode ser composto por:
-    - receitas
-    - ingredientes
-    - insumos
-6. Pedido deve aceitar somente produto final.
+4. Insumos são itens operacionais (embalagem, colher, etiqueta etc.).
+5. Produto final pode ser composto por receitas, ingredientes e insumos.
+6. Pedido aceita somente produto final.
+7. Produtos devem permitir ajuste manual de estoque na tela de detalhes.
+8. Insumos devem ter conversões e entrada de estoque por conversão, igual ingredientes.
 
 ---
 
 ## 1) Entidades esperadas
 
-### 1.1 Ingredient (já existente, manter)
-
-Campos atuais esperados no front:
+### Ingredient (manter)
 
 - id
 - name
@@ -29,9 +26,14 @@ Campos atuais esperados no front:
 - stockQuantity
 - minimumStockQuantity?
 
-### 1.2 Supply (nova entidade de insumos)
+### IngredientConversion (manter)
 
-Campos esperados:
+- id
+- ingredientId
+- name
+- quantityInBaseUnit
+
+### Supply (novo)
 
 - id
 - name
@@ -40,13 +42,18 @@ Campos esperados:
 - stockQuantity
 - minimumStockQuantity?
 
-### 1.3 Product (produto final)
+### SupplyConversion (novo)
 
-Campos esperados:
+- id
+- supplyId
+- name
+- quantityInBaseUnit
+
+### Product (produto final)
 
 - id
 - name
-- salePrice (opcional na criação)
+- salePrice
 - stockQuantity
 - minimumStockQuantity?
 - indirectCostPercentage
@@ -55,13 +62,11 @@ Campos esperados:
 - discountPercentage
 - isActive
 
-### 1.4 ProductComponent
-
-Representa a composição do produto:
+### ProductComponent
 
 - id
 - productId
-- componentType: 'Recipe' | 'Ingredient' | 'Supply'
+- componentType: `Recipe | Ingredient | Supply`
 - recipeId?
 - ingredientId?
 - supplyId?
@@ -71,63 +76,67 @@ Representa a composição do produto:
 - stockQuantity
 - quantityUsed
 
-### 1.5 OrderItem
+### OrderItem
 
-Item de pedido deve conter:
-
-- productId
+- id
+- orderId
+- product: { id, name }
 - quantity
 - unitPrice
 - totalPrice
-- product: { id, name }
 
 ---
 
 ## 2) Endpoints obrigatórios
 
-## 2.1 Ingredientes (manter)
+### Ingredientes (já existem, manter compatíveis)
 
-- manter contratos atuais de `/ingredients`
+- `GET /ingredients`
+- `GET /ingredients/{id}`
+- `POST /ingredients`
+- `PUT /ingredients/{id}`
+- `DELETE /ingredients/{id}`
 
-## 2.2 Insumos (novo)
+### Conversões de ingredientes (já existem, manter)
 
-1. `GET /supplies`
-2. `GET /supplies/{id}`
-3. `POST /supplies`
-4. `PUT /supplies/{id}`
-5. `DELETE /supplies/{id}`
+- `GET /ingredients/{ingredientId}/conversions`
+- `POST /ingredients/{ingredientId}/conversions`
+- `PUT /ingredients/{ingredientId}/conversions/{conversionId}`
+- `DELETE /ingredients/{ingredientId}/conversions/{conversionId}`
 
-Payload de criação/edição (exemplo):
+### Insumos (novo)
 
-```json
-{
-    "name": "Embalagem G",
-    "unit": "unit",
-    "unitCost": 1.25,
-    "stockQuantity": 200,
-    "minimumStockQuantity": 50
-}
-```
+- `GET /supplies`
+- `GET /supplies/{id}`
+- `POST /supplies`
+- `PUT /supplies/{id}`
+- `DELETE /supplies/{id}`
 
-## 2.3 Produtos finais
+### Conversões de insumos (novo, espelhado de ingredientes)
 
-1. `GET /products`
-2. `GET /products/{id}`
-3. `POST /products`
-4. `PATCH /products/{id}`
-5. `PATCH /products/{id}/pricing`
+- `GET /supplies/{supplyId}/conversions`
+- `POST /supplies/{supplyId}/conversions`
+- `PUT /supplies/{supplyId}/conversions/{conversionId}`
+- `DELETE /supplies/{supplyId}/conversions/{conversionId}`
 
-## 2.4 Composição do produto
+### Produtos finais
 
-1. `GET /products/{productId}/components`
-2. `GET /products/{productId}/components/catalog`
-3. `POST /products/{productId}/components`
-4. `PUT /products/{productId}/components/{componentId}`
-5. `DELETE /products/{productId}/components/{componentId}`
+- `GET /products`
+- `GET /products/{id}`
+- `POST /products`
+- `PATCH /products/{id}`
+    - precisa aceitar ao menos: `name`, `isActive`, `stockQuantity`, `minimumStockQuantity`
+- `PATCH /products/{id}/pricing`
 
-### Regra do catálogo
+### Composição de produtos
 
-`GET /products/{productId}/components/catalog` deve retornar itens com shape:
+- `GET /products/{productId}/components`
+- `GET /products/{productId}/components/catalog`
+- `POST /products/{productId}/components`
+- `PUT /products/{productId}/components/{componentId}`
+- `DELETE /products/{productId}/components/{componentId}`
+
+#### Formato esperado para catálogo
 
 ```json
 [
@@ -152,71 +161,72 @@ Payload de criação/edição (exemplo):
 ]
 ```
 
-## 2.5 Pedidos
+### Pedidos
 
-1. `POST /orders/{orderId}/items` deve aceitar **somente** `productId`.
-2. `GET /orders/{orderId}/items` deve retornar `product` com `id` e `name`.
-3. `POST /orders/{id}/deliver` deve baixar estoque do produto e refletir consumo dos componentes (receitas, ingredientes e insumos).
+- `POST /orders/{orderId}/items` (somente `productId`)
+- `GET /orders/{orderId}/items` (retornar `product`)
+- `POST /orders/{id}/deliver` (baixa de estoque de produto e componentes)
 
 ---
 
-## 3) Validações de negócio
+## 3) Regras de negócio
 
-1. `componentType` obrigatório.
-2. Se `Recipe`, exige `recipeId` e proíbe `ingredientId` e `supplyId`.
+1. `componentType` é obrigatório.
+2. Se `Recipe`, exige `recipeId` e proíbe `ingredientId`/`supplyId`.
 3. Se `Ingredient`, exige `ingredientId` e proíbe os demais ids.
 4. Se `Supply`, exige `supplyId` e proíbe os demais ids.
 5. `quantityUsed > 0`.
-6. Não permitir duplicidade de componente no mesmo produto (mesmo type + mesmo id de origem).
-7. Não permitir produto referenciar ele mesmo direta/indiretamente por receita/composição (evitar ciclos).
-8. `minimumStockQuantity >= 0`, `finalPrice >= 0`.
+6. Não permitir componente duplicado no mesmo produto (mesmo type + mesmo id de origem).
+7. Evitar ciclos de composição.
+8. `stockQuantity >= 0`, `minimumStockQuantity >= 0`, `finalPrice >= 0`.
 
 ---
 
-## 4) Consistência e transação
+## 4) Consistência transacional
 
-1. Operações de composição devem ser transacionais.
-2. Entrega de pedido deve ser transacional (rollback total em estoque insuficiente).
-3. Indexar chaves de busca:
-    - supplies(name)
-    - product_components(product_id)
-    - order_items(order_id)
+1. Operações de composição transacionais.
+2. Entrega de pedido transacional (rollback total se faltar estoque).
+3. Índices recomendados:
+    - `supplies(name)`
+    - `supply_conversions(supply_id)`
+    - `product_components(product_id)`
+    - `order_items(order_id)`
 
 ---
 
-## 5) Formato de erros
-
-Use respostas padronizadas:
+## 5) Formato de erro
 
 ```json
 {
     "message": "Descrição legível",
-    "code": "SUPPLY_NOT_FOUND",
+    "code": "SUPPLY_CONVERSION_NOT_FOUND",
     "details": {}
 }
 ```
 
 Status sugeridos:
 
-- 400: payload inválido
-- 404: não encontrado
-- 409: conflito de negócio (duplicidade, estoque insuficiente, ciclo)
-- 422: regra inválida
+- 400 payload inválido
+- 404 não encontrado
+- 409 conflito de negócio
+- 422 validação de regra
 
 ---
 
 ## 6) Definition of done
 
 - [ ] Endpoints de supplies implementados
+- [ ] Endpoints de supply conversions implementados
 - [ ] Endpoints de products/components implementados
+- [ ] PATCH de produto aceitando ajuste de estoque
 - [ ] Pedido usando apenas productId
 - [ ] Entrega com baixa de estoque consistente
 - [ ] Testes de integração para fluxos críticos
-- [ ] Documentação OpenAPI atualizada
+- [ ] OpenAPI atualizado
 
-No final, entregue:
+Ao final, entregar:
 
 1. resumo técnico das decisões
-2. lista de migrations
-3. exemplos de request/response de todos endpoints
-4. lista de testes executados
+2. migrations criadas
+3. exemplos de request/response
+4. testes executados
