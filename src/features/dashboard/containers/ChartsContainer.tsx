@@ -40,11 +40,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/shared/components/ui/chart'
-import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-} from '@/shared/components/ui/alert'
+import { Alert, AlertTitle } from '@/shared/components/ui/alert'
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
 
@@ -165,10 +161,6 @@ const ChartsContainer = () => {
                     <AlertTitle>
                         Não foi possível carregar o dashboard
                     </AlertTitle>
-                    <AlertDescription>
-                        Algum endpoint de dashboard falhou. Verifique se o
-                        backend já implementou os contratos necessários.
-                    </AlertDescription>
                 </Alert>
             </section>
         )
@@ -226,9 +218,6 @@ const ChartsContainer = () => {
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Pedidos por status</CardTitle>
-                        <CardDescription>
-                            Passe o mouse para ver a quantidade por status
-                        </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ChartContainer
