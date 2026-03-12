@@ -1,17 +1,17 @@
 'use client'
 
+import Link from 'next/link'
 import {
     AlertCircle,
-    Boxes,
     ClipboardList,
     PackageSearch,
     TrendingUp,
 } from 'lucide-react'
 import { Cell, Pie, PieChart } from 'recharts'
-import { useGetProducts } from '@/features/products/list/hooks/queries/useGetProducts'
-import { useGetIngredients } from '@/features/ingredients/hooks/queries/useGetIngredients'
-import { useGetSupplies } from '@/features/supplies/hooks/queries/useGetSupplies'
-import { useGetOrders } from '@/features/orders/list/hooks/queries/useGetOrders'
+import { useGetDashboardStockAlerts } from '@/features/dashboard/hooks/queries/useGetDashboardStockAlerts'
+import { useGetDashboardOrdersByStatus } from '@/features/dashboard/hooks/queries/useGetDashboardOrdersByStatus'
+import { useGetDashboardInventoryValueByType } from '@/features/dashboard/hooks/queries/useGetDashboardInventoryValueByType'
+import { useGetDashboardRecentOrders } from '@/features/dashboard/hooks/queries/useGetDashboardRecentOrders'
 import {
     orderStatusLabelMap,
     orderStatusVariantMap,
@@ -39,15 +39,6 @@ import {
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
 
-type StockAlertItem = {
-    id: number
-    name: string
-    category: 'Produto' | 'Ingrediente' | 'Insumo'
-    stockQuantity: number
-    minimumStockQuantity: number
-    ratio: number
-}
-
 const STATUS_COLORS: Record<OrderStatus, string> = {
     Pending: '#3b82f6',
     InProduction: '#f59e0b',
@@ -55,14 +46,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
     Delivered: '#14b8a6',
     Canceled: '#ef4444',
 }
-
-const STATUS_KEYS: OrderStatus[] = [
-    'Pending',
-    'InProduction',
-    'Ready',
-    'Delivered',
-    'Canceled',
-]
 
 const chartConfig = {
     Pending: {
@@ -84,110 +67,61 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-function toStockAlert<
-    T extends {
-        id: number
-        name: string
-        stockQuantity: number
-        minimumStockQuantity?: number
-    },
->(items: T[], category: StockAlertItem['category']): StockAlertItem[] {
-    return items
-        .filter((item) => {
-            const minimum = item.minimumStockQuantity ?? 0
-            return minimum > 0 && item.stockQuantity <= minimum * 1.2
-        })
-        .map((item) => {
-            const minimum = item.minimumStockQuantity ?? 0
-            return {
-                id: item.id,
-                name: item.name,
-                category,
-                stockQuantity: item.stockQuantity,
-                minimumStockQuantity: minimum,
-                ratio: minimum > 0 ? item.stockQuantity / minimum : 1,
-            }
-        })
+const inventoryTypeLabelMap: Record<string, string> = {
+    Products: 'Produtos',
+    Ingredients: 'Ingredientes',
+    Supplies: 'Insumos',
+}
+
+const categoryLabelMap: Record<string, string> = {
+    Product: 'Produto',
+    Ingredient: 'Ingrediente',
+    Supply: 'Insumo',
 }
 
 const ChartsContainer = () => {
-    const productsQuery = useGetProducts()
-    const ingredientsQuery = useGetIngredients()
-    const suppliesQuery = useGetSupplies()
-    const ordersQuery = useGetOrders()
+    const stockAlertsQuery = useGetDashboardStockAlerts()
+    const ordersByStatusQuery = useGetDashboardOrdersByStatus()
+    const inventoryValueByTypeQuery = useGetDashboardInventoryValueByType()
+    const recentOrdersQuery = useGetDashboardRecentOrders()
 
     const isLoading =
-        productsQuery.isLoading ||
-        ingredientsQuery.isLoading ||
-        suppliesQuery.isLoading ||
-        ordersQuery.isLoading
+        stockAlertsQuery.isLoading ||
+        ordersByStatusQuery.isLoading ||
+        inventoryValueByTypeQuery.isLoading ||
+        recentOrdersQuery.isLoading
 
     const isError =
-        productsQuery.isError ||
-        ingredientsQuery.isError ||
-        suppliesQuery.isError ||
-        ordersQuery.isError
+        stockAlertsQuery.isError ||
+        ordersByStatusQuery.isError ||
+        inventoryValueByTypeQuery.isError ||
+        recentOrdersQuery.isError
 
-    const products = productsQuery.data ?? []
-    const ingredients = ingredientsQuery.data ?? []
-    const supplies = suppliesQuery.data ?? []
-    const orders = ordersQuery.data ?? []
+    const stockAlerts = stockAlertsQuery.data ?? []
+    const ordersByStatus = ordersByStatusQuery.data ?? []
+    const inventoryValueByType = inventoryValueByTypeQuery.data ?? []
+    const recentOrders = recentOrdersQuery.data ?? []
 
-    const stockAlerts = [
-        ...toStockAlert(products, 'Produto'),
-        ...toStockAlert(ingredients, 'Ingrediente'),
-        ...toStockAlert(supplies, 'Insumo'),
-    ]
-        .sort((a, b) => a.ratio - b.ratio)
-        .slice(0, 8)
+    const inProgressOrders = ordersByStatus
+        .filter(
+            (item) =>
+                item.status === 'Pending' ||
+                item.status === 'InProduction' ||
+                item.status === 'Ready'
+        )
+        .reduce((acc, item) => acc + item.total, 0)
 
-    const countByStatus = orders.reduce<Record<OrderStatus, number>>(
-        (acc, order) => {
-            acc[order.status] += 1
-            return acc
-        },
-        {
-            Pending: 0,
-            InProduction: 0,
-            Ready: 0,
-            Delivered: 0,
-            Canceled: 0,
-        }
+    const totalInventoryValue = inventoryValueByType.reduce(
+        (acc, item) => acc + item.totalValue,
+        0
     )
 
-    const statusChartData = STATUS_KEYS.map((status) => ({
-        status,
-        label: orderStatusLabelMap[status],
-        value: countByStatus[status],
-        fill: STATUS_COLORS[status],
+    const statusChartData = ordersByStatus.map((item) => ({
+        status: item.status,
+        label: orderStatusLabelMap[item.status],
+        value: item.total,
+        fill: STATUS_COLORS[item.status],
     }))
-
-    const totalInventoryValue =
-        ingredients.reduce(
-            (acc, item) => acc + item.stockQuantity * item.unitCost,
-            0
-        ) +
-        supplies.reduce(
-            (acc, item) => acc + item.stockQuantity * item.unitCost,
-            0
-        )
-
-    const inProgressOrders = orders.filter(
-        (order) =>
-            order.status === 'Pending' ||
-            order.status === 'InProduction' ||
-            order.status === 'Ready'
-    )
-
-    const activeProducts = products.filter((product) => product.isActive)
-
-    const latestOrders = [...orders]
-        .sort(
-            (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-        )
-        .slice(0, 5)
 
     if (isLoading) {
         return (
@@ -208,7 +142,8 @@ const ChartsContainer = () => {
                         Não foi possível carregar o dashboard
                     </AlertTitle>
                     <AlertDescription>
-                        Verifique sua conexão com a API e tente novamente.
+                        Algum endpoint de dashboard falhou. Verifique se o
+                        backend já implementou os contratos necessários.
                     </AlertDescription>
                 </Alert>
             </section>
@@ -220,19 +155,6 @@ const ChartsContainer = () => {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription>Produtos ativos</CardDescription>
-                        <CardTitle className="text-3xl">
-                            {activeProducts.length}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <Boxes className="h-4 w-4" />
-                        {products.length} produtos cadastrados
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-2">
                         <CardDescription>Alertas de estoque</CardDescription>
                         <CardTitle className="text-3xl">
                             {stockAlerts.length}
@@ -240,7 +162,7 @@ const ChartsContainer = () => {
                     </CardHeader>
                     <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
                         <PackageSearch className="h-4 w-4" />
-                        Itens próximos do mínimo
+                        Itens próximos/abaixo do mínimo
                     </CardContent>
                 </Card>
 
@@ -248,7 +170,7 @@ const ChartsContainer = () => {
                     <CardHeader className="pb-2">
                         <CardDescription>Pedidos em andamento</CardDescription>
                         <CardTitle className="text-3xl">
-                            {inProgressOrders.length}
+                            {inProgressOrders}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -257,16 +179,18 @@ const ChartsContainer = () => {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="md:col-span-2">
                     <CardHeader className="pb-2">
-                        <CardDescription>Valor em estoque</CardDescription>
+                        <CardDescription>
+                            Valor total em estoque
+                        </CardDescription>
                         <CardTitle className="text-3xl">
                             {formatCurrency(totalInventoryValue)}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
                         <TrendingUp className="h-4 w-4" />
-                        Ingredientes + insumos
+                        Consolidado por tipo de estoque
                     </CardContent>
                 </Card>
             </div>
@@ -310,9 +234,41 @@ const ChartsContainer = () => {
 
                 <Card className="lg:col-span-3">
                     <CardHeader>
+                        <CardTitle>Valor em estoque por tipo</CardTitle>
+                        <CardDescription>
+                            Valores entregues pelo backend por categoria
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {inventoryValueByType.length === 0 && (
+                            <p className="text-muted-foreground text-sm">
+                                Sem dados de valor por tipo.
+                            </p>
+                        )}
+                        {inventoryValueByType.map((item) => (
+                            <div
+                                key={item.type}
+                                className="bg-muted/40 flex items-center justify-between rounded-lg p-3"
+                            >
+                                <p className="text-sm font-medium">
+                                    {inventoryTypeLabelMap[item.type] ??
+                                        item.type}
+                                </p>
+                                <p className="text-sm font-semibold">
+                                    {formatCurrency(item.totalValue)}
+                                </p>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
                         <CardTitle>Estoque crítico e atenção</CardTitle>
                         <CardDescription>
-                            Itens com estoque menor ou igual a 120% do mínimo
+                            Itens próximos do mínimo com priorização do backend
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -321,77 +277,88 @@ const ChartsContainer = () => {
                                 Nenhum item precisa de atenção no momento.
                             </p>
                         )}
-                        {stockAlerts.map((item) => {
-                            const isCritical =
-                                item.stockQuantity <= item.minimumStockQuantity
-                            return (
-                                <div
-                                    key={`${item.category}-${item.id}`}
-                                    className="bg-muted/40 flex items-center justify-between rounded-lg p-3"
+                        {stockAlerts.map((item) => (
+                            <div
+                                key={`${item.category}-${item.id}`}
+                                className="bg-muted/40 flex items-center justify-between rounded-lg p-3"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        {item.name}
+                                    </p>
+                                    <p className="text-muted-foreground text-xs">
+                                        {categoryLabelMap[item.category] ??
+                                            item.category}{' '}
+                                        · Atual: {item.stockQuantity} · Mínimo:{' '}
+                                        {item.minimumStockQuantity}
+                                    </p>
+                                </div>
+                                <Badge
+                                    variant={
+                                        item.severity === 'Critical'
+                                            ? 'destructive'
+                                            : 'secondary'
+                                    }
                                 >
+                                    {item.severity === 'Critical'
+                                        ? 'Crítico'
+                                        : 'Atenção'}
+                                </Badge>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Últimos pedidos</CardTitle>
+                        <CardDescription>
+                            Clique em um pedido para abrir os detalhes
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {recentOrders.length === 0 && (
+                            <p className="text-muted-foreground text-sm">
+                                Ainda não existem pedidos cadastrados.
+                            </p>
+                        )}
+                        {recentOrders.map((order) => (
+                            <Link
+                                key={order.id}
+                                href={`/orders/${order.id}`}
+                                className="hover:border-primary block rounded-lg border p-3 transition-colors"
+                            >
+                                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                     <div>
-                                        <p className="text-sm font-medium">
-                                            {item.name}
+                                        <p className="font-medium">
+                                            Pedido #{order.number}
                                         </p>
-                                        <p className="text-muted-foreground text-xs">
-                                            {item.category} · Atual:{' '}
-                                            {item.stockQuantity} · Mínimo:{' '}
-                                            {item.minimumStockQuantity}
+                                        <p className="text-muted-foreground text-sm">
+                                            {order.customerName} · Criado em{' '}
+                                            {formatDate(order.createdAt)} ·
+                                            Itens: {order.totalItems}
                                         </p>
                                     </div>
-                                    <Badge
-                                        variant={
-                                            isCritical
-                                                ? 'destructive'
-                                                : 'secondary'
-                                        }
-                                    >
-                                        {isCritical ? 'Crítico' : 'Atenção'}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-semibold">
+                                            {formatCurrency(order.totalValue)}
+                                        </p>
+                                        <Badge
+                                            variant={
+                                                orderStatusVariantMap[
+                                                    order.status
+                                                ]
+                                            }
+                                        >
+                                            {orderStatusLabelMap[order.status]}
+                                        </Badge>
+                                    </div>
                                 </div>
-                            )
-                        })}
+                            </Link>
+                        ))}
                     </CardContent>
                 </Card>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Últimos pedidos</CardTitle>
-                    <CardDescription>
-                        Visão rápida dos pedidos mais recentes
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    {latestOrders.length === 0 && (
-                        <p className="text-muted-foreground text-sm">
-                            Ainda não existem pedidos cadastrados.
-                        </p>
-                    )}
-                    {latestOrders.map((order) => (
-                        <div
-                            key={order.id}
-                            className="flex flex-col gap-2 rounded-lg border p-3 md:flex-row md:items-center md:justify-between"
-                        >
-                            <div>
-                                <p className="font-medium">
-                                    Pedido #{order.number}
-                                </p>
-                                <p className="text-muted-foreground text-sm">
-                                    {order.customer?.name ??
-                                        'Cliente não informado'}{' '}
-                                    · Criado em {formatDate(order.createdAt)}
-                                </p>
-                            </div>
-                            <Badge
-                                variant={orderStatusVariantMap[order.status]}
-                            >
-                                {orderStatusLabelMap[order.status]}
-                            </Badge>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
         </section>
     )
 }
