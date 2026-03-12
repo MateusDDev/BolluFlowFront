@@ -7,7 +7,16 @@ import {
     PackageSearch,
     TrendingUp,
 } from 'lucide-react'
-import { Cell, Pie, PieChart } from 'recharts'
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Pie,
+    PieChart,
+    XAxis,
+    YAxis,
+} from 'recharts'
 import { useGetDashboardStockAlerts } from '@/features/dashboard/hooks/queries/useGetDashboardStockAlerts'
 import { useGetDashboardOrdersByStatus } from '@/features/dashboard/hooks/queries/useGetDashboardOrdersByStatus'
 import { useGetDashboardInventoryValueByType } from '@/features/dashboard/hooks/queries/useGetDashboardInventoryValueByType'
@@ -47,7 +56,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
     Canceled: '#ef4444',
 }
 
-const chartConfig = {
+const statusChartConfig = {
     Pending: {
         label: orderStatusLabelMap.Pending,
         color: STATUS_COLORS.Pending,
@@ -65,6 +74,12 @@ const chartConfig = {
         label: orderStatusLabelMap.Canceled,
         color: STATUS_COLORS.Canceled,
     },
+} satisfies ChartConfig
+
+const inventoryChartConfig = {
+    Products: { label: 'Produtos', color: '#22c55e' },
+    Ingredients: { label: 'Ingredientes', color: '#0ea5e9' },
+    Supplies: { label: 'Insumos', color: '#a855f7' },
 } satisfies ChartConfig
 
 const inventoryTypeLabelMap: Record<string, string> = {
@@ -102,14 +117,15 @@ const ChartsContainer = () => {
     const inventoryValueByType = inventoryValueByTypeQuery.data ?? []
     const recentOrders = recentOrdersQuery.data ?? []
 
-    const inProgressOrders = ordersByStatus
-        .filter(
-            (item) =>
-                item.status === 'Pending' ||
-                item.status === 'InProduction' ||
-                item.status === 'Ready'
-        )
-        .reduce((acc, item) => acc + item.total, 0)
+    const pendingOrders =
+        ordersByStatus.find((item) => item.status === 'Pending')?.total ?? 0
+    const inProductionOrders =
+        ordersByStatus.find((item) => item.status === 'InProduction')?.total ??
+        0
+    const readyOrders =
+        ordersByStatus.find((item) => item.status === 'Ready')?.total ?? 0
+
+    const inProgressOrders = pendingOrders + inProductionOrders + readyOrders
 
     const totalInventoryValue = inventoryValueByType.reduce(
         (acc, item) => acc + item.totalValue,
@@ -121,6 +137,14 @@ const ChartsContainer = () => {
         label: orderStatusLabelMap[item.status],
         value: item.total,
         fill: STATUS_COLORS[item.status],
+    }))
+
+    const inventoryChartData = inventoryValueByType.map((item) => ({
+        ...item,
+        label: inventoryTypeLabelMap[item.type] ?? item.type,
+        fill:
+            inventoryChartConfig[item.type as keyof typeof inventoryChartConfig]
+                ?.color ?? '#64748b',
     }))
 
     if (isLoading) {
@@ -168,14 +192,17 @@ const ChartsContainer = () => {
 
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription>Pedidos em andamento</CardDescription>
+                        <CardDescription>
+                            Pedidos operacionais (em andamento)
+                        </CardDescription>
                         <CardTitle className="text-3xl">
                             {inProgressOrders}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
                         <ClipboardList className="h-4 w-4" />
-                        Pendentes, em preparo e prontos
+                        Pendentes: {pendingOrders} · Em preparo:{' '}
+                        {inProductionOrders} · Prontos: {readyOrders}
                     </CardContent>
                 </Card>
 
@@ -200,12 +227,12 @@ const ChartsContainer = () => {
                     <CardHeader>
                         <CardTitle>Pedidos por status</CardTitle>
                         <CardDescription>
-                            Distribuição atual dos pedidos
+                            Passe o mouse para ver a quantidade por status
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[280px]">
                         <ChartContainer
-                            config={chartConfig}
+                            config={statusChartConfig}
                             className="h-full w-full"
                         >
                             <PieChart>
@@ -225,7 +252,23 @@ const ChartsContainer = () => {
                                     ))}
                                 </Pie>
                                 <ChartTooltip
-                                    content={<ChartTooltipContent hideLabel />}
+                                    content={
+                                        <ChartTooltipContent
+                                            hideIndicator
+                                            formatter={(value, name, item) => (
+                                                <div className="flex w-full items-center justify-between gap-3">
+                                                    <span className="text-muted-foreground">
+                                                        {name}
+                                                    </span>
+                                                    <span className="font-semibold">
+                                                        {String(
+                                                            item.payload.value
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        />
+                                    }
                                 />
                             </PieChart>
                         </ChartContainer>
@@ -236,29 +279,72 @@ const ChartsContainer = () => {
                     <CardHeader>
                         <CardTitle>Valor em estoque por tipo</CardTitle>
                         <CardDescription>
-                            Valores entregues pelo backend por categoria
+                            Comparativo visual em gráfico de barras
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        {inventoryValueByType.length === 0 && (
-                            <p className="text-muted-foreground text-sm">
-                                Sem dados de valor por tipo.
-                            </p>
-                        )}
-                        {inventoryValueByType.map((item) => (
-                            <div
-                                key={item.type}
-                                className="bg-muted/40 flex items-center justify-between rounded-lg p-3"
+                    <CardContent className="h-[280px]">
+                        <ChartContainer
+                            config={inventoryChartConfig}
+                            className="h-full w-full"
+                        >
+                            <BarChart
+                                data={inventoryChartData}
+                                layout="vertical"
+                                margin={{ left: 16, right: 16 }}
                             >
-                                <p className="text-sm font-medium">
-                                    {inventoryTypeLabelMap[item.type] ??
-                                        item.type}
-                                </p>
-                                <p className="text-sm font-semibold">
-                                    {formatCurrency(item.totalValue)}
-                                </p>
-                            </div>
-                        ))}
+                                <CartesianGrid horizontal={false} />
+                                <YAxis
+                                    dataKey="label"
+                                    type="category"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={95}
+                                />
+                                <XAxis
+                                    dataKey="totalValue"
+                                    type="number"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tickFormatter={(value) =>
+                                        formatCurrency(Number(value))
+                                    }
+                                />
+                                <ChartTooltip
+                                    content={
+                                        <ChartTooltipContent
+                                            nameKey="label"
+                                            formatter={(
+                                                _value,
+                                                _name,
+                                                item
+                                            ) => (
+                                                <div className="flex w-full items-center justify-between gap-3">
+                                                    <span className="text-muted-foreground">
+                                                        {String(
+                                                            item.payload.label
+                                                        )}
+                                                    </span>
+                                                    <span className="font-semibold">
+                                                        {formatCurrency(
+                                                            item.payload
+                                                                .totalValue
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        />
+                                    }
+                                />
+                                <Bar dataKey="totalValue" radius={6}>
+                                    {inventoryChartData.map((entry) => (
+                                        <Cell
+                                            key={entry.type}
+                                            fill={entry.fill}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
@@ -268,7 +354,7 @@ const ChartsContainer = () => {
                     <CardHeader>
                         <CardTitle>Estoque crítico e atenção</CardTitle>
                         <CardDescription>
-                            Itens próximos do mínimo com priorização do backend
+                            Barras de cobertura de estoque por item
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -277,35 +363,62 @@ const ChartsContainer = () => {
                                 Nenhum item precisa de atenção no momento.
                             </p>
                         )}
-                        {stockAlerts.map((item) => (
-                            <div
-                                key={`${item.category}-${item.id}`}
-                                className="bg-muted/40 flex items-center justify-between rounded-lg p-3"
-                            >
-                                <div>
-                                    <p className="text-sm font-medium">
-                                        {item.name}
-                                    </p>
-                                    <p className="text-muted-foreground text-xs">
-                                        {categoryLabelMap[item.category] ??
-                                            item.category}{' '}
-                                        · Atual: {item.stockQuantity} · Mínimo:{' '}
-                                        {item.minimumStockQuantity}
+                        {stockAlerts.map((item) => {
+                            const fillPercent = Math.max(
+                                0,
+                                Math.min(item.stockCoveragePercent, 100)
+                            )
+
+                            return (
+                                <div
+                                    key={`${item.category}-${item.id}`}
+                                    className="bg-muted/40 rounded-lg p-3"
+                                >
+                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                {item.name}
+                                            </p>
+                                            <p className="text-muted-foreground text-xs">
+                                                {categoryLabelMap[
+                                                    item.category
+                                                ] ?? item.category}{' '}
+                                                · Atual: {item.stockQuantity} ·
+                                                Mínimo:{' '}
+                                                {item.minimumStockQuantity}
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant={
+                                                item.severity === 'Critical'
+                                                    ? 'destructive'
+                                                    : 'secondary'
+                                            }
+                                        >
+                                            {item.severity === 'Critical'
+                                                ? 'Crítico'
+                                                : 'Atenção'}
+                                        </Badge>
+                                    </div>
+                                    <div className="bg-background h-2.5 w-full overflow-hidden rounded-full border">
+                                        <div
+                                            className={`h-full rounded-full ${
+                                                item.severity === 'Critical'
+                                                    ? 'bg-destructive'
+                                                    : 'bg-yellow-500'
+                                            }`}
+                                            style={{
+                                                width: `${fillPercent}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-muted-foreground mt-1 text-xs">
+                                        Cobertura: {item.stockCoveragePercent}%
+                                        do mínimo
                                     </p>
                                 </div>
-                                <Badge
-                                    variant={
-                                        item.severity === 'Critical'
-                                            ? 'destructive'
-                                            : 'secondary'
-                                    }
-                                >
-                                    {item.severity === 'Critical'
-                                        ? 'Crítico'
-                                        : 'Atenção'}
-                                </Badge>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </CardContent>
                 </Card>
 
