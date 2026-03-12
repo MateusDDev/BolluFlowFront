@@ -63,7 +63,7 @@ export function ProductPricing() {
             indirectCost: product.indirectCostPercentage.toString(),
             markup: product.markupPercentage.toString(),
             discount: product.discountPercentage?.toString() ?? '',
-            finalPrice: product.finalPrice.toString(),
+            finalPrice: Math.round(product.finalPrice * 100).toString(),
         }
     }, [product])
 

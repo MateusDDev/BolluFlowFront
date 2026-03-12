@@ -12,6 +12,7 @@ Quero que você implemente no backend o domínio de **Produto Final** separado d
 6. Pedido aceita somente produto final.
 7. Produtos devem permitir ajuste manual de estoque na tela de detalhes.
 8. Insumos devem ter conversões e entrada de estoque por conversão, igual ingredientes.
+9. Receita não deve ter margem de lucro/custo indireto/precificação própria para venda final (evitar margem dupla).
 
 ---
 

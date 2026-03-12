@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
@@ -13,6 +13,7 @@ import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpda
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
+import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 
 interface FormState {
     name: string
@@ -57,6 +58,7 @@ export function RecipeDetails() {
     const recipeId = Number(id)
 
     const { data: recipe, isLoading } = useGetRecipe(recipeId)
+    const { data: recipeIngredients } = useGetRecipeIngredients(recipeId)
     const { mutateAsync: updateRecipe, isPending } = useUpdateRecipe()
 
     const [form, setForm] = useState<FormState | null>(null)
@@ -78,6 +80,15 @@ export function RecipeDetails() {
 
         return JSON.stringify(form) !== JSON.stringify(initialForm)
     }, [form, initialForm])
+
+    const estimatedCost = useMemo(() => {
+        if (!recipeIngredients?.length) return 0
+
+        return recipeIngredients.reduce(
+            (total, item) => total + item.unitPrice * item.quantityUsed,
+            0
+        )
+    }, [recipeIngredients])
 
     if (isLoading || !recipe || !form) return null
 
@@ -118,9 +129,9 @@ export function RecipeDetails() {
                     Informações básicas
                 </h3>
 
-                <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Nome da receita</Label>
+                        <Label>Nome</Label>
                         <Input
                             value={form.name}
                             onChange={(e) => setField('name', e.target.value)}
@@ -137,10 +148,10 @@ export function RecipeDetails() {
                         />
                     </div>
 
-                    <div className="grid gap-3">
+                    <div className="grid gap-2">
                         <Label>Tempo de preparo</Label>
 
-                        <div className="flex w-full gap-2">
+                        <div className="flex gap-2">
                             <div className="w-full">
                                 <Label className="text-sm font-medium text-muted-foreground">
                                     Horas
@@ -193,30 +204,17 @@ export function RecipeDetails() {
 
             <section className="space-y-4 border-t pt-6">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Precificação
+                    Informacoes de custo
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label>Margem de lucro (%)</Label>
-                        <Input value={recipe.markupPercentage} disabled />
+                        <Label>Custo estimado da receita</Label>
+                        <Input value={formatCurrency(estimatedCost)} disabled />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Custo indireto (%)</Label>
-                        <Input value={recipe.indirectCostPercentage} disabled />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Desconto (%)</Label>
-                        <Input
-                            value={recipe.discountPercentage ?? '-'}
-                            disabled
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Preço final</Label>
+                        <Label>Preco de referencia</Label>
                         <Input
                             value={formatCurrency(recipe.finalPrice)}
                             disabled
