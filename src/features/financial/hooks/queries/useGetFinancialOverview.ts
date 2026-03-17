@@ -20,7 +20,7 @@ export type FinancialEntry = {
     date: Date
     status: FinancialEntryStatus
     isFixed: boolean
-    source: 'auto-order' | 'manual'
+    source: 'auto-order' | 'manual' | 'auto-stock'
     reference?: string
 }
 
@@ -35,6 +35,7 @@ export type CreateFinancialEntryInput = {
 }
 
 export type FinancialOverviewData = {
+    selectedMonth: string
     entries: FinancialEntry[]
     currentBalance: number
     forecastBalance: number
@@ -45,10 +46,18 @@ export type FinancialOverviewData = {
     fixedCostsInMonth: number
 }
 
-const LOCAL_STORAGE_KEY = 'bolluflow-financial-manual-entries-v2'
+const MANUAL_LOCAL_STORAGE_KEY = 'bolluflow-financial-manual-entries-v3'
 
 function calculateOrderTotal(items: OrderItemModel[]) {
     return items.reduce((acc, item) => acc + item.totalPrice, 0)
+}
+
+function generateId() {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+        return crypto.randomUUID()
+    }
+
+    return `${Date.now()}-${Math.floor(Math.random() * 100000)}`
 }
 
 function mapDeliveredOrdersToEntries(
@@ -92,16 +101,17 @@ function parseManualEntries(value: string | null): FinancialEntry[] {
     }
 }
 
-function getCurrentMonthKey(date: Date) {
-    return `${date.getFullYear()}-${date.getMonth()}`
+function isEntryFromMonth(entry: FinancialEntry, month: string) {
+    return entry.date.toISOString().slice(0, 7) === month
 }
 
 function buildFinancialOverview(
-    entries: FinancialEntry[]
+    allEntries: FinancialEntry[],
+    selectedMonth: string
 ): FinancialOverviewData {
-    const sortedEntries = [...entries].sort(
-        (a, b) => b.date.getTime() - a.date.getTime()
-    )
+    const entries = allEntries
+        .filter((entry) => isEntryFromMonth(entry, selectedMonth))
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
 
     const totalIncomes = entries
         .filter((entry) => entry.type === 'income' && entry.status === 'paid')
@@ -126,20 +136,13 @@ function buildFinancialOverview(
     const currentBalance = totalIncomes - totalExpenses
     const forecastBalance = currentBalance + pendingToReceive - pendingToPay
 
-    const now = new Date()
-    const monthKey = getCurrentMonthKey(now)
-
     const fixedCostsInMonth = entries
-        .filter(
-            (entry) =>
-                entry.type === 'expense' &&
-                entry.isFixed &&
-                getCurrentMonthKey(entry.date) === monthKey
-        )
+        .filter((entry) => entry.type === 'expense' && entry.isFixed)
         .reduce((acc, entry) => acc + entry.amount, 0)
 
     return {
-        entries: sortedEntries,
+        selectedMonth,
+        entries,
         currentBalance,
         forecastBalance,
         totalIncomes,
@@ -150,13 +153,13 @@ function buildFinancialOverview(
     }
 }
 
-export function useGetFinancialOverview() {
+export function useGetFinancialOverview(selectedMonth: string) {
     const [manualEntries, setManualEntries] = useState<FinancialEntry[]>(() => {
         if (typeof window === 'undefined') return []
 
-        const storedValue = window.localStorage.getItem(LOCAL_STORAGE_KEY)
-
-        return parseManualEntries(storedValue)
+        return parseManualEntries(
+            window.localStorage.getItem(MANUAL_LOCAL_STORAGE_KEY)
+        )
     })
 
     const ordersQuery = useQuery({
@@ -176,17 +179,20 @@ export function useGetFinancialOverview() {
 
     const saveEntries = (entries: FinancialEntry[]) => {
         setManualEntries(entries)
-        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(entries))
+        window.localStorage.setItem(
+            MANUAL_LOCAL_STORAGE_KEY,
+            JSON.stringify(entries)
+        )
     }
 
     const createEntry = (input: CreateFinancialEntryInput) => {
         const entry: FinancialEntry = {
-            id: `manual-${crypto.randomUUID()}`,
-            description: input.description,
+            id: `manual-${generateId()}`,
+            description: input.description.trim(),
             type: input.type,
-            category: input.category,
+            category: input.category.trim() || 'Despesas gerais',
             amount: input.amount,
-            date: new Date(input.date),
+            date: new Date(`${input.date}T12:00:00`),
             status: input.status,
             isFixed: input.isFixed,
             source: 'manual',
@@ -228,9 +234,11 @@ export function useGetFinancialOverview() {
         ) as Record<number, OrderItemModel[]>
 
         const orderEntries = mapDeliveredOrdersToEntries(orders, orderItemsMap)
-
-        return buildFinancialOverview([...orderEntries, ...manualEntries])
-    }, [manualEntries, orderItemsQueries, orders])
+        return buildFinancialOverview(
+            [...orderEntries, ...manualEntries],
+            selectedMonth
+        )
+    }, [manualEntries, orderItemsQueries, orders, selectedMonth])
 
     return {
         isLoading,

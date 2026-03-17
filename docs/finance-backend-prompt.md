@@ -1,28 +1,23 @@
-# Prompt para o Back-end — Financeiro básico real da doceria
+# Prompt para o Back-end — Financeiro mensal (MVP prático da doceria)
 
-Preciso evoluir o back-end para suportar um **financeiro básico e real** no Bollu Flow, com foco em:
+Preciso evoluir o back-end para suportar um financeiro **simples e útil no dia a dia**, com visão por mês.
 
-- entradas (vendas e outros recebimentos)
-- saídas (compras de ingredientes/insumos e despesas)
-- contas fixas (água, luz, gás, aluguel, internet etc.)
-- saldo atual e saldo projetado
+## Objetivo do MVP
 
-Sem necessidade de DRE complexa nesse momento.
+Quero conseguir, para qualquer mês (`YYYY-MM`):
 
-## Objetivo funcional
+1. Ver saldo atual (entradas pagas - saídas pagas)
+2. Ver saldo projetado (considerando pendências)
+3. Registrar lançamentos manuais (entrada/saída)
+4. Controlar contas fixas (água, luz, gás, aluguel etc.)
+5. Ter receitas automáticas de vendas
+6. Ter despesas automáticas de compras de estoque (ingredientes e insumos)
 
-A pessoa administradora da doceria precisa conseguir responder:
+## Endpoints necessários
 
-1. Quanto tenho em caixa hoje?
-2. Quanto ainda tenho para receber?
-3. Quanto ainda tenho para pagar?
-4. Quais são minhas contas fixas do mês?
+### 1) Lançamentos financeiros
 
-## Endpoints mínimos desejados
-
-### 1) Lançamentos financeiros (extrato)
-
-#### Criar lançamento
+#### Criar lançamento manual
 
 `POST /financial/entries`
 
@@ -30,10 +25,10 @@ Payload:
 
 ```json
 {
-    "description": "Compra de embalagens",
+    "description": "Compra de embalagem",
     "type": "Expense",
     "category": "Insumos",
-    "amount": 185.9,
+    "amount": 189.5,
     "date": "2026-03-12",
     "status": "Paid",
     "isFixed": false,
@@ -41,11 +36,11 @@ Payload:
 }
 ```
 
-#### Listar lançamentos
+#### Listar lançamentos por mês
 
-`GET /financial/entries?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&type=Income|Expense&status=Paid|Pending&isFixed=true|false&page=1&pageSize=20`
+`GET /financial/entries?month=YYYY-MM&type=Income|Expense&status=Paid|Pending&page=1&pageSize=50`
 
-#### Atualizar status (pago/pendente)
+#### Atualizar status
 
 `PATCH /financial/entries/{entryId}/status`
 
@@ -57,34 +52,48 @@ Payload:
 }
 ```
 
-#### Excluir lançamento
+#### Excluir lançamento manual
 
 `DELETE /financial/entries/{entryId}`
 
-### 2) Receitas automáticas por venda
+> Observação: lançamentos automáticos não devem ser excluídos por esse endpoint.
 
-Quero que pedidos entregues gerem entradas automaticamente no financeiro.
+### 2) Receitas automáticas de vendas
 
-Sugestão de endpoint para consumo no front:
+`GET /financial/entries/auto-sales?month=YYYY-MM`
 
-`GET /financial/sales-entries?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
+Regra:
 
-Resposta esperada:
+- pedidos `Delivered` geram entrada automática `Income`, com status `Paid`.
+
+### 3) Despesas automáticas de compras de estoque
+
+`GET /financial/entries/auto-stock-purchases?month=YYYY-MM`
+
+Regra esperada:
+
+- toda compra/entrada de estoque de ingredientes e insumos deve gerar saída automática `Expense`.
+- incluir referência da compra/movimentação para rastreio.
+
+Resposta exemplo:
 
 ```json
 [
     {
-        "id": "sale-order-123",
-        "orderId": 123,
-        "description": "Venda pedido #2050 - Maria",
-        "amount": 240.0,
-        "date": "2026-03-03",
-        "status": "Paid"
+        "id": "stock-purchase-77",
+        "description": "Compra de ingrediente: açúcar",
+        "type": "Expense",
+        "category": "Ingredientes",
+        "amount": 320.0,
+        "date": "2026-03-10",
+        "status": "Paid",
+        "source": "AutoStockPurchase",
+        "referenceId": 77
     }
 ]
 ```
 
-### 3) Resumo financeiro básico
+### 4) Resumo do mês
 
 `GET /financial/overview?month=YYYY-MM`
 
@@ -92,17 +101,18 @@ Retornar:
 
 ```json
 {
-    "currentBalance": 5230.5,
-    "totalIncomesPaid": 8900.0,
-    "totalExpensesPaid": 3669.5,
-    "pendingToReceive": 950.0,
-    "pendingToPay": 700.0,
-    "forecastBalance": 5480.5,
-    "fixedCostsInMonth": 1200.0
+    "month": "2026-03",
+    "currentBalance": 4200.0,
+    "forecastBalance": 3950.0,
+    "totalIncomesPaid": 9000.0,
+    "totalExpensesPaid": 4800.0,
+    "pendingToReceive": 700.0,
+    "pendingToPay": 950.0,
+    "fixedCostsInMonth": 2100.0
 }
 ```
 
-### 4) Contas fixas
+### 5) Contas fixas
 
 #### Criar conta fixa
 
@@ -128,21 +138,20 @@ Payload:
 
 `POST /financial/fixed-accounts/generate-month?month=YYYY-MM`
 
-> Isso pode criar lançamentos pendentes automaticamente para o mês.
+## Regras de negócio importantes
 
-## Regras importantes
-
-1. Não permitir valor negativo ou zero em lançamentos.
-2. Usar decimal monetário adequado no banco (evitar float puro).
-3. Lançamento não pode mudar `type` depois de criado (ou justificar se permitir).
-4. Status só pode ser `Paid` ou `Pending` nesse MVP.
-5. Vendas automáticas não podem ser excluídas manualmente no financeiro.
-6. Paginação obrigatória nas listagens.
+1. Valor do lançamento deve ser maior que zero.
+2. Usar decimal para dinheiro (não float puro).
+3. Status permitido no MVP: `Paid` e `Pending`.
+4. Paginação obrigatória nas listagens.
+5. Lançamentos automáticos precisam de rastreabilidade (`source`, `referenceId`).
+6. Não duplicar lançamento automático se o processo for reexecutado (idempotência).
 
 ## Enums sugeridos
 
 - `FinancialEntryType`: `Income`, `Expense`
 - `FinancialEntryStatus`: `Paid`, `Pending`
+- `FinancialEntrySource`: `Manual`, `AutoSale`, `AutoStockPurchase`, `AutoFixedAccount`
 
 ## Entregáveis esperados
 
