@@ -1,6 +1,7 @@
 import {
     ChefHatIcon,
     Home,
+    LandmarkIcon,
     NotepadTextIcon,
     PackageIcon,
     ShoppingBagIcon,
@@ -13,7 +14,7 @@ export type NavItem = {
     title: string
     url: string
     icon: LucideIcon
-    section: 'principal' | 'estoque' | 'cadastros'
+    section: 'principal' | 'estoque' | 'cadastros' | 'financeiro'
 }
 
 export const navItems: NavItem[] = [
@@ -28,6 +29,12 @@ export const navItems: NavItem[] = [
         url: '/orders',
         icon: NotepadTextIcon,
         section: 'principal',
+    },
+    {
+        title: 'Financeiro',
+        url: '/financial',
+        icon: LandmarkIcon,
+        section: 'financeiro',
     },
     {
         title: 'Produtos',
@@ -66,6 +73,7 @@ export const navSections: Array<{
     title: string
 }> = [
     { key: 'principal', title: 'Principal' },
+    { key: 'financeiro', title: 'Financeiro' },
     { key: 'estoque', title: 'Estoque' },
     { key: 'cadastros', title: 'Cadastros' },
 ]
