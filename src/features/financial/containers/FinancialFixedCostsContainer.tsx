@@ -1,11 +1,22 @@
 'use client'
 
-import { FormEvent, useMemo, useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { FormEvent, useState } from 'react'
+import { Pencil } from 'lucide-react'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/shared/components/ui/alert-dialog'
 import { useGetFinancialOverview } from '@/features/financial/hooks/queries/useGetFinancialOverview'
 import {
     CreateFinancialEntryInput,
-    FinancialEntry,
+    FixedAccountTemplate,
 } from '@/features/financial/lib/types'
 import { getMonthLabel } from '@/features/financial/lib/month'
 import { Button } from '@/shared/components/ui/button'
@@ -26,7 +37,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/shared/components/ui/table'
-import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 
 function getDefaultFixedCostForm(month: string): CreateFinancialEntryInput {
     return {
@@ -40,34 +51,32 @@ function getDefaultFixedCostForm(month: string): CreateFinancialEntryInput {
     }
 }
 
-function mapEntryToForm(entry: FinancialEntry): CreateFinancialEntryInput {
+function mapFixedAccountToForm(
+    account: FixedAccountTemplate
+): CreateFinancialEntryInput {
     return {
-        description: entry.description,
+        description: account.description,
         type: 'expense',
-        category: entry.category,
-        amount: entry.amount,
-        date: entry.date.toISOString().slice(0, 10),
-        status: entry.status,
+        category: account.category,
+        amount: account.amount,
+        date: `${account.startMonth}-01`,
+        status: account.defaultStatus,
         isFixed: true,
     }
 }
 
 export function FinancialFixedCostsContainer({ month }: { month: string }) {
-    const { data, createEntry, updateEntry, deleteEntry } =
-        useGetFinancialOverview(month)
+    const {
+        data,
+        fixedAccounts,
+        createFixedAccount,
+        updateFixedAccount,
+        deleteFixedAccount,
+    } = useGetFinancialOverview(month)
 
-    const fixedAccounts = useMemo(
-        () =>
-            data.entries.filter(
-                (entry) =>
-                    entry.type === 'expense' &&
-                    entry.isFixed &&
-                    entry.source === 'manual'
-            ),
-        [data.entries]
+    const [editingAccountId, setEditingAccountId] = useState<string | null>(
+        null
     )
-
-    const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
     const [formState, setFormState] = useState<CreateFinancialEntryInput>(
         getDefaultFixedCostForm(month)
     )
@@ -75,18 +84,19 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
     const onSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        if (!formState.description.trim() || Number(formState.amount) <= 0)
+        if (!formState.description.trim() || Number(formState.amount) <= 0) {
             return
+        }
 
-        if (editingEntryId) {
-            updateEntry(editingEntryId, {
+        if (editingAccountId) {
+            updateFixedAccount(editingAccountId, {
                 ...formState,
                 amount: Number(formState.amount),
                 type: 'expense',
                 isFixed: true,
             })
         } else {
-            createEntry({
+            createFixedAccount({
                 ...formState,
                 amount: Number(formState.amount),
                 type: 'expense',
@@ -94,17 +104,17 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
             })
         }
 
-        setEditingEntryId(null)
+        setEditingAccountId(null)
         setFormState(getDefaultFixedCostForm(month))
     }
 
-    const startEdit = (entry: FinancialEntry) => {
-        setEditingEntryId(entry.id)
-        setFormState(mapEntryToForm(entry))
+    const startEdit = (account: FixedAccountTemplate) => {
+        setEditingAccountId(account.id)
+        setFormState(mapFixedAccountToForm(account))
     }
 
     const cancelEdit = () => {
-        setEditingEntryId(null)
+        setEditingAccountId(null)
         setFormState(getDefaultFixedCostForm(month))
     }
 
@@ -116,8 +126,8 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
                         Contas fixas de {getMonthLabel(month)}
                     </CardTitle>
                     <CardDescription>
-                        Cadastre, edite e remova custos recorrentes como água,
-                        luz, gás, aluguel e internet.
+                        Custos recorrentes impactam o mês atual e todos os meses
+                        seguintes até serem encerrados.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm">
@@ -129,7 +139,7 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
             <Card>
                 <CardHeader>
                     <CardTitle>
-                        {editingEntryId
+                        {editingAccountId
                             ? 'Editar conta fixa'
                             : 'Nova conta fixa'}
                     </CardTitle>
@@ -170,21 +180,21 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Data</Label>
+                            <Label>Mês inicial</Label>
                             <Input
-                                type="date"
-                                value={formState.date}
+                                type="month"
+                                value={formState.date.slice(0, 7)}
                                 onChange={({ target }) =>
                                     setFormState((current) => ({
                                         ...current,
-                                        date: target.value,
+                                        date: `${target.value}-01`,
                                     }))
                                 }
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Status</Label>
+                            <Label>Status padrão do mês atual</Label>
                             <select
                                 className="border rounded-md h-9 px-3 w-full bg-transparent"
                                 value={formState.status}
@@ -215,11 +225,11 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
 
                         <div className="lg:col-span-4 flex gap-2">
                             <Button type="submit">
-                                {editingEntryId
+                                {editingAccountId
                                     ? 'Salvar alterações'
                                     : 'Adicionar conta fixa'}
                             </Button>
-                            {editingEntryId && (
+                            {editingAccountId && (
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -236,14 +246,19 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
             <Card>
                 <CardHeader>
                     <CardTitle>Lista de contas fixas</CardTitle>
+                    <CardDescription>
+                        A exclusão é controlada por intervalo para preservar a
+                        linha do tempo financeira.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Descrição</TableHead>
-                                <TableHead>Data</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>Início</TableHead>
+                                <TableHead>Fim</TableHead>
+                                <TableHead>Status padrão</TableHead>
                                 <TableHead className="text-right">
                                     Valor
                                 </TableHead>
@@ -254,21 +269,24 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
                         </TableHeader>
                         <TableBody>
                             {fixedAccounts.length ? (
-                                fixedAccounts.map((entry) => (
-                                    <TableRow key={entry.id}>
+                                fixedAccounts.map((account) => (
+                                    <TableRow key={account.id}>
                                         <TableCell>
-                                            {entry.description}
+                                            {account.description}
                                         </TableCell>
                                         <TableCell>
-                                            {formatDate(entry.date)}
+                                            {account.startMonth}
                                         </TableCell>
                                         <TableCell>
-                                            {entry.status === 'paid'
+                                            {account.endMonth ?? 'Sem fim'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {account.defaultStatus === 'paid'
                                                 ? 'Pago'
                                                 : 'Pendente'}
                                         </TableCell>
                                         <TableCell className="text-right font-semibold">
-                                            {formatCurrency(entry.amount)}
+                                            {formatCurrency(account.amount)}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
@@ -277,21 +295,80 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() =>
-                                                        startEdit(entry)
+                                                        startEdit(account)
                                                     }
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        deleteEntry(entry.id)
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                        >
+                                                            Remover
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Como deseja
+                                                                excluir esta
+                                                                conta fixa?
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Escolha se a
+                                                                exclusão vale
+                                                                apenas para o
+                                                                histórico até
+                                                                este mês, para
+                                                                os meses futuros
+                                                                ou para toda a
+                                                                recorrência.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter className="sm:flex-col sm:items-stretch">
+                                                            <AlertDialogCancel>
+                                                                Cancelar
+                                                            </AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() =>
+                                                                    deleteFixedAccount(
+                                                                        account.id,
+                                                                        'until-month'
+                                                                    )
+                                                                }
+                                                            >
+                                                                Excluir apenas
+                                                                até este mês
+                                                            </AlertDialogAction>
+                                                            <AlertDialogAction
+                                                                onClick={() =>
+                                                                    deleteFixedAccount(
+                                                                        account.id,
+                                                                        'from-month'
+                                                                    )
+                                                                }
+                                                            >
+                                                                Excluir a partir
+                                                                deste mês
+                                                            </AlertDialogAction>
+                                                            <AlertDialogAction
+                                                                onClick={() =>
+                                                                    deleteFixedAccount(
+                                                                        account.id,
+                                                                        'all'
+                                                                    )
+                                                                }
+                                                            >
+                                                                Excluir
+                                                                definitivamente
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -299,10 +376,10 @@ export function FinancialFixedCostsContainer({ month }: { month: string }) {
                             ) : (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={5}
+                                        colSpan={6}
                                         className="text-center text-muted-foreground"
                                     >
-                                        Nenhuma conta fixa cadastrada neste mês.
+                                        Nenhuma conta fixa cadastrada.
                                     </TableCell>
                                 </TableRow>
                             )}

@@ -1,9 +1,13 @@
 import {
     FinancialEntry,
     FinancialEntryStatus,
+    FixedAccountTemplate,
 } from '@/features/financial/lib/types'
+import { addMonths } from '@/features/financial/lib/month'
 
-const STORAGE_KEY = 'bolluflow-financial-manual-entries-v4'
+const ENTRIES_STORAGE_KEY = 'bolluflow-financial-entries-v5'
+const FIXED_ACCOUNTS_STORAGE_KEY = 'bolluflow-financial-fixed-accounts-v1'
+const DELETED_REFERENCES_STORAGE_KEY = 'bolluflow-financial-deleted-refs-v1'
 export const FINANCIAL_STORAGE_EVENT = 'bolluflow-financial-storage-updated'
 
 export type StoredFinancialEntry = Omit<FinancialEntry, 'date'> & {
@@ -18,6 +22,8 @@ type StockPurchaseEntryInput = {
     date?: string
     status?: FinancialEntryStatus
 }
+
+type FixedAccountDeleteMode = 'until-month' | 'from-month' | 'all'
 
 function notifyFinancialEntriesUpdated() {
     if (typeof window === 'undefined') return
@@ -49,20 +55,97 @@ export function parseStoredFinancialEntries(
     }
 }
 
+function parseStoredFixedAccounts(
+    value: string | null
+): FixedAccountTemplate[] {
+    if (!value) return []
+
+    try {
+        return JSON.parse(value) as FixedAccountTemplate[]
+    } catch {
+        return []
+    }
+}
+
+function parseDeletedReferences(value: string | null): string[] {
+    if (!value) return []
+
+    try {
+        return JSON.parse(value) as string[]
+    } catch {
+        return []
+    }
+}
+
 export function getStoredFinancialEntries() {
     if (typeof window === 'undefined') return []
 
-    return parseStoredFinancialEntries(window.localStorage.getItem(STORAGE_KEY))
+    return parseStoredFinancialEntries(
+        window.localStorage.getItem(ENTRIES_STORAGE_KEY)
+    )
 }
 
 export function saveStoredFinancialEntries(entries: FinancialEntry[]) {
     if (typeof window === 'undefined') return
 
     window.localStorage.setItem(
-        STORAGE_KEY,
+        ENTRIES_STORAGE_KEY,
         JSON.stringify(serializeEntries(entries))
     )
     notifyFinancialEntriesUpdated()
+}
+
+export function getStoredFixedAccounts() {
+    if (typeof window === 'undefined') return []
+
+    return parseStoredFixedAccounts(
+        window.localStorage.getItem(FIXED_ACCOUNTS_STORAGE_KEY)
+    )
+}
+
+export function saveStoredFixedAccounts(accounts: FixedAccountTemplate[]) {
+    if (typeof window === 'undefined') return
+
+    window.localStorage.setItem(
+        FIXED_ACCOUNTS_STORAGE_KEY,
+        JSON.stringify(accounts)
+    )
+    notifyFinancialEntriesUpdated()
+}
+
+export function getDeletedFinancialReferences() {
+    if (typeof window === 'undefined') return []
+
+    return parseDeletedReferences(
+        window.localStorage.getItem(DELETED_REFERENCES_STORAGE_KEY)
+    )
+}
+
+function saveDeletedFinancialReferences(references: string[]) {
+    if (typeof window === 'undefined') return
+
+    window.localStorage.setItem(
+        DELETED_REFERENCES_STORAGE_KEY,
+        JSON.stringify(Array.from(new Set(references)))
+    )
+    notifyFinancialEntriesUpdated()
+}
+
+export function deleteAutomaticFinancialEntry(reference?: string) {
+    if (!reference) return
+
+    saveDeletedFinancialReferences([
+        ...getDeletedFinancialReferences(),
+        reference,
+    ])
+}
+
+export function restoreAutomaticFinancialEntry(reference?: string) {
+    if (!reference) return
+
+    saveDeletedFinancialReferences(
+        getDeletedFinancialReferences().filter((item) => item !== reference)
+    )
 }
 
 export function appendStockPurchaseEntry({
@@ -75,13 +158,16 @@ export function appendStockPurchaseEntry({
 }: StockPurchaseEntryInput) {
     if (typeof window === 'undefined' || amount <= 0) return
 
+    const reference = `${itemType}-${itemId}-${date ?? new Date().toISOString().slice(0, 10)}`
+    const deletedReferences = getDeletedFinancialReferences()
+
+    if (deletedReferences.includes(reference)) {
+        restoreAutomaticFinancialEntry(reference)
+    }
+
     const currentEntries = getStoredFinancialEntries().filter(
         (entry) =>
-            !(
-                entry.source === 'auto-stock' &&
-                entry.reference ===
-                    `${itemType}-${itemId}-${date ?? new Date().toISOString().slice(0, 10)}`
-            )
+            !(entry.source === 'auto-stock' && entry.reference === reference)
     )
 
     const entryDate = new Date(
@@ -98,8 +184,40 @@ export function appendStockPurchaseEntry({
         status,
         isFixed: false,
         source: 'auto-stock',
-        reference: `${itemType}-${itemId}-${date ?? new Date().toISOString().slice(0, 10)}`,
+        reference,
     }
 
     saveStoredFinancialEntries([nextEntry, ...currentEntries])
+}
+
+export function deleteFixedAccountTemplate(
+    accountId: string,
+    mode: FixedAccountDeleteMode,
+    month: string
+) {
+    const accounts = getStoredFixedAccounts()
+
+    const updatedAccounts = accounts.flatMap((account) => {
+        if (account.id !== accountId) return [account]
+
+        if (mode === 'all') return []
+
+        if (mode === 'until-month') {
+            return [
+                {
+                    ...account,
+                    startMonth: addMonths(month, 1),
+                },
+            ]
+        }
+
+        return [
+            {
+                ...account,
+                endMonth: month,
+            },
+        ]
+    })
+
+    saveStoredFixedAccounts(updatedAccounts)
 }

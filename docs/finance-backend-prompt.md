@@ -1,174 +1,324 @@
-# Prompt para o Back-end — Financeiro mensal (MVP prático da doceria)
+# Prompt para o Back-end — Evolução do módulo Financeiro e Receitas
 
-Preciso evoluir o back-end para suportar um financeiro **simples e útil no dia a dia**, com visão por mês.
+Preciso evoluir o back-end para suportar um mini sistema financeiro mais correto, rastreável e escalável para a doceria.
 
-## Objetivo do MVP
+## Objetivos principais
 
-Quero conseguir, para qualquer mês (`YYYY-MM`):
+1. Financeiro mensal com navegação clara por Resumo, Lançamentos e Contas Fixas
+2. Entradas automáticas por venda
+3. Despesas automáticas por compra/reposição de estoque
+4. Contas fixas recorrentes com impacto em todos os meses futuros
+5. Saldo projetado acumulado ao longo da linha do tempo
+6. Suporte a receitas com estoque e conversões, semelhante ao que já existe para ingredientes
 
-1. Ver saldo atual (entradas pagas - saídas pagas)
-2. Ver saldo projetado (considerando pendências)
-3. Registrar lançamentos manuais (entrada/saída)
-4. Controlar contas fixas (água, luz, gás, aluguel etc.)
-5. Ter receitas automáticas de vendas
-6. Ter despesas automáticas de compras de estoque (ingredientes e insumos), hoje já refletidas no front quando a entrada de estoque é lançada manualmente
+---
 
-## Endpoints necessários
+## 1) Endpoints REST legíveis
 
-### 1) Lançamentos financeiros
+Quero endpoints claros e diretos, evitando padrões difíceis de inspecionar no browser.
+
+### Lançamentos financeiros
+
+#### Listar lançamentos
+
+`GET /api/financeiro/lancamentos?month=YYYY-MM&type=income|expense&source=manual|auto-sale|auto-stock|auto-fixed&status=paid|pending`
 
 #### Criar lançamento manual
 
-`POST /financial/entries`
-
-Payload:
+`POST /api/financeiro/lancamentos`
 
 ```json
 {
-    "description": "Compra de embalagem",
-    "type": "Expense",
+    "description": "Compra emergencial de embalagem",
+    "type": "expense",
     "category": "Insumos",
-    "amount": 189.5,
-    "date": "2026-03-12",
-    "status": "Paid",
-    "isFixed": false,
-    "notes": "Fornecedor XP"
+    "amount": 120.5,
+    "date": "2026-03-19",
+    "status": "paid",
+    "isFixed": false
 }
 ```
 
-#### Listar lançamentos por mês
+#### Atualizar lançamento manual
 
-`GET /financial/entries?month=YYYY-MM&type=Income|Expense&status=Paid|Pending&page=1&pageSize=50`
+`PUT /api/financeiro/lancamentos/{id}`
 
 #### Atualizar status
 
-`PATCH /financial/entries/{entryId}/status`
-
-Payload:
+`PATCH /api/financeiro/lancamentos/{id}/status`
 
 ```json
 {
-    "status": "Paid"
+    "status": "pending"
 }
 ```
 
 #### Excluir lançamento manual
 
-`DELETE /financial/entries/{entryId}`
+`DELETE /api/financeiro/lancamentos/{id}`
 
-> Observação: lançamentos automáticos não devem ser excluídos por esse endpoint.
+---
 
-### 2) Receitas automáticas de vendas
+## 2) Exclusão controlada de lançamentos automáticos
 
-`GET /financial/entries/auto-sales?month=YYYY-MM`
+### Problema
 
-Regra:
+Lançamentos automáticos, especialmente compras de estoque, também precisam poder ser removidos do financeiro sem necessariamente apagar a movimentação de origem.
 
-- pedidos `Delivered` geram entrada automática `Income`, com status `Paid`.
+### Endpoint sugerido
 
-### 3) Despesas automáticas de compras de estoque
+`POST /api/financeiro/lancamentos/{id}/exclude`
 
-`GET /financial/entries/auto-stock-purchases?month=YYYY-MM`
+```json
+{
+    "reason": "Movimentação lançada em duplicidade",
+    "preserveSource": true
+}
+```
 
-Regra esperada:
+### Regra de negócio
 
-- toda compra/entrada de estoque de ingredientes e insumos deve gerar saída automática `Expense` de forma nativa no back-end.
-- incluir referência da compra/movimentação para rastreio.
+- Se `preserveSource = true`, o lançamento financeiro é desconsiderado no extrato, mas a compra/entrada de estoque continua existindo na origem.
+- Deve existir rastreabilidade dessa exclusão.
+- A exclusão não deve apagar histórico bruto; idealmente marcar como `excluded`.
 
-Resposta exemplo:
+---
+
+## 3) Entradas automáticas por venda
+
+### Endpoint
+
+`GET /api/financeiro/lancamentos/auto-sales?month=YYYY-MM`
+
+### Regra
+
+- Pedido `Delivered` gera entrada automática.
+- Deve haver referência ao pedido.
+
+### Exemplo
 
 ```json
 [
     {
-        "id": "stock-purchase-77",
+        "id": "fin-auto-sale-123",
+        "description": "Venda pedido #2050 - Maria",
+        "type": "income",
+        "category": "Vendas",
+        "amount": 240.0,
+        "date": "2026-03-10",
+        "status": "paid",
+        "source": "auto-sale",
+        "referenceType": "order",
+        "referenceId": 123
+    }
+]
+```
+
+---
+
+## 4) Despesas automáticas por compra de estoque
+
+### Endpoint
+
+`GET /api/financeiro/lancamentos/auto-stock?month=YYYY-MM`
+
+### Regra
+
+- Toda compra/reposição de ingrediente ou insumo deve gerar despesa automática.
+- Deve haver origem rastreável da compra/movimentação.
+- Terminologia semântica: usar “Compra de insumo”, “Compra de ingrediente” ou “Reposição de estoque”.
+
+### Exemplo
+
+```json
+[
+    {
+        "id": "fin-auto-stock-77",
         "description": "Compra de ingrediente: açúcar",
-        "type": "Expense",
+        "type": "expense",
         "category": "Ingredientes",
         "amount": 320.0,
         "date": "2026-03-10",
-        "status": "Paid",
-        "source": "AutoStockPurchase",
+        "status": "paid",
+        "source": "auto-stock",
+        "referenceType": "stock_purchase",
         "referenceId": 77
     }
 ]
 ```
 
-### 4) Resumo do mês
+---
 
-`GET /financial/overview?month=YYYY-MM`
+## 5) Resumo financeiro com saldo projetado acumulado
 
-Retornar:
+### Endpoint
+
+`GET /api/financeiro/resumo?month=YYYY-MM`
+
+### Regra crítica
+
+O saldo projetado deve ser acumulativo, não isolado por mês.
+
+### Exemplo esperado
 
 ```json
 {
-    "month": "2026-03",
-    "currentBalance": 4200.0,
-    "forecastBalance": 3950.0,
-    "totalIncomesPaid": 9000.0,
-    "totalExpensesPaid": 4800.0,
+    "selectedMonth": "2026-03",
+    "totalIncomes": 9000.0,
+    "totalExpenses": 4800.0,
     "pendingToReceive": 700.0,
     "pendingToPay": 950.0,
-    "fixedCostsInMonth": 2100.0
+    "currentBalance": 15320.0,
+    "forecastBalance": 15070.0,
+    "fixedCostsInMonth": 2100.0,
+    "recentEntries": []
 }
 ```
 
-### 5) Contas fixas
+### Interpretação
 
-#### Criar conta fixa
+- `totalIncomes` e `totalExpenses` = valores do mês selecionado
+- `currentBalance` = saldo acumulado até o fim do mês selecionado considerando apenas pagos/recebidos
+- `forecastBalance` = saldo acumulado até o fim do mês selecionado considerando também pendências
 
-`POST /financial/fixed-accounts`
+---
 
-Payload:
+## 6) Contas fixas recorrentes
+
+### Criar conta fixa
+
+`POST /api/financeiro/contas-fixas`
 
 ```json
 {
     "description": "Conta de luz",
     "category": "Utilidades",
-    "defaultAmount": 320.0,
-    "dueDay": 10,
-    "isActive": true
+    "amount": 320.0,
+    "startMonth": "2026-03",
+    "defaultStatus": "pending"
 }
 ```
 
-#### Listar contas fixas
+### Listar contas fixas
 
-`GET /financial/fixed-accounts`
+`GET /api/financeiro/contas-fixas`
 
-#### Gerar lançamentos mensais de contas fixas
+### Atualizar conta fixa
 
-`POST /financial/fixed-accounts/generate-month?month=YYYY-MM`
+`PUT /api/financeiro/contas-fixas/{id}`
 
-## Entidades sugeridas
+### Exclusão controlada de conta fixa
+
+`POST /api/financeiro/contas-fixas/{id}/delete-range`
+
+```json
+{
+    "mode": "until-month",
+    "month": "2026-03"
+}
+```
+
+### Modos possíveis
+
+- `until-month`
+- `from-month`
+- `all`
+
+### Regra
+
+- Conta fixa impacta todos os meses futuros a partir do `startMonth` até ser encerrada.
+- Nunca fazer exclusão cega sem perguntar o intervalo.
+
+---
+
+## 7) Receitas com estoque e conversões
+
+Quero aplicar para **Receitas** um comportamento próximo ao de Ingredientes/Insumos, mas respeitando a natureza do domínio.
+
+### Regras
+
+- Receita é produzida, não comprada.
+- Receita deve ter estoque próprio.
+- Receita deve aceitar conversões/unidades, como “unidade”, “kg”, “fatia”, etc.
+- Produção de receita deve gerar movimentação de estoque da própria receita.
+- Se houver controle financeiro futuro de produção, isso pode alimentar custo interno, mas não é venda automática por si só.
+
+### Endpoints sugeridos
+
+- `GET /api/receitas`
+- `GET /api/receitas/{id}`
+- `PATCH /api/receitas/{id}`
+- `GET /api/receitas/{id}/conversoes`
+- `POST /api/receitas/{id}/conversoes`
+- `PUT /api/receitas/{id}/conversoes/{conversionId}`
+- `DELETE /api/receitas/{id}/conversoes/{conversionId}`
+- `POST /api/receitas/{id}/producao`
+
+### Exemplo de produção
+
+```json
+{
+    "conversionId": 2,
+    "quantity": 3,
+    "productionDate": "2026-03-19"
+}
+```
+
+---
+
+## 8) Entidades sugeridas
+
+### Financeiro
 
 - `FinancialEntry`
+- `FinancialEntryExclusion`
 - `FixedAccount`
+- `FixedAccountPeriod` (opcional, se quiser representar intervalos/encerramentos)
 - `StockPurchase` ou `InventoryPurchaseMovement`
-- `FinancialEntrySourceLink` (opcional para rastreabilidade de origem)
 
-## Relacionamentos esperados
+### Receitas
+
+- `Recipe`
+- `RecipeConversion`
+- `RecipeStockMovement`
+
+---
+
+## 9) Relacionamentos esperados
 
 - pedido entregue -> gera `FinancialEntry` de entrada
-- compra de ingrediente/insumo -> gera `FinancialEntry` de saída
-- conta fixa mensal -> gera `FinancialEntry` recorrente
+- compra/reposição de ingrediente ou insumo -> gera `FinancialEntry` de despesa
+- conta fixa -> gera impacto recorrente mês a mês
+- produção de receita -> gera `RecipeStockMovement`
 
-## Regras de negócio importantes
+---
 
-1. Valor do lançamento deve ser maior que zero.
-2. Usar decimal para dinheiro (não float puro).
-3. Status permitido no MVP: `Paid` e `Pending`.
-4. Paginação obrigatória nas listagens.
-5. Lançamentos automáticos precisam de rastreabilidade (`source`, `referenceId`).
-6. Não duplicar lançamento automático se o processo for reexecutado (idempotência).
+## 10) Regras de negócio importantes
 
-## Enums sugeridos
+1. Valor monetário sempre maior que zero.
+2. Usar decimal monetário (não float puro).
+3. Endpoints REST legíveis e com payload/response fáceis de inspecionar.
+4. Toda origem automática precisa de rastreabilidade (`referenceType`, `referenceId`, `source`).
+5. Exclusões automáticas devem preservar histórico e auditoria.
+6. Saldo projetado precisa ser calculado sobre uma linha do tempo acumulada.
+7. Contas fixas precisam refletir corretamente todos os meses futuros.
+8. Receitas devem ganhar estoque e conversões próprias.
 
-- `FinancialEntryType`: `Income`, `Expense`
-- `FinancialEntryStatus`: `Paid`, `Pending`
-- `FinancialEntrySource`: `Manual`, `AutoSale`, `AutoStockPurchase`, `AutoFixedAccount`
+---
 
-## Entregáveis esperados
+## 11) Enums sugeridos
+
+- `FinancialEntryType`: `income`, `expense`
+- `FinancialEntryStatus`: `paid`, `pending`, `excluded`
+- `FinancialEntrySource`: `manual`, `auto-sale`, `auto-stock`, `auto-fixed`
+- `DeletionMode`: `until-month`, `from-month`, `all`
+
+---
+
+## 12) Entrega esperada
 
 - endpoints implementados
 - migrations
-- validações de domínio
-- documentação OpenAPI com exemplos
+- documentação OpenAPI
+- exemplos reais de request/response
+- regras de negócio cobertas por testes

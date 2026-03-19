@@ -46,7 +46,7 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
         )
     }
 
-    const recentEntries = data.entries.slice(0, 5)
+    const recentEntries = data.recentEntries
 
     return (
         <section className="space-y-4 py-4">

@@ -2,6 +2,17 @@
 
 import { FormEvent, useMemo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/shared/components/ui/alert-dialog'
 import { useGetFinancialOverview } from '@/features/financial/hooks/queries/useGetFinancialOverview'
 import {
     CreateFinancialEntryInput,
@@ -44,10 +55,22 @@ function getDefaultFormState(month: string): CreateFinancialEntryInput {
 }
 
 function entryBadge(entry: FinancialEntry) {
+    if (entry.source === 'auto-stock') {
+        return <Badge variant="outline">Compra de estoque</Badge>
+    }
+
+    if (entry.source === 'auto-order') {
+        return <Badge variant="default">Venda automática</Badge>
+    }
+
     if (entry.type === 'income') return <Badge variant="default">Entrada</Badge>
     if (entry.isFixed) return <Badge variant="outline">Conta fixa</Badge>
 
-    return <Badge variant="secondary">Saída</Badge>
+    return <Badge variant="secondary">Despesa manual</Badge>
+}
+
+function canDeleteEntry(entry: FinancialEntry) {
+    return entry.source === 'manual' || entry.source === 'auto-stock'
 }
 
 export function FinancialEntriesContainer({ month }: { month: string }) {
@@ -93,8 +116,8 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                 <CardHeader>
                     <CardTitle>Lançamentos de {getMonthLabel(month)}</CardTitle>
                     <CardDescription>
-                        Cadastro simples de entradas e saídas com status
-                        pago/pendente.
+                        Cadastro simples de entradas e despesas do mês, com
+                        origem rastreável quando o lançamento é automático.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -112,7 +135,7 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                                         description: target.value,
                                     }))
                                 }
-                                placeholder="Ex: Compra de açúcar"
+                                placeholder="Ex: Reposição de caixa de brigadeiro"
                             />
                         </div>
 
@@ -159,7 +182,7 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                                 }
                             >
                                 <option value="income">Entrada</option>
-                                <option value="expense">Saída</option>
+                                <option value="expense">Despesa</option>
                             </select>
                         </div>
 
@@ -204,7 +227,7 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                                     }))
                                 }
                             />
-                            É conta fixa?
+                            Impacta como conta fixa recorrente?
                         </label>
 
                         <div className="lg:col-span-4">
@@ -224,7 +247,7 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                             [
                                 { value: 'all', label: 'Todos' },
                                 { value: 'income', label: 'Entradas' },
-                                { value: 'expense', label: 'Saídas' },
+                                { value: 'expense', label: 'Despesas' },
                             ] as const
                         ).map((option) => (
                             <Button
@@ -287,8 +310,8 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                                         {formatCurrency(entry.amount)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {entry.source === 'manual' && (
-                                            <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-2">
+                                            {entry.source === 'manual' && (
                                                 <Button
                                                     type="button"
                                                     variant="outline"
@@ -301,18 +324,51 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                                                 >
                                                     Alternar status
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        deleteEntry(entry.id)
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        )}
+                                            )}
+
+                                            {canDeleteEntry(entry) && (
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Excluir
+                                                                lançamento?
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                {entry.source ===
+                                                                'auto-stock'
+                                                                    ? 'Essa ação remove apenas o lançamento financeiro automático da compra de estoque, preservando a movimentação de estoque.'
+                                                                    : 'Essa ação remove o lançamento manual do extrato financeiro.'}
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>
+                                                                Cancelar
+                                                            </AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() =>
+                                                                    deleteEntry(
+                                                                        entry.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Confirmar
+                                                                exclusão
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

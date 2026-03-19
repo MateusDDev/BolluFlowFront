@@ -1,5 +1,10 @@
 export type FinancialEntryType = 'income' | 'expense'
 export type FinancialEntryStatus = 'paid' | 'pending'
+export type FinancialEntrySource =
+    | 'auto-order'
+    | 'manual'
+    | 'auto-stock'
+    | 'auto-fixed'
 
 export type FinancialEntry = {
     id: string
@@ -10,7 +15,7 @@ export type FinancialEntry = {
     date: Date
     status: FinancialEntryStatus
     isFixed: boolean
-    source: 'auto-order' | 'manual' | 'auto-stock'
+    source: FinancialEntrySource
     reference?: string
 }
 
@@ -22,4 +27,14 @@ export type CreateFinancialEntryInput = {
     date: string
     status: FinancialEntryStatus
     isFixed: boolean
+}
+
+export type FixedAccountTemplate = {
+    id: string
+    description: string
+    category: string
+    amount: number
+    startMonth: string
+    endMonth?: string | null
+    defaultStatus: FinancialEntryStatus
 }
