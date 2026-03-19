@@ -2,11 +2,11 @@
 
 import { FormEvent, useMemo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import { useGetFinancialOverview } from '@/features/financial/hooks/queries/useGetFinancialOverview'
 import {
     CreateFinancialEntryInput,
     FinancialEntry,
-    useGetFinancialOverview,
-} from '@/features/financial/hooks/queries/useGetFinancialOverview'
+} from '@/features/financial/lib/types'
 import { getMonthLabel } from '@/features/financial/lib/month'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'

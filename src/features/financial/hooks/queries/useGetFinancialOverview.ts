@@ -1,38 +1,21 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { getOrderItems, getOrders } from '@/features/orders/services/order.api'
 import {
     OrderItemModel,
     OrderModel,
 } from '@/features/orders/services/order.model'
-
-export type FinancialEntryType = 'income' | 'expense'
-export type FinancialEntryStatus = 'paid' | 'pending'
-
-export type FinancialEntry = {
-    id: string
-    description: string
-    type: FinancialEntryType
-    category: string
-    amount: number
-    date: Date
-    status: FinancialEntryStatus
-    isFixed: boolean
-    source: 'auto-order' | 'manual' | 'auto-stock'
-    reference?: string
-}
-
-export type CreateFinancialEntryInput = {
-    description: string
-    type: FinancialEntryType
-    category: string
-    amount: number
-    date: string
-    status: FinancialEntryStatus
-    isFixed: boolean
-}
+import {
+    getStoredFinancialEntries,
+    saveStoredFinancialEntries,
+    FINANCIAL_STORAGE_EVENT,
+} from '@/features/financial/lib/financialEntriesStorage'
+import {
+    CreateFinancialEntryInput,
+    FinancialEntry,
+} from '@/features/financial/lib/types'
 
 export type FinancialOverviewData = {
     selectedMonth: string
@@ -45,8 +28,6 @@ export type FinancialOverviewData = {
     pendingToPay: number
     fixedCostsInMonth: number
 }
-
-const MANUAL_LOCAL_STORAGE_KEY = 'bolluflow-financial-manual-entries-v3'
 
 function calculateOrderTotal(items: OrderItemModel[]) {
     return items.reduce((acc, item) => acc + item.totalPrice, 0)
@@ -82,23 +63,6 @@ function mapDeliveredOrdersToEntries(
                 reference: String(order.number),
             }
         })
-}
-
-function parseManualEntries(value: string | null): FinancialEntry[] {
-    if (!value) return []
-
-    try {
-        const parsed = JSON.parse(value) as Array<
-            Omit<FinancialEntry, 'date'> & { date: string }
-        >
-
-        return parsed.map((entry) => ({
-            ...entry,
-            date: new Date(entry.date),
-        }))
-    } catch {
-        return []
-    }
 }
 
 function isEntryFromMonth(entry: FinancialEntry, month: string) {
@@ -157,10 +121,20 @@ export function useGetFinancialOverview(selectedMonth: string) {
     const [manualEntries, setManualEntries] = useState<FinancialEntry[]>(() => {
         if (typeof window === 'undefined') return []
 
-        return parseManualEntries(
-            window.localStorage.getItem(MANUAL_LOCAL_STORAGE_KEY)
-        )
+        return getStoredFinancialEntries()
     })
+
+    useEffect(() => {
+        const syncEntries = () => setManualEntries(getStoredFinancialEntries())
+
+        window.addEventListener(FINANCIAL_STORAGE_EVENT, syncEntries)
+        window.addEventListener('storage', syncEntries)
+
+        return () => {
+            window.removeEventListener(FINANCIAL_STORAGE_EVENT, syncEntries)
+            window.removeEventListener('storage', syncEntries)
+        }
+    }, [])
 
     const ordersQuery = useQuery({
         queryKey: ['orders'],
@@ -179,10 +153,7 @@ export function useGetFinancialOverview(selectedMonth: string) {
 
     const saveEntries = (entries: FinancialEntry[]) => {
         setManualEntries(entries)
-        window.localStorage.setItem(
-            MANUAL_LOCAL_STORAGE_KEY,
-            JSON.stringify(entries)
-        )
+        saveStoredFinancialEntries(entries)
     }
 
     const createEntry = (input: CreateFinancialEntryInput) => {
@@ -207,7 +178,9 @@ export function useGetFinancialOverview(selectedMonth: string) {
 
             return {
                 ...entry,
-                status: entry.status === 'paid' ? 'pending' : 'paid',
+                status: (entry.status === 'paid'
+                    ? 'pending'
+                    : 'paid') as FinancialEntry['status'],
             }
         })
 

@@ -21,6 +21,7 @@ import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGetSupplyConversions'
 import { useUpdateSupply } from '@/features/supplies/hooks/mutations/useUpdateSupply'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { appendStockPurchaseEntry } from '@/features/financial/lib/financialEntriesStorage'
 
 type Props = {
     supply: SupplyModel
@@ -78,6 +79,13 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                 stockQuantity: supply.stockQuantity + addedInBaseUnit,
                 minimumStockQuantity: supply.minimumStockQuantity,
             },
+        })
+
+        appendStockPurchaseEntry({
+            itemType: 'supply',
+            itemId: supply.id,
+            itemName: supply.name,
+            amount: addedInBaseUnit * supply.unitCost,
         })
 
         setQuantityInput('')
@@ -149,12 +157,23 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                         />
                     </div>
 
-                    <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Sera adicionado ao estoque:{' '}
-                        <strong>
-                            {addedInBaseUnit.toLocaleString('pt-BR')}{' '}
-                            {getMeasurementUnitLabel(supply.baseUnit)}
-                        </strong>
+                    <div className="rounded border p-3 text-sm text-muted-foreground grid gap-1">
+                        <p>
+                            Será adicionado ao estoque:{' '}
+                            <strong>
+                                {addedInBaseUnit.toLocaleString('pt-BR')}{' '}
+                                {getMeasurementUnitLabel(supply.baseUnit)}
+                            </strong>
+                        </p>
+                        <p>
+                            Despesa automática no financeiro:{' '}
+                            <strong>
+                                {new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                }).format(addedInBaseUnit * supply.unitCost)}
+                            </strong>
+                        </p>
                     </div>
 
                     <DialogFooter>

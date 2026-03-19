@@ -21,6 +21,7 @@ import { IngredientModel } from '@/features/ingredients/services/ingredient.mode
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { appendStockPurchaseEntry } from '@/features/financial/lib/financialEntriesStorage'
 
 type Props = {
     ingredient: IngredientModel
@@ -30,8 +31,13 @@ type Props = {
 
 const BASE_OPTION_VALUE = '__base__'
 
-export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Props) {
-    const [selectedConversion, setSelectedConversion] = useState(BASE_OPTION_VALUE)
+export function IngredientStockEntryModal({
+    ingredient,
+    open,
+    onOpenChange,
+}: Props) {
+    const [selectedConversion, setSelectedConversion] =
+        useState(BASE_OPTION_VALUE)
     const [quantityInput, setQuantityInput] = useState('')
 
     const { data: customConversions, isLoading } = useGetIngredientConversions(
@@ -51,7 +57,7 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
-    }, [customConversions, ingredient.baseUnit])
+    }, [customConversions])
 
     const selectedFactor = useMemo(() => {
         if (selectedConversion === BASE_OPTION_VALUE) return 1
@@ -83,6 +89,13 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             },
         })
 
+        appendStockPurchaseEntry({
+            itemType: 'ingredient',
+            itemId: ingredient.id,
+            itemName: ingredient.name,
+            amount: addedInBaseUnit * ingredient.unitCost,
+        })
+
         setQuantityInput('')
         setSelectedConversion(BASE_OPTION_VALUE)
         onOpenChange(false)
@@ -94,8 +107,8 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                 <DialogHeader>
                     <DialogTitle>Entrada de estoque</DialogTitle>
                     <DialogDescription>
-                        Lance compras usando conversões personalizadas e o sistema
-                        converte para unidade base.
+                        Lance compras usando conversões personalizadas e o
+                        sistema converte para unidade base.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -112,12 +125,22 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base ({getMeasurementUnitLabel(ingredient.baseUnit)})
+                                    Unidade base (
+                                    {getMeasurementUnitLabel(
+                                        ingredient.baseUnit
+                                    )}
+                                    )
                                 </SelectItem>
                                 {availableConversions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label} = {option.quantityInBaseUnit}{' '}
-                                        {getMeasurementUnitLabel(ingredient.baseUnit)}
+                                    <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label} ={' '}
+                                        {option.quantityInBaseUnit}{' '}
+                                        {getMeasurementUnitLabel(
+                                            ingredient.baseUnit
+                                        )}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -145,12 +168,25 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                         />
                     </div>
 
-                    <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Será adicionado ao estoque:{' '}
-                        <strong>
-                            {addedInBaseUnit.toLocaleString('pt-BR')} {' '}
-                            {getMeasurementUnitLabel(ingredient.baseUnit)}
-                        </strong>
+                    <div className="rounded border p-3 text-sm text-muted-foreground grid gap-1">
+                        <p>
+                            Será adicionado ao estoque:{' '}
+                            <strong>
+                                {addedInBaseUnit.toLocaleString('pt-BR')}{' '}
+                                {getMeasurementUnitLabel(ingredient.baseUnit)}
+                            </strong>
+                        </p>
+                        <p>
+                            Despesa automática no financeiro:{' '}
+                            <strong>
+                                {new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                }).format(
+                                    addedInBaseUnit * ingredient.unitCost
+                                )}
+                            </strong>
+                        </p>
                     </div>
 
                     <DialogFooter>
@@ -164,7 +200,9 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                         </Button>
                     </DialogFooter>
 
-                    {error && <p className="text-sm text-red-500">{error.message}</p>}
+                    {error && (
+                        <p className="text-sm text-red-500">{error.message}</p>
+                    )}
                 </form>
             </DialogContent>
         </Dialog>

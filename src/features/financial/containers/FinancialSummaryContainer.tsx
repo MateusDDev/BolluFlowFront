@@ -88,10 +88,9 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
 
             <Alert>
                 <AlertTitle>
-                    As vendas entram automaticamente por pedidos entregues.
-                    Compras automáticas de estoque (ingredientes/insumos)
-                    dependem de endpoints de movimentação de compras no
-                    back-end.
+                    As vendas entram automaticamente por pedidos entregues e
+                    compras lançadas nas entradas de estoque de ingredientes e
+                    insumos já entram como despesa automática no financeiro.
                 </AlertTitle>
             </Alert>
         </section>

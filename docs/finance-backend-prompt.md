@@ -11,7 +11,7 @@ Quero conseguir, para qualquer mês (`YYYY-MM`):
 3. Registrar lançamentos manuais (entrada/saída)
 4. Controlar contas fixas (água, luz, gás, aluguel etc.)
 5. Ter receitas automáticas de vendas
-6. Ter despesas automáticas de compras de estoque (ingredientes e insumos)
+6. Ter despesas automáticas de compras de estoque (ingredientes e insumos), hoje já refletidas no front quando a entrada de estoque é lançada manualmente
 
 ## Endpoints necessários
 
@@ -72,7 +72,7 @@ Regra:
 
 Regra esperada:
 
-- toda compra/entrada de estoque de ingredientes e insumos deve gerar saída automática `Expense`.
+- toda compra/entrada de estoque de ingredientes e insumos deve gerar saída automática `Expense` de forma nativa no back-end.
 - incluir referência da compra/movimentação para rastreio.
 
 Resposta exemplo:
@@ -137,6 +137,19 @@ Payload:
 #### Gerar lançamentos mensais de contas fixas
 
 `POST /financial/fixed-accounts/generate-month?month=YYYY-MM`
+
+## Entidades sugeridas
+
+- `FinancialEntry`
+- `FixedAccount`
+- `StockPurchase` ou `InventoryPurchaseMovement`
+- `FinancialEntrySourceLink` (opcional para rastreabilidade de origem)
+
+## Relacionamentos esperados
+
+- pedido entregue -> gera `FinancialEntry` de entrada
+- compra de ingrediente/insumo -> gera `FinancialEntry` de saída
+- conta fixa mensal -> gera `FinancialEntry` recorrente
 
 ## Regras de negócio importantes
 
