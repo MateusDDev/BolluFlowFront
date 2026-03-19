@@ -12,7 +12,15 @@ import {
     CardTitle,
 } from '@/shared/components/ui/card'
 import { Skeleton } from '@/shared/components/ui/skeleton'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/shared/components/ui/table'
+import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
 
 export function FinancialSummaryContainer({ month }: { month: string }) {
     const { isLoading, isError, data } = useGetFinancialOverview(month)
@@ -38,6 +46,8 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
         )
     }
 
+    const recentEntries = data.entries.slice(0, 5)
+
     return (
         <section className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
@@ -47,16 +57,7 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription>Saldo atual do mês</CardDescription>
-                        <CardTitle>
-                            {formatCurrency(data.currentBalance)}
-                        </CardTitle>
-                    </CardHeader>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>Entradas pagas</CardDescription>
+                        <CardDescription>Total de entradas</CardDescription>
                         <CardTitle>
                             {formatCurrency(data.totalIncomes)}
                         </CardTitle>
@@ -65,9 +66,18 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
 
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardDescription>Saídas pagas</CardDescription>
+                        <CardDescription>Total de despesas</CardDescription>
                         <CardTitle>
                             {formatCurrency(data.totalExpenses)}
+                        </CardTitle>
+                    </CardHeader>
+                </Card>
+
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardDescription>Saldo do mês</CardDescription>
+                        <CardTitle>
+                            {formatCurrency(data.currentBalance)}
                         </CardTitle>
                     </CardHeader>
                 </Card>
@@ -85,6 +95,64 @@ export function FinancialSummaryContainer({ month }: { month: string }) {
                     </CardContent>
                 </Card>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Movimentações recentes</CardTitle>
+                    <CardDescription>
+                        Últimos lançamentos do mês selecionado.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Descrição</TableHead>
+                                <TableHead>Data</TableHead>
+                                <TableHead>Tipo</TableHead>
+                                <TableHead className="text-right">
+                                    Valor
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {recentEntries.length ? (
+                                recentEntries.map((entry) => (
+                                    <TableRow key={entry.id}>
+                                        <TableCell>
+                                            {entry.description}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDate(entry.date)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {entry.type === 'income'
+                                                ? 'Entrada'
+                                                : 'Despesa'}
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold">
+                                            {entry.type === 'expense'
+                                                ? '-'
+                                                : '+'}
+                                            {formatCurrency(entry.amount)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={4}
+                                        className="text-center text-muted-foreground"
+                                    >
+                                        Nenhuma movimentação encontrada neste
+                                        mês.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
             <Alert>
                 <AlertTitle>

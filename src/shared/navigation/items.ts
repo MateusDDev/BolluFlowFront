@@ -1,9 +1,12 @@
 import {
+    CircleDollarSignIcon,
     ChefHatIcon,
+    FileTextIcon,
     Home,
     LandmarkIcon,
     NotepadTextIcon,
     PackageIcon,
+    ReceiptTextIcon,
     ShoppingBagIcon,
     type LucideIcon,
     UsersIcon,
@@ -15,6 +18,11 @@ export type NavItem = {
     url: string
     icon: LucideIcon
     section: 'principal' | 'estoque' | 'cadastros' | 'financeiro'
+    items?: Array<{
+        title: string
+        url: string
+        icon?: LucideIcon
+    }>
 }
 
 export const navItems: NavItem[] = [
@@ -32,9 +40,26 @@ export const navItems: NavItem[] = [
     },
     {
         title: 'Financeiro',
-        url: '/financial',
+        url: '/financial/resumo',
         icon: LandmarkIcon,
         section: 'financeiro',
+        items: [
+            {
+                title: 'Resumo',
+                url: '/financial/resumo',
+                icon: CircleDollarSignIcon,
+            },
+            {
+                title: 'Lançamentos',
+                url: '/financial/lancamentos',
+                icon: ReceiptTextIcon,
+            },
+            {
+                title: 'Contas Fixas',
+                url: '/financial/contas-fixas',
+                icon: FileTextIcon,
+            },
+        ],
     },
     {
         title: 'Produtos',
@@ -67,6 +92,17 @@ export const navItems: NavItem[] = [
         section: 'cadastros',
     },
 ]
+
+export const flatNavItems = navItems.flatMap((item) => [
+    item,
+    ...(item.items?.map((subItem) => ({
+        ...item,
+        title: subItem.title,
+        url: subItem.url,
+        icon: subItem.icon ?? item.icon,
+        items: undefined,
+    })) ?? []),
+])
 
 export const navSections: Array<{
     key: NavItem['section']

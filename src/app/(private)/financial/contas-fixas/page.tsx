@@ -1,3 +1,4 @@
+import { FinancialSectionHeader } from '@/features/financial/components/FinancialSectionHeader'
 import { FinancialFixedCostsContainer } from '@/features/financial/containers/FinancialFixedCostsContainer'
 import { getCurrentMonthValue } from '@/features/financial/lib/month'
 
@@ -9,5 +10,13 @@ export default async function FinancialFixedCostsPage({
     const params = await searchParams
     const month = params.month ?? getCurrentMonthValue()
 
-    return <FinancialFixedCostsContainer month={month} />
+    return (
+        <div className="space-y-4">
+            <FinancialSectionHeader
+                title="Contas fixas"
+                description="Acompanhe custos recorrentes e o impacto mensal no caixa."
+            />
+            <FinancialFixedCostsContainer month={month} />
+        </div>
+    )
 }

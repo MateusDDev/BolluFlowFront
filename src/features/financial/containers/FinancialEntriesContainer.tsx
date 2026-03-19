@@ -27,7 +27,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/shared/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
 
 type FilterType = 'all' | 'income' | 'expense'
@@ -220,18 +219,29 @@ export function FinancialEntriesContainer({ month }: { month: string }) {
                     <CardTitle>Extrato do mês</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    <Tabs
-                        value={filter}
-                        onValueChange={(value) =>
-                            setFilter(value as FilterType)
-                        }
-                    >
-                        <TabsList>
-                            <TabsTrigger value="all">Todos</TabsTrigger>
-                            <TabsTrigger value="income">Entradas</TabsTrigger>
-                            <TabsTrigger value="expense">Saídas</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className="flex flex-wrap gap-2">
+                        {(
+                            [
+                                { value: 'all', label: 'Todos' },
+                                { value: 'income', label: 'Entradas' },
+                                { value: 'expense', label: 'Saídas' },
+                            ] as const
+                        ).map((option) => (
+                            <Button
+                                key={option.value}
+                                type="button"
+                                variant={
+                                    filter === option.value
+                                        ? 'default'
+                                        : 'outline'
+                                }
+                                size="sm"
+                                onClick={() => setFilter(option.value)}
+                            >
+                                {option.label}
+                            </Button>
+                        ))}
+                    </div>
 
                     <Table>
                         <TableHeader>

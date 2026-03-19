@@ -172,6 +172,25 @@ export function useGetFinancialOverview(selectedMonth: string) {
         saveEntries([entry, ...manualEntries])
     }
 
+    const updateEntry = (entryId: string, input: CreateFinancialEntryInput) => {
+        const updated = manualEntries.map((entry) => {
+            if (entry.id !== entryId) return entry
+
+            return {
+                ...entry,
+                description: input.description.trim(),
+                type: input.type,
+                category: input.category.trim() || 'Despesas gerais',
+                amount: input.amount,
+                date: new Date(`${input.date}T12:00:00`),
+                status: input.status,
+                isFixed: input.isFixed,
+            }
+        })
+
+        saveEntries(updated)
+    }
+
     const toggleEntryStatus = (entryId: string) => {
         const updated = manualEntries.map((entry) => {
             if (entry.id !== entryId) return entry
@@ -218,6 +237,7 @@ export function useGetFinancialOverview(selectedMonth: string) {
         isError,
         data,
         createEntry,
+        updateEntry,
         toggleEntryStatus,
         deleteEntry,
     }

@@ -1,19 +1,18 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/shared/components/ui/input'
-import { getCurrentMonthValue } from '@/features/financial/lib/month'
+import {
+    getCurrentMonthValue,
+    getMonthLabel,
+} from '@/features/financial/lib/month'
 
-const tabs = [
-    { label: 'Resumo', href: '/financial/resumo' },
-    { label: 'Lançamentos', href: '/financial/lancamentos' },
-    { label: 'Contas fixas', href: '/financial/contas-fixas' },
-]
+type Props = {
+    title: string
+    description?: string
+}
 
-export function FinancialSectionHeader() {
-    const pathname = usePathname()
+export function FinancialSectionHeader({ title, description }: Props) {
     const searchParams = useSearchParams()
     const router = useRouter()
 
@@ -23,33 +22,25 @@ export function FinancialSectionHeader() {
         const params = new URLSearchParams(searchParams.toString())
         params.set('month', nextMonth)
 
-        router.push(`${pathname}?${params.toString()}`)
+        router.push(`?${params.toString()}`)
     }
 
     return (
-        <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h2 className="text-lg font-semibold">Financeiro</h2>
-                <div className="w-44">
-                    <Input
-                        type="month"
-                        value={month}
-                        onChange={(event) => onMonthChange(event.target.value)}
-                    />
-                </div>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-1">
+                <h2 className="text-xl font-semibold">{title}</h2>
+                <p className="text-sm text-muted-foreground">
+                    {description ?? `Visualização de ${getMonthLabel(month)}.`}
+                </p>
             </div>
 
-            <Tabs value={pathname}>
-                <TabsList>
-                    {tabs.map((tab) => (
-                        <TabsTrigger key={tab.href} value={tab.href} asChild>
-                            <Link href={`${tab.href}?month=${month}`}>
-                                {tab.label}
-                            </Link>
-                        </TabsTrigger>
-                    ))}
-                </TabsList>
-            </Tabs>
+            <div className="w-44">
+                <Input
+                    type="month"
+                    value={month}
+                    onChange={(event) => onMonthChange(event.target.value)}
+                />
+            </div>
         </div>
     )
 }

@@ -10,13 +10,18 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     useSidebar,
 } from '@/shared/components/ui/sidebar'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { navItems, navSections } from '@/shared/navigation/items'
 import { useMe } from '@/features/login/hooks/useMe'
 
 const AppSidebar = () => {
+    const pathname = usePathname()
     const { state } = useSidebar()
     const { data: user } = useMe()
 
@@ -47,16 +52,72 @@ const AppSidebar = () => {
                             </SidebarGroupLabel>
                             <SidebarGroupContent>
                                 <SidebarMenu>
-                                    {items.map((item) => (
-                                        <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild>
-                                                <Link href={item.url}>
-                                                    <item.icon className="text-primary" />
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    ))}
+                                    {items.map((item) => {
+                                        const hasChildren = Boolean(
+                                            item.items?.length
+                                        )
+                                        const isActiveParent = hasChildren
+                                            ? item.items?.some(
+                                                  (subItem) =>
+                                                      pathname === subItem.url
+                                              )
+                                            : pathname === item.url
+
+                                        return (
+                                            <SidebarMenuItem key={item.title}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={Boolean(
+                                                        isActiveParent
+                                                    )}
+                                                >
+                                                    <Link href={item.url}>
+                                                        <item.icon className="text-primary" />
+                                                        <span>
+                                                            {item.title}
+                                                        </span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+
+                                                {hasChildren && (
+                                                    <SidebarMenuSub>
+                                                        {item.items?.map(
+                                                            (subItem) => (
+                                                                <SidebarMenuSubItem
+                                                                    key={
+                                                                        subItem.url
+                                                                    }
+                                                                >
+                                                                    <SidebarMenuSubButton
+                                                                        asChild
+                                                                        isActive={
+                                                                            pathname ===
+                                                                            subItem.url
+                                                                        }
+                                                                    >
+                                                                        <Link
+                                                                            href={
+                                                                                subItem.url
+                                                                            }
+                                                                        >
+                                                                            {subItem.icon && (
+                                                                                <subItem.icon />
+                                                                            )}
+                                                                            <span>
+                                                                                {
+                                                                                    subItem.title
+                                                                                }
+                                                                            </span>
+                                                                        </Link>
+                                                                    </SidebarMenuSubButton>
+                                                                </SidebarMenuSubItem>
+                                                            )
+                                                        )}
+                                                    </SidebarMenuSub>
+                                                )}
+                                            </SidebarMenuItem>
+                                        )
+                                    })}
                                 </SidebarMenu>
                             </SidebarGroupContent>
                         </SidebarGroup>
