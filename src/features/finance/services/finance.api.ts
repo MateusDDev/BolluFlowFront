@@ -7,15 +7,13 @@ import {
 
 export function getFinanceOverview(month: string) {
     return apiClient<FinanceOverviewModel>(
-        `/api/finance/overview?month=${month}`,
-        'GET'
+        `/api/finance/overview?month=${month}`
     )
 }
 
 export function getFinanceTransactions(month: string) {
     return apiClient<FinancialTransactionModel[]>(
-        `/api/finance/transactions?month=${month}`,
-        'GET'
+        `/api/finance/transactions?month=${month}`
     )
 }
 
@@ -42,7 +40,7 @@ export function deleteTransaction(id: string) {
 }
 
 export function getFixedCosts() {
-    return apiClient<FixedCostModel[]>('/api/finance/fixed-costs', 'GET')
+    return apiClient<FixedCostModel[]>('/api/finance/fixed-costs')
 }
 
 export function createFixedCost(data: {

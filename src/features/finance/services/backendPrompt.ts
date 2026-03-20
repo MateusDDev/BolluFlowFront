@@ -1,28 +1,37 @@
-export const financeBackendPrompt = `Build a Finance module for a confectionery management system.
+export const financeBackendPrompt = `Extend the existing backend of this confectionery management system with Finance capabilities. Do not replace the current backend architecture. Add only the missing entities, endpoints, service logic and integrations required for the frontend flows below.
 
 GOAL
-Create a simple, functional and scalable mini financial app with three pages:
+Add a Finance module that supports:
 - /finance/overview
 - /finance/transactions
 - /finance/fixed-costs
 
+The frontend will call the real backend through a configurable external base URL.
+The backend remains the single source of truth for persistence, calculations, recurrence and integrity rules.
+
 LANGUAGE RULES
 - All code, entities, endpoints, payloads, responses and business logic must be in English.
-- REST endpoints must be explicit and readable.
-- Avoid framework-specific transport patterns such as RSC payloads or internal streaming.
+- Keep REST endpoints explicit and readable.
+- Responses must be browser-readable and easy to inspect in the network tab.
 
-ENTITIES
+BACKEND EXTENSION SCOPE
+1. Keep all existing authentication, customer, order, ingredient, supply, recipe and product modules.
+2. Add a new Finance domain without breaking existing APIs.
+3. Reuse existing sale/order flows and inventory flows whenever possible.
+4. Add or extend purchase flows for ingredients and supplies if they do not already exist.
+
+NEW OR EXTENDED ENTITIES
 1. FinancialTransaction
-- id: string | uuid
+- id: uuid
 - type: 'income' | 'expense'
 - sourceType: 'manual' | 'sale' | 'ingredient_purchase' | 'supply_purchase' | 'fixed_cost'
 - description: string
-- amount: decimal
+- amount: decimal(12,2)
 - eventDate: date
-- month: string (YYYY-MM)
+- month: string (YYYY-MM) or derivable server-side
 - notes?: string
 - sourceEntityType: 'manual' | 'sale' | 'purchase' | 'fixed_cost'
-- sourceEntityId?: string
+- sourceEntityId?: uuid
 - isAutomatic: boolean
 - metadata?: json
 - deletedAt?: datetime
@@ -30,9 +39,9 @@ ENTITIES
 - updatedAt: datetime
 
 2. FixedCost
-- id: string | uuid
+- id: uuid
 - name: string
-- amount: decimal
+- amount: decimal(12,2)
 - startMonth: string (YYYY-MM)
 - endMonth?: string | null
 - notes?: string
@@ -41,58 +50,79 @@ ENTITIES
 - updatedAt: datetime
 
 3. Purchase
-- id: string | uuid
+- id: uuid
 - itemType: 'ingredient' | 'supply'
-- itemId: string | uuid
-- itemName: string
-- conversionName: string
-- quantity: decimal
-- quantityInBaseUnit: decimal
-- totalCost: decimal
+- itemId: uuid
+- itemNameSnapshot: string
+- conversionNameSnapshot: string
+- quantity: decimal(12,3)
+- quantityInBaseUnit: decimal(12,3)
+- totalCost: decimal(12,2)
 - purchasedAt: date
 - notes?: string
 - deletedAt?: datetime
 - createdAt: datetime
 - updatedAt: datetime
 
-4. Recipe
+4. Recipe extension
 - Recipes are produced, not purchased.
-- They can have stock and conversions, but they must not create purchase records and must not automatically generate finance expenses.
+- Recipes may have stock and conversions, but must not generate purchase records or automatic finance expenses.
+- If recipe stock/conversion support already exists, keep it and align behavior with ingredients and supplies.
 
-ENDPOINTS
+REQUIRED ENDPOINTS
 Finance overview
 GET /api/finance/overview?month=2026-03
-Response:
+Response example:
 {
   "month": "2026-03",
-  "incomeTotal": 1800,
-  "expenseTotal": 1820,
-  "monthBalance": -20,
-  "projectedBalance": -560,
+  "incomeTotal": 1800.00,
+  "expenseTotal": 1820.00,
+  "monthBalance": -20.00,
+  "projectedBalance": -560.00,
   "recentTransactions": [
     {
       "id": "txn_1",
       "type": "expense",
       "sourceType": "fixed_cost",
       "description": "Kitchen rent",
-      "amount": 1200,
+      "amount": 1200.00,
       "eventDate": "2026-03-01",
       "month": "2026-03",
       "sourceEntityType": "fixed_cost",
       "sourceEntityId": "fixed_1",
-      "isAutomatic": true
+      "isAutomatic": true,
+      "notes": null,
+      "metadata": { "recurring": true }
     }
   ]
 }
 
 Transactions
 GET /api/finance/transactions?month=2026-03
+Response example:
+[
+  {
+    "id": "txn_manual_1",
+    "type": "expense",
+    "sourceType": "manual",
+    "description": "Manual expense - packaging refund",
+    "amount": 45.50,
+    "eventDate": "2026-03-20",
+    "month": "2026-03",
+    "sourceEntityType": "manual",
+    "sourceEntityId": null,
+    "isAutomatic": false,
+    "notes": "Supplier adjustment",
+    "metadata": null
+  }
+]
+
 POST /api/finance/transactions
 Request example:
 {
   "type": "expense",
   "description": "Manual expense - packaging refund",
-  "amount": 45.5,
+  "amount": 45.50,
   "eventDate": "2026-03-20",
   "notes": "Supplier adjustment"
 }
@@ -102,20 +132,22 @@ Response example:
   "type": "expense",
   "sourceType": "manual",
   "description": "Manual expense - packaging refund",
-  "amount": 45.5,
+  "amount": 45.50,
   "eventDate": "2026-03-20",
   "month": "2026-03",
   "sourceEntityType": "manual",
+  "sourceEntityId": null,
   "isAutomatic": false,
-  "notes": "Supplier adjustment"
+  "notes": "Supplier adjustment",
+  "metadata": null
 }
 
 DELETE /api/finance/transactions/:id
 Behavior:
-- Always require confirmation in the UI.
+- Always support UI confirmation on the frontend.
 - Manual transaction: soft delete only the transaction.
-- Automatic transaction from purchase: delete the transaction and the linked purchase.
-- Automatic transaction from sale: reject or define a cascade based on the sales domain rules.
+- Automatic transaction from ingredient/supply purchase: delete or cancel the transaction and the linked purchase according to existing inventory integrity rules.
+- Automatic transaction from sale: either block deletion or define a safe domain-specific cascade.
 Response example:
 {
   "deleted": true,
@@ -134,10 +166,21 @@ DELETE /api/finance/fixed-costs/:id?mode=permanent&month=2026-03
 Create request example:
 {
   "name": "Internet",
-  "amount": 89.9,
+  "amount": 89.90,
   "startMonth": "2026-03",
   "endMonth": null,
   "notes": "Business fiber link"
+}
+Response example:
+{
+  "id": "fixed_1",
+  "name": "Internet",
+  "amount": 89.90,
+  "startMonth": "2026-03",
+  "endMonth": null,
+  "notes": "Business fiber link",
+  "createdAt": "2026-03-20T12:00:00.000Z",
+  "updatedAt": "2026-03-20T12:00:00.000Z"
 }
 
 Delete response example:
@@ -148,6 +191,8 @@ Delete response example:
 }
 
 Purchases
+If ingredient and supply purchase endpoints already exist, extend them to create finance transactions automatically.
+If they do not exist, add:
 POST /api/inventory/purchases
 Request example:
 {
@@ -157,7 +202,7 @@ Request example:
   "conversionName": "5 kg pack",
   "quantity": 2,
   "quantityInBaseUnit": 10,
-  "totalCost": 560,
+  "totalCost": 560.00,
   "purchasedAt": "2026-03-08",
   "notes": "Monthly replenishment"
 }
@@ -171,7 +216,7 @@ Response example:
     "conversionName": "5 kg pack",
     "quantity": 2,
     "quantityInBaseUnit": 10,
-    "totalCost": 560,
+    "totalCost": 560.00,
     "purchasedAt": "2026-03-08",
     "notes": "Monthly replenishment"
   },
@@ -180,12 +225,13 @@ Response example:
     "type": "expense",
     "sourceType": "ingredient_purchase",
     "description": "Ingredient purchase - Premium chocolate",
-    "amount": 560,
+    "amount": 560.00,
     "eventDate": "2026-03-08",
     "month": "2026-03",
     "sourceEntityType": "purchase",
     "sourceEntityId": "purchase_1",
     "isAutomatic": true,
+    "notes": "Monthly replenishment",
     "metadata": {
       "conversionName": "5 kg pack",
       "quantityInBaseUnit": 10
@@ -195,47 +241,48 @@ Response example:
 
 BUSINESS RULES
 1. Sale -> automatic income
-- Every confirmed sale must create one financial transaction with type = income and sourceType = sale.
-- The transaction must preserve traceability to the original sale.
+- When a sale/order becomes financially confirmed, create one income transaction.
+- Preserve traceability to the original sale/order entity.
 
 2. Ingredient purchase / supply purchase -> automatic expense
-- Purchasing ingredients or supplies must create a Purchase record and an automatic expense transaction.
-- Deleting the automatic purchase transaction must also remove or cancel the linked purchase according to the inventory policy.
+- Every ingredient or supply purchase must create one Purchase record and one automatic expense transaction.
+- Finance transaction creation must happen in the backend, not in the frontend.
 
 3. Fixed cost recurrence
 - Fixed costs represent recurring monthly expenses.
-- They must automatically appear in every applicable future month.
-- Do not require manual duplication for each month.
+- The backend must expand recurrence for every applicable future month.
+- The frontend must not duplicate or calculate recurring rows locally.
 
 4. Fixed cost deletion logic
-- Delete only until this month: keep the fixed cost active after the selected month, but stop or hide occurrences up to the selected month according to the agreed rule.
-- Delete from this month forward: stop recurrence starting from the selected month.
-- Delete permanently: remove the recurring schedule entirely.
-- If preferred for consistency, split the recurring series into multiple records to preserve auditability.
+- Delete only until this month
+- Delete from this month forward
+- Delete permanently
+- Implement the real recurrence strategy in the backend so auditability is preserved.
 
 5. Projected balance
 - Must be cumulative.
-- Each month affects the next month.
-- If January ends negative, February projected balance must start negative.
-- Fixed costs from future months must also affect future projected balances.
+- Each month impacts the next month.
+- The backend must calculate and return the projected balance.
+- The frontend must only render the returned value.
 
 6. Inventory and conversions
-- Ingredients: have stock, units and conversions; can be purchased; purchases generate expenses.
-- Supplies: have stock, units and conversions; can be purchased; purchases generate expenses.
-- Recipes: have stock, units and conversions; are produced, not purchased; must not generate automatic purchase expenses.
-- Reuse the same conversion behavior for ingredients, supplies and recipes.
+- Ingredients: stock + units + conversions + purchases + automatic finance expense.
+- Supplies: stock + units + conversions + purchases + automatic finance expense.
+- Recipes: stock + units + conversions, but no purchase endpoint and no automatic purchase expense.
+- Reuse the same conversion behavior across ingredients, supplies and recipes whenever possible.
 
 7. UX terminology
-Use these labels instead of ambiguous ones:
+Prefer these labels in payload descriptions and any response metadata intended for UI rendering:
 - Ingredient purchase
 - Supply purchase
 - Stock replenishment
 - Manual income
 - Manual expense
 
-IMPLEMENTATION NOTES
-- Prefer soft deletion with deletedAt for financial traceability.
+INTEGRATION NOTES
+- Keep the existing backend architecture and coding conventions.
+- Prefer soft deletion where financial traceability matters.
 - Return enough source metadata for audit trails.
-- Keep payloads simple and browser-readable.
 - Make date/month fields explicit.
-- Keep the design simple and scalable, avoid overengineering.`
+- Do not move financial calculations to the frontend.
+- Keep the implementation simple, functional and scalable.`

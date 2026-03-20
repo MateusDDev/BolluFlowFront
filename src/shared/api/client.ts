@@ -1,4 +1,4 @@
-﻿import { API_URL } from './config'
+import { API_BASE_URL } from './config'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
@@ -21,11 +21,7 @@ export async function apiClient<T>(
         ...(options.headers ?? {}),
     }
 
-    const targetUrl = endpoint.startsWith('/api/')
-        ? endpoint
-        : `${API_URL}${endpoint}`
-
-    const res = await fetch(targetUrl, {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
         headers,
         credentials: 'include',
