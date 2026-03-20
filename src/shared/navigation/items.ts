@@ -28,38 +28,38 @@ export type NavGroup = {
 export const navGroups: NavGroup[] = [
     {
         key: 'main',
-        title: 'Main',
+        title: 'Principal',
         items: [
             { title: 'Dashboard', url: '/', icon: Home },
-            { title: 'Orders', url: '/orders', icon: NotepadTextIcon },
+            { title: 'Pedidos', url: '/orders', icon: NotepadTextIcon },
         ],
     },
     {
         key: 'inventory',
-        title: 'Inventory',
+        title: 'Estoque',
         items: [
-            { title: 'Products', url: '/products', icon: PackageIcon },
-            { title: 'Ingredients', url: '/ingredients', icon: WheatIcon },
-            { title: 'Supplies', url: '/supplies', icon: ShoppingBagIcon },
+            { title: 'Produtos', url: '/products', icon: PackageIcon },
+            { title: 'Ingredientes', url: '/ingredients', icon: WheatIcon },
+            { title: 'Insumos', url: '/supplies', icon: ShoppingBagIcon },
         ],
     },
     {
         key: 'finance',
-        title: 'Finance',
+        title: 'Financeiro',
         variant: 'highlighted',
         items: [
             {
-                title: 'Overview',
+                title: 'Resumo',
                 url: '/finance/overview',
                 icon: CircleDollarSignIcon,
             },
             {
-                title: 'Transactions',
+                title: 'Lançamentos',
                 url: '/finance/transactions',
                 icon: ReceiptTextIcon,
             },
             {
-                title: 'Fixed Costs',
+                title: 'Contas Fixas',
                 url: '/finance/fixed-costs',
                 icon: WalletCardsIcon,
             },
@@ -67,10 +67,10 @@ export const navGroups: NavGroup[] = [
     },
     {
         key: 'catalog',
-        title: 'Catalog',
+        title: 'Cadastros',
         items: [
-            { title: 'Recipes', url: '/recipes', icon: ChefHatIcon },
-            { title: 'Customers', url: '/customers', icon: UsersIcon },
+            { title: 'Receitas', url: '/recipes', icon: ChefHatIcon },
+            { title: 'Clientes', url: '/customers', icon: UsersIcon },
         ],
     },
 ]

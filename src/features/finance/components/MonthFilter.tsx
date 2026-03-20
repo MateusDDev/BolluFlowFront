@@ -9,7 +9,7 @@ type Props = {
     label?: string
 }
 
-export function MonthFilter({ value, onChange, label = 'Month' }: Props) {
+export function MonthFilter({ value, onChange, label = 'Mês' }: Props) {
     return (
         <div className="grid gap-2">
             <Label htmlFor="finance-month">{label}</Label>

@@ -75,22 +75,22 @@ export function FixedCostDialog({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button variant={fixedCost ? 'outline' : 'default'}>
-                    {fixedCost ? 'Edit' : 'New fixed cost'}
+                    {fixedCost ? 'Editar' : 'Nova conta fixa'}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {fixedCost ? 'Edit fixed cost' : 'Create fixed cost'}
+                        {fixedCost ? 'Editar conta fixa' : 'Criar conta fixa'}
                     </DialogTitle>
                     <DialogDescription>
-                        Fixed costs automatically appear as monthly expenses in
-                        future months.
+                        As contas fixas aparecem automaticamente como despesas
+                        mensais nos próximos meses.
                     </DialogDescription>
                 </DialogHeader>
                 <form className="grid gap-4" onSubmit={handleSubmit}>
                     <div className="grid gap-2">
-                        <Label htmlFor="fixed-name">Name</Label>
+                        <Label htmlFor="fixed-name">Nome</Label>
                         <Input
                             id="fixed-name"
                             value={draft.name}
@@ -105,7 +105,7 @@ export function FixedCostDialog({
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="fixed-amount">Amount</Label>
+                            <Label htmlFor="fixed-amount">Valor</Label>
                             <Input
                                 id="fixed-amount"
                                 type="number"
@@ -122,7 +122,7 @@ export function FixedCostDialog({
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="fixed-start">Start month</Label>
+                            <Label htmlFor="fixed-start">Mês inicial</Label>
                             <Input
                                 id="fixed-start"
                                 type="month"
@@ -138,7 +138,7 @@ export function FixedCostDialog({
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="fixed-end">End month</Label>
+                        <Label htmlFor="fixed-end">Mês final</Label>
                         <Input
                             id="fixed-end"
                             type="month"
@@ -152,7 +152,7 @@ export function FixedCostDialog({
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="fixed-notes">Notes</Label>
+                        <Label htmlFor="fixed-notes">Observações</Label>
                         <Textarea
                             id="fixed-notes"
                             value={draft.notes}
@@ -166,7 +166,7 @@ export function FixedCostDialog({
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={isPending}>
-                            {isPending ? 'Saving...' : 'Save fixed cost'}
+                            {isPending ? 'Salvando...' : 'Salvar conta fixa'}
                         </Button>
                     </DialogFooter>
                 </form>

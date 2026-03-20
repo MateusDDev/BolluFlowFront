@@ -15,12 +15,12 @@ import { FixedCostModel } from '@/features/finance/services/finance.model'
 import { useDeleteFixedCost } from '@/features/finance/hooks/mutations/useDeleteFixedCost'
 
 const options = [
-    { value: 'until-this-month', label: 'Delete only until this month' },
+    { value: 'until-this-month', label: 'Excluir somente até este mês' },
     {
         value: 'from-this-month-forward',
-        label: 'Delete from this month forward',
+        label: 'Excluir deste mês em diante',
     },
-    { value: 'permanent', label: 'Delete permanently' },
+    { value: 'permanent', label: 'Excluir permanentemente' },
 ] as const
 
 export function FixedCostDeleteDialog({
@@ -44,13 +44,13 @@ export function FixedCostDeleteDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="destructive">Delete</Button>
+                <Button variant="destructive">Excluir</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete fixed cost</DialogTitle>
+                    <DialogTitle>Excluir conta fixa</DialogTitle>
                     <DialogDescription>
-                        Choose how the recurring series should be removed.
+                        Escolha como a recorrência deve ser removida.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-3">
@@ -71,7 +71,9 @@ export function FixedCostDeleteDialog({
                         onClick={handleDelete}
                         disabled={mutation.isPending}
                     >
-                        {mutation.isPending ? 'Deleting...' : 'Confirm delete'}
+                        {mutation.isPending
+                            ? 'Excluindo...'
+                            : 'Confirmar exclusão'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

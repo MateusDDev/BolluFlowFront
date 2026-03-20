@@ -31,16 +31,16 @@ export function TransactionDeleteDialog({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="destructive" size="sm">
-                    Delete
+                    Excluir
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete transaction</DialogTitle>
+                    <DialogTitle>Excluir lançamento</DialogTitle>
                     <DialogDescription>
                         {transaction.isAutomatic
-                            ? 'This is an automatic transaction. The linked source will also be handled when possible.'
-                            : 'This manual transaction will be removed.'}
+                            ? 'Este lançamento é automático. O vínculo com a origem será tratado pelo backend quando aplicável.'
+                            : 'Este lançamento manual será removido.'}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -49,7 +49,9 @@ export function TransactionDeleteDialog({
                         onClick={handleDelete}
                         disabled={mutation.isPending}
                     >
-                        {mutation.isPending ? 'Deleting...' : 'Confirm delete'}
+                        {mutation.isPending
+                            ? 'Excluindo...'
+                            : 'Confirmar exclusão'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

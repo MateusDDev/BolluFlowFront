@@ -13,6 +13,7 @@ import {
     formatFinanceCurrency,
     formatMonthLabel,
     getSourceLabel,
+    getTransactionTypeLabel,
 } from '@/features/finance/services/finance.utils'
 
 export function FinanceOverviewContainer({
@@ -28,23 +29,27 @@ export function FinanceOverviewContainer({
         <section className="space-y-6 py-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold">Finance overview</h1>
+                    <h1 className="text-3xl font-semibold">
+                        Resumo financeiro
+                    </h1>
                     <p className="text-muted-foreground">
-                        Monthly view for {formatMonthLabel(month)}.
+                        Visão mensal de {formatMonthLabel(month)}.
                     </p>
                 </div>
                 <MonthFilter value={month} onChange={onMonthChange} />
             </div>
 
-            {isLoading && <p>Loading finance overview...</p>}
-            {error && <p>Unable to load finance overview.</p>}
+            {isLoading && <p>Carregando resumo financeiro...</p>}
+            {error && <p>Não foi possível carregar o resumo financeiro.</p>}
 
             {data && (
                 <>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                         <Card>
                             <CardHeader>
-                                <CardDescription>Total income</CardDescription>
+                                <CardDescription>
+                                    Total de entradas
+                                </CardDescription>
                                 <CardTitle>
                                     {formatFinanceCurrency(data.incomeTotal)}
                                 </CardTitle>
@@ -53,7 +58,7 @@ export function FinanceOverviewContainer({
                         <Card>
                             <CardHeader>
                                 <CardDescription>
-                                    Total expenses
+                                    Total de despesas
                                 </CardDescription>
                                 <CardTitle>
                                     {formatFinanceCurrency(data.expenseTotal)}
@@ -62,7 +67,7 @@ export function FinanceOverviewContainer({
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardDescription>Month balance</CardDescription>
+                                <CardDescription>Saldo do mês</CardDescription>
                                 <CardTitle>
                                     {formatFinanceCurrency(data.monthBalance)}
                                 </CardTitle>
@@ -71,7 +76,7 @@ export function FinanceOverviewContainer({
                         <Card className="xl:col-span-2">
                             <CardHeader>
                                 <CardDescription>
-                                    Projected cumulative balance
+                                    Saldo projetado acumulado
                                 </CardDescription>
                                 <CardTitle>
                                     {formatFinanceCurrency(
@@ -80,17 +85,17 @@ export function FinanceOverviewContainer({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="text-sm text-muted-foreground">
-                                The projected balance is cumulative, so previous
-                                months impact the selected month.
+                                O saldo projetado é acumulado, então os meses
+                                anteriores impactam o mês selecionado.
                             </CardContent>
                         </Card>
                     </div>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Recent transactions</CardTitle>
+                            <CardTitle>Lançamentos recentes</CardTitle>
                             <CardDescription>
-                                Latest activity for the selected month.
+                                Atividade mais recente do mês selecionado.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -108,7 +113,10 @@ export function FinanceOverviewContainer({
                                             {getSourceLabel(
                                                 transaction.sourceType
                                             )}{' '}
-                                            · {transaction.type}
+                                            ·{' '}
+                                            {getTransactionTypeLabel(
+                                                transaction.type
+                                            )}
                                         </p>
                                     </div>
                                     <div className="text-right font-medium">

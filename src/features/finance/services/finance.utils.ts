@@ -6,7 +6,7 @@ export function getCurrentMonthValue() {
 }
 
 export function formatMonthLabel(month: string) {
-    return new Date(`${month}-01T00:00:00Z`).toLocaleDateString('en-US', {
+    return new Date(`${month}-01T00:00:00Z`).toLocaleDateString('pt-BR', {
         month: 'long',
         year: 'numeric',
         timeZone: 'UTC',
@@ -14,17 +14,21 @@ export function formatMonthLabel(month: string) {
 }
 
 export function formatFinanceCurrency(value: number) {
-    return formatCurrency(value, 'en-US', 'USD')
+    return formatCurrency(value, 'pt-BR', 'BRL')
 }
 
 export function getSourceLabel(sourceType: FinanceTransactionSourceType) {
     const labelMap: Record<FinanceTransactionSourceType, string> = {
         manual: 'Manual',
-        sale: 'Sale',
-        ingredient_purchase: 'Ingredient purchase',
-        supply_purchase: 'Supply purchase',
-        fixed_cost: 'Fixed cost',
+        sale: 'Venda',
+        ingredient_purchase: 'Compra de ingrediente',
+        supply_purchase: 'Compra de insumo',
+        fixed_cost: 'Conta fixa',
     }
 
     return labelMap[sourceType]
+}
+
+export function getTransactionTypeLabel(type: 'income' | 'expense') {
+    return type === 'income' ? 'Entrada' : 'Despesa'
 }

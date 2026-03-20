@@ -33,7 +33,7 @@ export function ManualTransactionDialog({
         event.preventDefault()
         await mutation.mutateAsync({
             type,
-            description: `${type === 'income' ? 'Manual income' : 'Manual expense'} - ${description}`,
+            description: `${type === 'income' ? 'Receita manual' : 'Despesa manual'} - ${description}`,
             amount: Number(amount),
             eventDate,
             notes,
@@ -47,19 +47,19 @@ export function ManualTransactionDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create manual transaction</Button>
+                <Button>Novo lançamento manual</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create manual transaction</DialogTitle>
+                    <DialogTitle>Novo lançamento manual</DialogTitle>
                     <DialogDescription>
-                        Register a manual income or manual expense for the
-                        selected month.
+                        Cadastre uma receita manual ou despesa manual para o mês
+                        selecionado.
                     </DialogDescription>
                 </DialogHeader>
                 <form className="grid gap-4" onSubmit={handleSubmit}>
                     <div className="grid gap-2">
-                        <Label>Type</Label>
+                        <Label>Tipo</Label>
                         <div className="flex gap-2">
                             <Button
                                 type="button"
@@ -68,7 +68,7 @@ export function ManualTransactionDialog({
                                 }
                                 onClick={() => setType('income')}
                             >
-                                Manual income
+                                Receita manual
                             </Button>
                             <Button
                                 type="button"
@@ -77,12 +77,12 @@ export function ManualTransactionDialog({
                                 }
                                 onClick={() => setType('expense')}
                             >
-                                Manual expense
+                                Despesa manual
                             </Button>
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description">Descrição</Label>
                         <Input
                             id="description"
                             value={description}
@@ -94,7 +94,7 @@ export function ManualTransactionDialog({
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="amount">Amount</Label>
+                            <Label htmlFor="amount">Valor</Label>
                             <Input
                                 id="amount"
                                 type="number"
@@ -108,7 +108,7 @@ export function ManualTransactionDialog({
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="eventDate">Date</Label>
+                            <Label htmlFor="eventDate">Data</Label>
                             <Input
                                 id="eventDate"
                                 type="date"
@@ -121,7 +121,7 @@ export function ManualTransactionDialog({
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="notes">Notes</Label>
+                        <Label htmlFor="notes">Observações</Label>
                         <Textarea
                             id="notes"
                             value={notes}
@@ -131,8 +131,8 @@ export function ManualTransactionDialog({
                     <DialogFooter>
                         <Button type="submit" disabled={mutation.isPending}>
                             {mutation.isPending
-                                ? 'Saving...'
-                                : 'Save transaction'}
+                                ? 'Salvando...'
+                                : 'Salvar lançamento'}
                         </Button>
                     </DialogFooter>
                 </form>

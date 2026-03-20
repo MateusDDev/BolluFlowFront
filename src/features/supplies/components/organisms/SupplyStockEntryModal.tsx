@@ -107,28 +107,28 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Supply purchase</DialogTitle>
+                    <DialogTitle>Compra de insumo</DialogTitle>
                     <DialogDescription>
-                        Register a stock replenishment using the selected
-                        conversion. An automatic finance expense is created when
-                        total cost is informed.
+                        Registre uma reposição de estoque usando a conversão
+                        selecionada. Quando o custo total for informado, o
+                        backend criará a despesa financeira automática.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label>Purchase unit</Label>
+                        <Label>Unidade de compra</Label>
                         <Select
                             value={selectedConversion}
                             onValueChange={setSelectedConversion}
                             disabled={isLoading || isPending}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a purchase unit" />
+                                <SelectValue placeholder="Selecione uma unidade de compra" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Base unit (
+                                    Unidade base (
                                     {getMeasurementUnitLabel(supply.baseUnit)})
                                 </SelectItem>
                                 {availableConversions.map((option) => (
@@ -149,10 +149,10 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
 
                     <div className="grid gap-2 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label>Purchased quantity</Label>
+                            <Label>Quantidade comprada</Label>
                             <Input
                                 inputMode="decimal"
-                                placeholder="Example: 2"
+                                placeholder="Ex.: 2"
                                 value={quantityInput}
                                 onChange={(e) =>
                                     setQuantityInput(
@@ -163,12 +163,12 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label>Total purchase cost</Label>
+                            <Label>Custo total da compra</Label>
                             <Input
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                placeholder="Optional"
+                                placeholder="Opcional"
                                 value={totalCostInput}
                                 onChange={(e) =>
                                     setTotalCostInput(e.target.value)
@@ -178,9 +178,9 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                     </div>
 
                     <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Stock replenishment:{' '}
+                        Reposição no estoque:{' '}
                         <strong>
-                            {addedInBaseUnit.toLocaleString('en-US')}{' '}
+                            {addedInBaseUnit.toLocaleString('pt-BR')}{' '}
                             {getMeasurementUnitLabel(supply.baseUnit)}
                         </strong>
                     </div>
@@ -192,7 +192,9 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                                 isPending || isNaN(quantity) || quantity <= 0
                             }
                         >
-                            {isPending ? 'Saving...' : 'Save supply purchase'}
+                            {isPending
+                                ? 'Salvando...'
+                                : 'Salvar compra de insumo'}
                         </Button>
                     </DialogFooter>
 

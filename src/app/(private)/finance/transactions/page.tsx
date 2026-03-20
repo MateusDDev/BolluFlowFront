@@ -1,3 +1,5 @@
+'use client'
+
 import { FinanceTransactionsPageState } from '@/features/finance/containers/FinancePageState'
 
 export default function FinanceTransactionsPage() {

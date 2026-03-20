@@ -26,10 +26,10 @@ export function FinanceFixedCostsContainer({
         <section className="space-y-6 py-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold">Fixed costs</h1>
+                    <h1 className="text-3xl font-semibold">Contas fixas</h1>
                     <p className="text-muted-foreground">
-                        Recurring monthly expenses that flow into future months
-                        automatically.
+                        Despesas recorrentes mensais que impactam
+                        automaticamente os próximos meses.
                     </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -39,15 +39,15 @@ export function FinanceFixedCostsContainer({
             </div>
             <Card>
                 <CardHeader>
-                    <CardTitle>Recurring expense schedules</CardTitle>
+                    <CardTitle>Recorrências cadastradas</CardTitle>
                     <CardDescription>
-                        Each fixed cost is expanded automatically for applicable
-                        future months.
+                        Cada conta fixa é expandida automaticamente pelo backend
+                        para os meses aplicáveis.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading && <p>Loading fixed costs...</p>}
-                    {error && <p>Unable to load fixed costs.</p>}
+                    {isLoading && <p>Carregando contas fixas...</p>}
+                    {error && <p>Não foi possível carregar as contas fixas.</p>}
                     <div className="space-y-3">
                         {data?.map((fixedCost) => (
                             <div
@@ -59,19 +59,18 @@ export function FinanceFixedCostsContainer({
                                         {fixedCost.name}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        {fixedCost.notes ||
-                                            'No notes provided.'}
+                                        {fixedCost.notes || 'Sem observações.'}
                                     </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">
-                                        Start month
+                                        Mês inicial
                                     </p>
                                     <p>{fixedCost.startMonth}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">
-                                        Monthly amount
+                                        Valor mensal
                                     </p>
                                     <p className="font-medium">
                                         {formatFinanceCurrency(
