@@ -3,7 +3,7 @@ import {
     FinancialEntryStatus,
     FixedAccountTemplate,
 } from '@/features/financial/lib/types'
-import { addMonths } from '@/features/financial/lib/month'
+import { addMonths, compareMonth } from '@/features/financial/lib/month'
 
 const ENTRIES_STORAGE_KEY = 'bolluflow-financial-entries-v5'
 const FIXED_ACCOUNTS_STORAGE_KEY = 'bolluflow-financial-fixed-accounts-v1'
@@ -203,18 +203,33 @@ export function deleteFixedAccountTemplate(
         if (mode === 'all') return []
 
         if (mode === 'until-month') {
+            const nextStartMonth = addMonths(month, 1)
+
+            if (
+                account.endMonth &&
+                compareMonth(nextStartMonth, account.endMonth) > 0
+            ) {
+                return []
+            }
+
             return [
                 {
                     ...account,
-                    startMonth: addMonths(month, 1),
+                    startMonth: nextStartMonth,
                 },
             ]
+        }
+
+        const previousMonth = addMonths(month, -1)
+
+        if (compareMonth(previousMonth, account.startMonth) < 0) {
+            return []
         }
 
         return [
             {
                 ...account,
-                endMonth: month,
+                endMonth: previousMonth,
             },
         ]
     })

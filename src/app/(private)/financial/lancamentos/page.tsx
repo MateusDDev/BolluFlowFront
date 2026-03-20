@@ -1,22 +1,5 @@
-import { FinancialSectionHeader } from '@/features/financial/components/FinancialSectionHeader'
-import { FinancialEntriesContainer } from '@/features/financial/containers/FinancialEntriesContainer'
-import { getCurrentMonthValue } from '@/features/financial/lib/month'
+import { FinancialEntriesPageContent } from '@/features/financial/containers/FinancialEntriesPageContent'
 
-export default async function FinancialEntriesPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ month?: string }>
-}) {
-    const params = await searchParams
-    const month = params.month ?? getCurrentMonthValue()
-
-    return (
-        <div className="space-y-4">
-            <FinancialSectionHeader
-                title="Lançamentos"
-                description="Gerencie entradas e despesas do mês, incluindo lançamentos manuais."
-            />
-            <FinancialEntriesContainer month={month} />
-        </div>
-    )
+export default function FinancialEntriesPage() {
+    return <FinancialEntriesPageContent />
 }

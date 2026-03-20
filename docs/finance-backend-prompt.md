@@ -2,6 +2,18 @@
 
 Preciso evoluir o back-end para suportar um mini sistema financeiro mais correto, rastreável e escalável para a doceria.
 
+## Observabilidade de requisições
+
+Além da regra de negócio, quero que o backend privilegie requisições simples de debugar no DevTools do navegador:
+
+- usar endpoints REST diretos, sem streaming opaco do framework;
+- request payload visível e legível;
+- response JSON real e completo;
+- status HTTP consistente;
+- mensagens de erro claras para debug funcional.
+
+---
+
 ## Objetivos principais
 
 1. Financeiro mensal com navegação clara por Resumo, Lançamentos e Contas Fixas
@@ -248,6 +260,7 @@ Quero aplicar para **Receitas** um comportamento próximo ao de Ingredientes/Ins
 - `GET /api/receitas`
 - `GET /api/receitas/{id}`
 - `PATCH /api/receitas/{id}`
+- `GET /api/receitas/{id}/estoque`
 - `GET /api/receitas/{id}/conversoes`
 - `POST /api/receitas/{id}/conversoes`
 - `PUT /api/receitas/{id}/conversoes/{conversionId}`
@@ -261,6 +274,31 @@ Quero aplicar para **Receitas** um comportamento próximo ao de Ingredientes/Ins
     "conversionId": 2,
     "quantity": 3,
     "productionDate": "2026-03-19"
+}
+```
+
+### Exemplo de conversão de receita
+
+```json
+{
+    "id": 2,
+    "name": "fatia",
+    "quantityInBaseUnit": 0.125,
+    "baseUnit": "kg"
+}
+```
+
+### Exemplo de resposta de produção
+
+```json
+{
+    "id": 91,
+    "recipeId": 14,
+    "conversionId": 2,
+    "quantityProduced": 3,
+    "quantityInBaseUnit": 0.375,
+    "productionDate": "2026-03-19",
+    "stockAfterProduction": 12.875
 }
 ```
 
