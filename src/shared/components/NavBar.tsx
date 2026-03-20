@@ -58,7 +58,7 @@ const NavBar = () => {
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={8}>
-                        <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+                        <DropdownMenuLabel>My account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-red-400"
@@ -66,7 +66,7 @@ const NavBar = () => {
                             onClick={() => logout()}
                         >
                             <LogOut />
-                            Sair
+                            Sign out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
