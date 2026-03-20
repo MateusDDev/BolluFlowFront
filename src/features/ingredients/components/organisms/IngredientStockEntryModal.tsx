@@ -21,6 +21,7 @@ import { IngredientModel } from '@/features/ingredients/services/ingredient.mode
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { createInventoryPurchase } from '@/features/finance/services/finance.api'
 
 type Props = {
     ingredient: IngredientModel
@@ -30,9 +31,15 @@ type Props = {
 
 const BASE_OPTION_VALUE = '__base__'
 
-export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Props) {
-    const [selectedConversion, setSelectedConversion] = useState(BASE_OPTION_VALUE)
+export function IngredientStockEntryModal({
+    ingredient,
+    open,
+    onOpenChange,
+}: Props) {
+    const [selectedConversion, setSelectedConversion] =
+        useState(BASE_OPTION_VALUE)
     const [quantityInput, setQuantityInput] = useState('')
+    const [totalCostInput, setTotalCostInput] = useState('')
 
     const { data: customConversions, isLoading } = useGetIngredientConversions(
         ingredient.id,
@@ -51,19 +58,22 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
-    }, [customConversions, ingredient.baseUnit])
+    }, [customConversions])
 
-    const selectedFactor = useMemo(() => {
-        if (selectedConversion === BASE_OPTION_VALUE) return 1
-
-        const conversion = availableConversions.find(
-            (option) => option.value === selectedConversion
-        )
-
-        return conversion?.quantityInBaseUnit ?? 1
-    }, [selectedConversion, availableConversions])
+    const selectedOption = availableConversions.find(
+        (option) => option.value === selectedConversion
+    )
+    const selectedFactor =
+        selectedConversion === BASE_OPTION_VALUE
+            ? 1
+            : (selectedOption?.quantityInBaseUnit ?? 1)
+    const selectedLabel =
+        selectedConversion === BASE_OPTION_VALUE
+            ? `Base unit (${getMeasurementUnitLabel(ingredient.baseUnit)})`
+            : (selectedOption?.label ?? 'Custom conversion')
 
     const quantity = Number(quantityInput.replace(',', '.'))
+    const totalCost = Number(totalCostInput.replace(',', '.'))
     const addedInBaseUnit =
         !isNaN(quantity) && quantity > 0 ? quantity * selectedFactor : 0
 
@@ -83,7 +93,22 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             },
         })
 
+        if (!isNaN(totalCost) && totalCost > 0) {
+            await createInventoryPurchase({
+                itemType: 'ingredient',
+                itemId: ingredient.id,
+                itemName: ingredient.name,
+                conversionName: selectedLabel,
+                quantity,
+                quantityInBaseUnit: addedInBaseUnit,
+                totalCost,
+                purchasedAt: new Date().toISOString().slice(0, 10),
+                notes: 'Ingredient purchase created from stock replenishment.',
+            })
+        }
+
         setQuantityInput('')
+        setTotalCostInput('')
         setSelectedConversion(BASE_OPTION_VALUE)
         onOpenChange(false)
     }
@@ -92,63 +117,83 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Entrada de estoque</DialogTitle>
+                    <DialogTitle>Ingredient purchase</DialogTitle>
                     <DialogDescription>
-                        Lance compras usando conversões personalizadas e o sistema
-                        converte para unidade base.
+                        Register a stock replenishment using the selected
+                        conversion. An automatic finance expense is created when
+                        total cost is informed.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label>Conversão</Label>
+                        <Label>Purchase unit</Label>
                         <Select
                             value={selectedConversion}
                             onValueChange={setSelectedConversion}
                             disabled={isLoading || isPending}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma conversão" />
+                                <SelectValue placeholder="Select a purchase unit" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base ({getMeasurementUnitLabel(ingredient.baseUnit)})
+                                    Base unit (
+                                    {getMeasurementUnitLabel(
+                                        ingredient.baseUnit
+                                    )}
+                                    )
                                 </SelectItem>
                                 {availableConversions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label} = {option.quantityInBaseUnit}{' '}
-                                        {getMeasurementUnitLabel(ingredient.baseUnit)}
+                                    <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label} ={' '}
+                                        {option.quantityInBaseUnit}{' '}
+                                        {getMeasurementUnitLabel(
+                                            ingredient.baseUnit
+                                        )}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    {!isLoading && availableConversions.length === 0 && (
-                        <p className="text-xs text-muted-foreground">
-                            Nenhuma conversão personalizada cadastrada.
-                        </p>
-                    )}
-
-                    <div className="grid gap-2">
-                        <Label>Quantidade comprada</Label>
-                        <Input
-                            inputMode="decimal"
-                            placeholder="Ex: 2"
-                            value={quantityInput}
-                            onChange={(e) =>
-                                setQuantityInput(
-                                    e.target.value.replace(/[^\d,.]/g, '')
-                                )
-                            }
-                            required
-                        />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Purchased quantity</Label>
+                            <Input
+                                inputMode="decimal"
+                                placeholder="Example: 2"
+                                value={quantityInput}
+                                onChange={(e) =>
+                                    setQuantityInput(
+                                        e.target.value.replace(/[^\d,.]/g, '')
+                                    )
+                                }
+                                required
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Total purchase cost</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Optional"
+                                value={totalCostInput}
+                                onChange={(e) =>
+                                    setTotalCostInput(e.target.value)
+                                }
+                            />
+                        </div>
                     </div>
 
                     <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Será adicionado ao estoque:{' '}
+                        Stock replenishment:{' '}
                         <strong>
-                            {addedInBaseUnit.toLocaleString('pt-BR')} {' '}
+                            {addedInBaseUnit.toLocaleString('en-US')}{' '}
                             {getMeasurementUnitLabel(ingredient.baseUnit)}
                         </strong>
                     </div>
@@ -160,11 +205,15 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                                 isPending || isNaN(quantity) || quantity <= 0
                             }
                         >
-                            {isPending ? 'Salvando...' : 'Adicionar ao estoque'}
+                            {isPending
+                                ? 'Saving...'
+                                : 'Save ingredient purchase'}
                         </Button>
                     </DialogFooter>
 
-                    {error && <p className="text-sm text-red-500">{error.message}</p>}
+                    {error && (
+                        <p className="text-sm text-red-500">{error.message}</p>
+                    )}
                 </form>
             </DialogContent>
         </Dialog>

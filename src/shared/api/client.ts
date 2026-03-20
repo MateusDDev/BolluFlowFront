@@ -21,7 +21,11 @@ export async function apiClient<T>(
         ...(options.headers ?? {}),
     }
 
-    const res = await fetch(`${API_URL}${endpoint}`, {
+    const targetUrl = endpoint.startsWith('/api/')
+        ? endpoint
+        : `${API_URL}${endpoint}`
+
+    const res = await fetch(targetUrl, {
         method,
         headers,
         credentials: 'include',

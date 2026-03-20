@@ -16,7 +16,7 @@ import {
 } from '@/shared/components/ui/dropdown-menu'
 import { SidebarTrigger } from 'ui/sidebar'
 import { usePathname } from 'next/navigation'
-import { navItems } from '@/shared/navigation/items'
+import { navGroups } from '@/shared/navigation/items'
 import ThemeButton from 'components/ThemeButton'
 import { useLogout } from '@/features/login/hooks/mutations/useLogout'
 import { useMe } from '@/features/login/hooks/useMe'
@@ -31,7 +31,10 @@ const NavBar = () => {
     const pathname = usePathname()
 
     const pageName =
-        title ?? navItems.find((item) => item.url === pathname)?.title
+        title ??
+        navGroups
+            .flatMap((group) => group.items)
+            .find((item) => item.url === pathname)?.title
 
     return (
         <nav className="flex items-center justify-between p-4">

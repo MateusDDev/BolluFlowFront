@@ -21,6 +21,7 @@ import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGetSupplyConversions'
 import { useUpdateSupply } from '@/features/supplies/hooks/mutations/useUpdateSupply'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { createInventoryPurchase } from '@/features/finance/services/finance.api'
 
 type Props = {
     supply: SupplyModel
@@ -34,12 +35,12 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
     const [selectedConversion, setSelectedConversion] =
         useState(BASE_OPTION_VALUE)
     const [quantityInput, setQuantityInput] = useState('')
+    const [totalCostInput, setTotalCostInput] = useState('')
 
     const { data: customConversions, isLoading } = useGetSupplyConversions(
         supply.id,
         open
     )
-
     const { mutateAsync, isPending, error } = useUpdateSupply()
 
     const availableConversions = useMemo(() => {
@@ -50,23 +51,25 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
         }))
     }, [customConversions])
 
-    const selectedFactor = useMemo(() => {
-        if (selectedConversion === BASE_OPTION_VALUE) return 1
-
-        const conversion = availableConversions.find(
-            (option) => option.value === selectedConversion
-        )
-
-        return conversion?.quantityInBaseUnit ?? 1
-    }, [selectedConversion, availableConversions])
+    const selectedOption = availableConversions.find(
+        (option) => option.value === selectedConversion
+    )
+    const selectedFactor =
+        selectedConversion === BASE_OPTION_VALUE
+            ? 1
+            : (selectedOption?.quantityInBaseUnit ?? 1)
+    const selectedLabel =
+        selectedConversion === BASE_OPTION_VALUE
+            ? `Base unit (${getMeasurementUnitLabel(supply.baseUnit)})`
+            : (selectedOption?.label ?? 'Custom conversion')
 
     const quantity = Number(quantityInput.replace(',', '.'))
+    const totalCost = Number(totalCostInput.replace(',', '.'))
     const addedInBaseUnit =
         !isNaN(quantity) && quantity > 0 ? quantity * selectedFactor : 0
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-
         if (isNaN(quantity) || quantity <= 0) return
 
         await mutateAsync({
@@ -80,7 +83,22 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
             },
         })
 
+        if (!isNaN(totalCost) && totalCost > 0) {
+            await createInventoryPurchase({
+                itemType: 'supply',
+                itemId: supply.id,
+                itemName: supply.name,
+                conversionName: selectedLabel,
+                quantity,
+                quantityInBaseUnit: addedInBaseUnit,
+                totalCost,
+                purchasedAt: new Date().toISOString().slice(0, 10),
+                notes: 'Supply purchase created from stock replenishment.',
+            })
+        }
+
         setQuantityInput('')
+        setTotalCostInput('')
         setSelectedConversion(BASE_OPTION_VALUE)
         onOpenChange(false)
     }
@@ -89,27 +107,28 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Entrada de estoque</DialogTitle>
+                    <DialogTitle>Supply purchase</DialogTitle>
                     <DialogDescription>
-                        Lance compras por conversao para atualizar o estoque na
-                        unidade base.
+                        Register a stock replenishment using the selected
+                        conversion. An automatic finance expense is created when
+                        total cost is informed.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label>Conversao</Label>
+                        <Label>Purchase unit</Label>
                         <Select
                             value={selectedConversion}
                             onValueChange={setSelectedConversion}
                             disabled={isLoading || isPending}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma conversao" />
+                                <SelectValue placeholder="Select a purchase unit" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base (
+                                    Base unit (
                                     {getMeasurementUnitLabel(supply.baseUnit)})
                                 </SelectItem>
                                 {availableConversions.map((option) => (
@@ -128,31 +147,40 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                         </Select>
                     </div>
 
-                    {!isLoading && availableConversions.length === 0 && (
-                        <p className="text-xs text-muted-foreground">
-                            Nenhuma conversao personalizada cadastrada.
-                        </p>
-                    )}
-
-                    <div className="grid gap-2">
-                        <Label>Quantidade comprada</Label>
-                        <Input
-                            inputMode="decimal"
-                            placeholder="Ex: 2"
-                            value={quantityInput}
-                            onChange={(e) =>
-                                setQuantityInput(
-                                    e.target.value.replace(/[^\d,.]/g, '')
-                                )
-                            }
-                            required
-                        />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Purchased quantity</Label>
+                            <Input
+                                inputMode="decimal"
+                                placeholder="Example: 2"
+                                value={quantityInput}
+                                onChange={(e) =>
+                                    setQuantityInput(
+                                        e.target.value.replace(/[^\d,.]/g, '')
+                                    )
+                                }
+                                required
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Total purchase cost</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Optional"
+                                value={totalCostInput}
+                                onChange={(e) =>
+                                    setTotalCostInput(e.target.value)
+                                }
+                            />
+                        </div>
                     </div>
 
                     <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Sera adicionado ao estoque:{' '}
+                        Stock replenishment:{' '}
                         <strong>
-                            {addedInBaseUnit.toLocaleString('pt-BR')}{' '}
+                            {addedInBaseUnit.toLocaleString('en-US')}{' '}
                             {getMeasurementUnitLabel(supply.baseUnit)}
                         </strong>
                     </div>
@@ -164,7 +192,7 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                                 isPending || isNaN(quantity) || quantity <= 0
                             }
                         >
-                            {isPending ? 'Salvando...' : 'Adicionar ao estoque'}
+                            {isPending ? 'Saving...' : 'Save supply purchase'}
                         </Button>
                     </DialogFooter>
 

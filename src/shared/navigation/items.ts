@@ -1,71 +1,76 @@
 import {
     ChefHatIcon,
+    CircleDollarSignIcon,
     Home,
     NotepadTextIcon,
     PackageIcon,
+    ReceiptTextIcon,
     ShoppingBagIcon,
     type LucideIcon,
     UsersIcon,
+    WalletCardsIcon,
     WheatIcon,
 } from 'lucide-react'
 
-export type NavItem = {
+export type NavLeafItem = {
     title: string
     url: string
     icon: LucideIcon
-    section: 'principal' | 'estoque' | 'cadastros'
 }
 
-export const navItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        url: '/',
-        icon: Home,
-        section: 'principal',
-    },
-    {
-        title: 'Pedidos',
-        url: '/orders',
-        icon: NotepadTextIcon,
-        section: 'principal',
-    },
-    {
-        title: 'Produtos',
-        url: '/products',
-        icon: PackageIcon,
-        section: 'estoque',
-    },
-    {
-        title: 'Ingredientes',
-        url: '/ingredients',
-        icon: WheatIcon,
-        section: 'estoque',
-    },
-    {
-        title: 'Insumos',
-        url: '/supplies',
-        icon: ShoppingBagIcon,
-        section: 'estoque',
-    },
-    {
-        title: 'Receitas',
-        url: '/recipes',
-        icon: ChefHatIcon,
-        section: 'cadastros',
-    },
-    {
-        title: 'Clientes',
-        url: '/customers',
-        icon: UsersIcon,
-        section: 'cadastros',
-    },
-]
-
-export const navSections: Array<{
-    key: NavItem['section']
+export type NavGroup = {
+    key: 'main' | 'inventory' | 'finance' | 'catalog'
     title: string
-}> = [
-    { key: 'principal', title: 'Principal' },
-    { key: 'estoque', title: 'Estoque' },
-    { key: 'cadastros', title: 'Cadastros' },
+    variant?: 'default' | 'highlighted'
+    items: NavLeafItem[]
+}
+
+export const navGroups: NavGroup[] = [
+    {
+        key: 'main',
+        title: 'Main',
+        items: [
+            { title: 'Dashboard', url: '/', icon: Home },
+            { title: 'Orders', url: '/orders', icon: NotepadTextIcon },
+        ],
+    },
+    {
+        key: 'inventory',
+        title: 'Inventory',
+        items: [
+            { title: 'Products', url: '/products', icon: PackageIcon },
+            { title: 'Ingredients', url: '/ingredients', icon: WheatIcon },
+            { title: 'Supplies', url: '/supplies', icon: ShoppingBagIcon },
+        ],
+    },
+    {
+        key: 'finance',
+        title: 'Finance',
+        variant: 'highlighted',
+        items: [
+            {
+                title: 'Overview',
+                url: '/finance/overview',
+                icon: CircleDollarSignIcon,
+            },
+            {
+                title: 'Transactions',
+                url: '/finance/transactions',
+                icon: ReceiptTextIcon,
+            },
+            {
+                title: 'Fixed Costs',
+                url: '/finance/fixed-costs',
+                icon: WalletCardsIcon,
+            },
+        ],
+    },
+    {
+        key: 'catalog',
+        title: 'Catalog',
+        items: [
+            { title: 'Recipes', url: '/recipes', icon: ChefHatIcon },
+            { title: 'Customers', url: '/customers', icon: UsersIcon },
+        ],
+    },
 ]
