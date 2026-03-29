@@ -27,6 +27,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   noDataMessage: string;
+  onRowClick?: (row: TData) => void;
   columnFilters?: ColumnFiltersState;
   onColumnFiltersChange?: (
     updater:
@@ -39,6 +40,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   noDataMessage,
+  onRowClick,
   columnFilters,
   onColumnFiltersChange,
 }: DataTableProps<TData, TValue>) {
@@ -87,9 +89,14 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : undefined}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      onClick={cell.column.id === "actions" ? (event) => event.stopPropagation() : undefined}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

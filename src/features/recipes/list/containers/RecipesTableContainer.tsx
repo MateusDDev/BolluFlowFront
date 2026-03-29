@@ -5,6 +5,7 @@ import { Button } from 'ui/button'
 import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { useGetRecipes } from '@/features/recipes/list/hooks/queries/useGetRecipes'
 import { recipeColumns } from '@/features/recipes/list/components/molecules/RecipeColumns'
@@ -14,6 +15,7 @@ export const RecipesTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const { data: recipes, isLoading, error } = useGetRecipes()
     const [searchValue, setSearchValue] = useState<string>('')
+    const router = useRouter()
 
     if (isLoading) return <p>Carregando receitas...</p>
 
@@ -48,6 +50,9 @@ export const RecipesTableContainer = () => {
                     noDataMessage="Nenhuma receita encontrada"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
+                    onRowClick={(recipe) =>
+                        router.push(`/recipes/${recipe.id}`)
+                    }
                 />
             </div>
         </section>

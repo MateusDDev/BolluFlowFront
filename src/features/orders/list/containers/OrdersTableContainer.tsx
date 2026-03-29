@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { Input } from 'ui/input'
 import { Button } from 'ui/button'
@@ -14,6 +15,7 @@ export function OrdersTableContainer() {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const { data: orders, isLoading, error } = useGetOrders()
     const [searchValue, setSearchValue] = useState<string>('')
+    const router = useRouter()
 
     if (isLoading) return <p>Carregando pedidos...</p>
 
@@ -48,6 +50,7 @@ export function OrdersTableContainer() {
                     noDataMessage="Nenhum pedido encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
+                    onRowClick={(order) => router.push(`/orders/${order.id}`)}
                 />
             </div>
         </section>

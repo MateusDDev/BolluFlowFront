@@ -5,6 +5,7 @@ import { Button } from 'ui/button'
 import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { useGetProducts } from '@/features/products/list/hooks/queries/useGetProducts'
 import { productColumns } from '@/features/products/list/components/molecules/ProductColumns'
@@ -14,6 +15,7 @@ export const ProductsTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const { data: products, isLoading, error } = useGetProducts()
     const [searchValue, setSearchValue] = useState<string>('')
+    const router = useRouter()
 
     if (isLoading) return <p>Carregando produtos...</p>
 
@@ -48,6 +50,9 @@ export const ProductsTableContainer = () => {
                     noDataMessage="Nenhum produto encontrado"
                     columnFilters={filters}
                     onColumnFiltersChange={setFilters}
+                    onRowClick={(product) =>
+                        router.push(`/products/${product.id}`)
+                    }
                 />
             </div>
         </section>
