@@ -1,174 +1,158 @@
-Você está no repositório de backend do BolluFlow e precisa implementar o suporte correto ao módulo financeiro do frontend, com foco em consistência de dados e idempotência.
+Você está no backend do BolluFlow e precisa suportar o novo módulo financeiro do frontend seguindo estas regras:
 
-## Contexto confirmado pelo frontend (não inventar além disso)
-As chamadas atuais do frontend mostram que o backend já possui:
-- Pedidos: `/orders`, `/orders/{id}`, `/orders/{id}/items`, ações `/cancel`, `/deliver`, `/start`, `/finish`, `/reopen`
-- Insumos: `/supplies` + conversões `/supplies/{id}/conversions`
-- Ingredientes: `/ingredients` + conversões `/ingredients/{id}/conversions`
-- Demais módulos: `/products`, `/recipes`, `/customers`, `/dashboard/*`, `/auth/*`
+## Premissas obrigatórias
+1. O backend é responsável pelos lançamentos automáticos.
+2. O frontend NÃO deve disparar lançamento automático quando:
+   - pedido é confirmado/entregue
+   - compra/entrada de estoque de ingrediente ou insumo é registrada
+3. O frontend só usa POST para lançamentos manuais.
+4. Contrato da API financeira em inglês:
+   - `POST /financial/entries`
+   - `GET /financial/entries?type=income|expense`
+   - `GET /financial/balance`
 
-Não há endpoints de movimentação de estoque e nem endpoints financeiros já expostos para esse contrato.
+## O que já existe (inferido do frontend)
+- Pedidos: `/orders`, `/orders/{id}`, `/orders/{id}/items`, `/orders/{id}/deliver`, etc.
+- Ingredientes: `/ingredients` e conversões.
+- Insumos: `/supplies` e conversões.
+- Não há endpoint explícito de movimentação de estoque financeira nem endpoints `/financial/*` já usados no legado.
 
-## Objetivo arquitetural
-NÃO depender apenas de chamadas avulsas do frontend para construir o financeiro.
-O backend deve derivar lançamentos financeiros a partir de eventos persistidos (movimentação de estoque e confirmação de pedido).
+## 1) Modelo de dados recomendado
 
-## 1) Criar entidade de movimentação de estoque (necessária)
-Criar uma entidade/tabela única para movimentações de estoque, reaproveitável para insumos e ingredientes.
+### 1.1 Tabela de movimentação de estoque (nova)
+Criar uma entidade única para ingredientes e insumos.
 
-### Tabela sugerida: `stock_movements`
-Campos (ajuste nomes ao padrão do projeto):
-- `id` (PK, bigint/autoincrement)
-- `item_type` (enum/string: `supply` | `ingredient`)
-- `item_id` (bigint, FK lógica para item)
-- `movement_type` (enum/string: `purchase` | `adjustment` | `consumption`)
-- `quantity` (decimal(14,4), sempre > 0)
-- `unit_cost` (decimal(14,4), >= 0)
-- `total_value` (decimal(14,2), >= 0)  // idealmente calculado no backend: quantity * unit_cost
-- `description` (varchar/text, opcional)
-- `reference_type` (enum/string, opcional: `manual` | `order` | `stock_entry`)
-- `reference_id` (bigint, opcional)
-- `event_key` (varchar(120), opcional, para idempotência)
-- `created_at`, `updated_at`
-
-Índices recomendados:
-- `(item_type, item_id, created_at)`
-- `(movement_type, created_at)`
-- único parcial/normal em `event_key` quando não nulo
-
-## 2) Criar entidade de lançamentos financeiros
-### Tabela sugerida: `financial_entries`
-- `id` (PK)
-- `type` (enum/string: `entrada` | `saida`)
-- `amount` (decimal(14,2), > 0)
-- `description` (varchar/text)
-- `origin` (enum/string: `pedido` | `insumo` | `ingrediente`)
-- `origin_id` (bigint)
-- `source_event` (varchar(80), ex: `order_delivered`, `stock_purchase`)
-- `event_key` (varchar(120), obrigatório para deduplicação por evento)
-- `created_at`, `updated_at`
+Tabela sugerida: `stock_movements`
+- `id` bigint PK
+- `item_type` enum(`ingredient`,`supply`)
+- `item_id` bigint not null
+- `movement_type` enum(`purchase`,`adjustment`,`consumption`)
+- `quantity` decimal(14,4) not null
+- `unit_cost` decimal(14,4) not null
+- `total_value` decimal(14,2) not null
+- `notes` text null
+- `event_key` varchar(120) null
+- `created_at` timestamp
+- `updated_at` timestamp
 
 Índices:
-- `(created_at)`
-- `(type)`
+- `(item_type, item_id, created_at)`
+- `(movement_type, created_at)`
+- `UNIQUE(event_key)` quando não nulo
+
+### 1.2 Tabela financeira (nova)
+Tabela sugerida: `financial_entries`
+- `id` bigint PK
+- `type` enum(`income`,`expense`) not null
+- `amount` decimal(14,2) not null
+- `description` varchar(255) not null
+- `origin` enum(`order`,`ingredient_purchase`,`supply_purchase`,`manual`) not null
+- `origin_id` bigint null
+- `event_key` varchar(120) null
+- `created_at` timestamp
+- `updated_at` timestamp
+
+Índices:
+- `(type, created_at)`
 - `(origin, origin_id)`
-- `UNIQUE(event_key)`
+- `UNIQUE(event_key)` quando não nulo
 
-## 3) Regras de derivação (obrigatórias)
-1. **Pedido confirmado (entregue)**
-   - Ao transicionar pedido para status entregue/confirmado, gerar `financial_entries` com:
-     - `type = saida`
-     - `amount = total do pedido`
-     - `origin = pedido`
-     - `origin_id = id do pedido`
-     - `source_event = order_delivered`
-     - `event_key = order_delivered:{orderId}`
-   - Se o evento repetir, não duplicar lançamento (idempotência).
+## 2) Regras de negócio de derivação automática (backend)
 
-2. **Compra de insumo/ingrediente registrada**
-   - Ao registrar `stock_movements` com `movement_type = purchase`, gerar `financial_entries` com:
-     - `type = entrada`
-     - `amount = total_value` da movimentação
-     - `origin = insumo` se `item_type=supply`; `ingrediente` se `item_type=ingredient`
-     - `origin_id = item_id`
-     - `source_event = stock_purchase`
-     - `event_key = stock_purchase:{stockMovementId}`
-   - Idempotência obrigatória para não duplicar.
+### 2.1 Pedido confirmado/entregue
+Ao marcar pedido como entregue (ou status equivalente de confirmação de venda):
+- gerar `financial_entries` com:
+  - `type = income`
+  - `amount = total do pedido`
+  - `origin = order`
+  - `origin_id = id do pedido`
+  - `description = Receita automática do pedido #<número/id>`
+  - `event_key = order_delivered:<orderId>`
 
-3. **Saldo**
-   - Sempre derivado do banco:
-     - `totalEntradas = SUM(amount where type='entrada')`
-     - `totalSaidas = SUM(amount where type='saida')`
-     - `saldo = totalEntradas - totalSaidas`
-   - Nunca confiar em cálculo vindo do frontend.
+### 2.2 Compra/entrada de ingrediente ou insumo
+Ao registrar movimentação de estoque do tipo `purchase`:
+- se `item_type=ingredient` => `origin = ingredient_purchase`
+- se `item_type=supply` => `origin = supply_purchase`
+- gerar `financial_entries` com:
+  - `type = expense`
+  - `amount = total_value`
+  - `origin_id = item_id`
+  - `description = Despesa automática de compra ...`
+  - `event_key = stock_purchase:<stockMovementId>`
 
-## 4) Endpoints necessários para o frontend
-### 4.1 POST `/financeiro/lancamentos`
-Manter para compatibilidade com frontend atual.
+### 2.3 Saldo
+Sempre derivado no backend:
+- `totalIncome = SUM(amount WHERE type='income')`
+- `totalExpense = SUM(amount WHERE type='expense')`
+- `balance = totalIncome - totalExpense`
 
-Body esperado:
+## 3) Idempotência (obrigatório)
+- Não duplicar lançamento para o mesmo evento.
+- Usar `event_key` único para eventos automáticos.
+- Em reprocessamento/retry do mesmo evento, retornar sucesso idempotente sem duplicar registros.
+
+## 4) Endpoints que o frontend precisa
+
+### 4.1 POST `/financial/entries`
+Uso exclusivo para lançamento manual no frontend.
+
+Request body:
 ```json
 {
-  "tipo": "entrada",
-  "valor": 120.50,
-  "descricao": "Entrada automática de compra de ingrediente: Chocolate",
-  "origem": "ingrediente",
-  "origem_id": 12
+  "type": "income",
+  "amount": 250.75,
+  "description": "Ajuste manual"
 }
 ```
 
-Resposta `201`:
+Response 201:
 ```json
 {
-  "id": 9,
-  "tipo": "entrada",
-  "valor": 120.50,
-  "descricao": "Entrada automática de compra de ingrediente: Chocolate",
-  "origem": "ingrediente",
-  "origem_id": 12,
+  "id": 101,
+  "type": "income",
+  "amount": 250.75,
+  "description": "Ajuste manual",
+  "origin": "manual",
+  "originId": null,
   "createdAt": "2026-03-29T12:00:00.000Z"
 }
 ```
 
-Observação: internamente, preferir registrar um `source_event`/`event_key` para idempotência mesmo nesse endpoint.
+Validações:
+- `type` obrigatório: `income|expense`
+- `amount` obrigatório e > 0
+- `description` obrigatória
 
-### 4.2 GET `/financeiro/lancamentos?tipo=entrada|saida`
-- Query `tipo` opcional.
-- Ordenar por data desc.
+### 4.2 GET `/financial/entries?type=income|expense`
+- Query `type` opcional
+- Ordenar por `createdAt DESC`
 
-Resposta `200` (array):
+Response 200:
 ```json
 [
   {
-    "id": 11,
-    "tipo": "saida",
-    "valor": 89.90,
-    "descricao": "Saída automática do pedido #123",
-    "origem": "pedido",
-    "origem_id": 123,
-    "createdAt": "2026-03-29T12:00:00.000Z"
+    "id": 99,
+    "type": "expense",
+    "amount": 120.5,
+    "description": "Despesa automática de compra de ingrediente",
+    "origin": "ingredient_purchase",
+    "originId": 12,
+    "createdAt": "2026-03-29T11:00:00.000Z"
   }
 ]
 ```
 
-### 4.3 GET `/financeiro/saldo`
-Resposta `200`:
+### 4.3 GET `/financial/balance`
+Response 200:
 ```json
 {
-  "totalEntradas": 1000.00,
-  "totalSaidas": 450.00,
-  "saldo": 550.00
+  "totalIncome": 1000,
+  "totalExpense": 420.5,
+  "balance": 579.5
 }
 ```
 
-## 5) Endpoints recomendados para movimentação de estoque (novo)
-Para evitar depender de update direto de estoque sem trilha:
-
-1. `POST /stock/movements`
-Body:
-```json
-{
-  "item_type": "ingredient",
-  "item_id": 12,
-  "movement_type": "purchase",
-  "quantity": 5,
-  "unit_cost": 24.10,
-  "description": "Compra mercado X",
-  "event_key": "front-stock-entry-uuid"
-}
-```
-Resposta `201` com movimento criado.
-
-2. `GET /stock/movements` (com filtros opcionais por item/tipo/data)
-
-Esses endpoints permitem auditoria e recálculo financeiro consistente.
-
-## 6) Idempotência mínima obrigatória
-- `financial_entries.event_key` único.
-- Geradores automáticos (pedido entregue e compra estoque) devem usar chaves determinísticas (`order_delivered:{id}`, `stock_purchase:{movementId}`).
-- Em conflito de idempotência, retornar sucesso idempotente (200/201 com recurso já existente) ou comportamento padronizado do projeto.
-
-## 7) Compatibilidade de contrato
-Manter nomes de campos compatíveis com frontend atual:
-- lançamento: `tipo`, `valor`, `descricao`, `origem`, `origem_id`, `createdAt`
-- saldo: `totalEntradas`, `totalSaidas`, `saldo`
+## 5) Compatibilidade e auditoria
+- Os lançamentos automáticos devem existir mesmo quando a operação for feita fora do frontend.
+- Recomendado manter log/auditoria de origem do evento.
+- Se já existir estrutura semelhante no backend, reaproveitar ao invés de duplicar tabelas.

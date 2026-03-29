@@ -4,7 +4,7 @@ import { FinancialEntryType } from '@/features/finance/services/finance.model'
 
 export function useGetFinancialEntries(type?: FinancialEntryType) {
     return useQuery({
-        queryKey: ['finance', 'entries', type ?? 'todos'],
+        queryKey: ['finance', 'entries', type ?? 'all'],
         queryFn: () => getFinancialEntries(type),
     })
 }

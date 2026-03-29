@@ -21,7 +21,6 @@ import { IngredientModel } from '@/features/ingredients/services/ingredient.mode
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
-import { useCreateFinancialEntry } from '@/features/finance/hooks/mutations/useCreateFinancialEntry'
 
 type Props = {
     ingredient: IngredientModel
@@ -45,8 +44,6 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
         isPending,
         error,
     } = useUpdateIngredient()
-
-    const { mutateAsync: createFinancialEntry } = useCreateFinancialEntry()
 
     const availableConversions = useMemo(() => {
         return (customConversions ?? []).map((item) => ({
@@ -84,14 +81,6 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                 stockQuantity: ingredient.stockQuantity + addedInBaseUnit,
                 minimumStockQuantity: ingredient.minimumStockQuantity,
             },
-        })
-
-        await createFinancialEntry({
-            tipo: 'entrada',
-            valor: addedInBaseUnit * ingredient.unitCost,
-            descricao: `Entrada automática de compra de ingrediente: ${ingredient.name}`,
-            origem: 'ingrediente',
-            origem_id: ingredient.id,
         })
 
         setQuantityInput('')

@@ -2,12 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 type OrderAction = (id: number) => Promise<unknown>
 
-type Props = {
-    action: OrderAction
-    onSuccess?: (orderId: number) => Promise<void> | void
-}
-
-export function useOrderAction({ action, onSuccess }: Props) {
+export function useOrderAction(action: OrderAction) {
     const client = useQueryClient()
 
     return useMutation({
@@ -17,8 +12,6 @@ export function useOrderAction({ action, onSuccess }: Props) {
             await client.invalidateQueries({ queryKey: ['orders'] })
             await client.invalidateQueries({ queryKey: ['order', orderId] })
             await client.invalidateQueries({ queryKey: ['orders', orderId] })
-
-            await onSuccess?.(orderId)
         },
     })
 }

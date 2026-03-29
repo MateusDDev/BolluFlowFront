@@ -21,7 +21,6 @@ import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGetSupplyConversions'
 import { useUpdateSupply } from '@/features/supplies/hooks/mutations/useUpdateSupply'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
-import { useCreateFinancialEntry } from '@/features/finance/hooks/mutations/useCreateFinancialEntry'
 
 type Props = {
     supply: SupplyModel
@@ -42,8 +41,6 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
     )
 
     const { mutateAsync, isPending, error } = useUpdateSupply()
-
-    const { mutateAsync: createFinancialEntry } = useCreateFinancialEntry()
 
     const availableConversions = useMemo(() => {
         return (customConversions ?? []).map((item) => ({
@@ -81,14 +78,6 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                 stockQuantity: supply.stockQuantity + addedInBaseUnit,
                 minimumStockQuantity: supply.minimumStockQuantity,
             },
-        })
-
-        await createFinancialEntry({
-            tipo: 'entrada',
-            valor: addedInBaseUnit * supply.unitCost,
-            descricao: `Entrada automática de compra de insumo: ${supply.name}`,
-            origem: 'insumo',
-            origem_id: supply.id,
         })
 
         setQuantityInput('')

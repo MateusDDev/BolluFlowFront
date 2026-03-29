@@ -7,18 +7,15 @@ import {
 } from '@/features/finance/services/finance.model'
 
 export function createFinancialEntry(data: CreateFinancialEntryDataType) {
-    return apiClient<FinancialEntryModel>('/financeiro/lancamentos', 'POST', data)
+    return apiClient<FinancialEntryModel>('/financial/entries', 'POST', data)
 }
 
 export function getFinancialEntries(type?: FinancialEntryType) {
-    const queryString = type ? `?tipo=${type}` : ''
+    const queryString = type ? `?type=${type}` : ''
 
-    return apiClient<FinancialEntryModel[]>(
-        `/financeiro/lancamentos${queryString}`,
-        'GET'
-    )
+    return apiClient<FinancialEntryModel[]>(`/financial/entries${queryString}`, 'GET')
 }
 
 export function getFinancialBalance() {
-    return apiClient<FinancialBalanceModel>('/financeiro/saldo', 'GET')
+    return apiClient<FinancialBalanceModel>('/financial/balance', 'GET')
 }

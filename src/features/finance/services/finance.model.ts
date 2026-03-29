@@ -1,27 +1,29 @@
-export type FinancialEntryType = 'entrada' | 'saida'
+export type FinancialEntryType = 'income' | 'expense'
 
-export type FinancialEntryOrigin = 'pedido' | 'insumo' | 'ingrediente'
+export type FinancialEntryOrigin =
+    | 'order'
+    | 'supply_purchase'
+    | 'ingredient_purchase'
+    | 'manual'
 
 export interface FinancialEntryModel {
     id: number
-    tipo: FinancialEntryType
-    valor: number
-    descricao: string
-    origem: FinancialEntryOrigin
-    origem_id: number
+    type: FinancialEntryType
+    amount: number
+    description: string
+    origin: FinancialEntryOrigin
+    originId?: number | null
     createdAt: string
 }
 
 export interface FinancialBalanceModel {
-    totalEntradas: number
-    totalSaidas: number
-    saldo: number
+    totalIncome: number
+    totalExpense: number
+    balance: number
 }
 
 export interface CreateFinancialEntryDataType {
-    tipo: FinancialEntryType
-    valor: number
-    descricao: string
-    origem: FinancialEntryOrigin
-    origem_id: number
+    type: FinancialEntryType
+    amount: number
+    description: string
 }
