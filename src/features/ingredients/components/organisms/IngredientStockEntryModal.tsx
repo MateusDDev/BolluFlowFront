@@ -19,8 +19,8 @@ import {
 } from 'ui/select'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
-import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { useCreateStockPurchase } from '@/features/stock/hooks/mutations/useCreateStockPurchase'
 
 type Props = {
     ingredient: IngredientModel
@@ -30,20 +30,25 @@ type Props = {
 
 const BASE_OPTION_VALUE = '__base__'
 
-export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Props) {
-    const [selectedConversion, setSelectedConversion] = useState(BASE_OPTION_VALUE)
+export function IngredientStockEntryModal({
+    ingredient,
+    open,
+    onOpenChange,
+}: Props) {
+    const [selectedConversion, setSelectedConversion] =
+        useState(BASE_OPTION_VALUE)
     const [quantityInput, setQuantityInput] = useState('')
+    const [unitCostInput, setUnitCostInput] = useState('')
+    const [notes, setNotes] = useState('')
+    const [formMessage, setFormMessage] = useState<string | null>(null)
 
     const { data: customConversions, isLoading } = useGetIngredientConversions(
         ingredient.id,
         open
     )
 
-    const {
-        mutateAsync: updateIngredient,
-        isPending,
-        error,
-    } = useUpdateIngredient()
+    const { mutateAsync: createStockPurchase, isPending } =
+        useCreateStockPurchase()
 
     const availableConversions = useMemo(() => {
         return (customConversions ?? []).map((item) => ({
@@ -51,7 +56,7 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
             label: item.name,
             quantityInBaseUnit: item.quantityInBaseUnit,
         }))
-    }, [customConversions, ingredient.baseUnit])
+    }, [customConversions])
 
     const selectedFactor = useMemo(() => {
         if (selectedConversion === BASE_OPTION_VALUE) return 1
@@ -64,38 +69,45 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
     }, [selectedConversion, availableConversions])
 
     const quantity = Number(quantityInput.replace(',', '.'))
-    const addedInBaseUnit =
-        !isNaN(quantity) && quantity > 0 ? quantity * selectedFactor : 0
+    const unitCost = Number(unitCostInput.replace(',', '.'))
+    const quantityInBaseUnit =
+        !Number.isNaN(quantity) && quantity > 0 ? quantity * selectedFactor : 0
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        setFormMessage(null)
 
-        if (isNaN(quantity) || quantity <= 0) return
+        if (Number.isNaN(quantity) || quantity <= 0) return
+        if (Number.isNaN(unitCost) || unitCost <= 0) return
 
-        await updateIngredient({
-            id: ingredient.id,
-            data: {
-                name: ingredient.name,
-                baseUnit: ingredient.baseUnit,
-                unitCost: ingredient.unitCost,
-                stockQuantity: ingredient.stockQuantity + addedInBaseUnit,
-                minimumStockQuantity: ingredient.minimumStockQuantity,
-            },
-        })
+        try {
+            await createStockPurchase({
+                itemType: 'ingredient',
+                itemId: ingredient.id,
+                movementType: 'purchase',
+                quantity: quantityInBaseUnit,
+                unitCost,
+                notes: notes.trim() || undefined,
+            })
 
-        setQuantityInput('')
-        setSelectedConversion(BASE_OPTION_VALUE)
-        onOpenChange(false)
+            setQuantityInput('')
+            setUnitCostInput('')
+            setNotes('')
+            setSelectedConversion(BASE_OPTION_VALUE)
+            setFormMessage('Compra registrada com sucesso!')
+            onOpenChange(false)
+        } catch {
+            setFormMessage('Não foi possível registrar a compra. Tente novamente.')
+        }
     }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Entrada de estoque</DialogTitle>
+                    <DialogTitle>Compra de ingrediente</DialogTitle>
                     <DialogDescription>
-                        Lance compras usando conversões personalizadas e o sistema
-                        converte para unidade base.
+                        Registre uma compra para atualizar o estoque.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -112,26 +124,30 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base ({getMeasurementUnitLabel(ingredient.baseUnit)})
+                                    Unidade base (
+                                    {getMeasurementUnitLabel(
+                                        ingredient.baseUnit
+                                    )}
+                                    )
                                 </SelectItem>
                                 {availableConversions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label} = {option.quantityInBaseUnit}{' '}
-                                        {getMeasurementUnitLabel(ingredient.baseUnit)}
+                                    <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label} ={' '}
+                                        {option.quantityInBaseUnit}{' '}
+                                        {getMeasurementUnitLabel(
+                                            ingredient.baseUnit
+                                        )}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    {!isLoading && availableConversions.length === 0 && (
-                        <p className="text-xs text-muted-foreground">
-                            Nenhuma conversão personalizada cadastrada.
-                        </p>
-                    )}
-
                     <div className="grid gap-2">
-                        <Label>Quantidade comprada</Label>
+                        <Label>Quantidade</Label>
                         <Input
                             inputMode="decimal"
                             placeholder="Ex: 2"
@@ -145,10 +161,34 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                         />
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label>Custo unitário (R$)</Label>
+                        <Input
+                            inputMode="decimal"
+                            placeholder="Ex: 12,30"
+                            value={unitCostInput}
+                            onChange={(e) =>
+                                setUnitCostInput(
+                                    e.target.value.replace(/[^\d,.]/g, '')
+                                )
+                            }
+                            required
+                        />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Observações</Label>
+                        <Input
+                            placeholder="Ex: Compra semanal"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                        />
+                    </div>
+
                     <div className="rounded border p-3 text-sm text-muted-foreground">
                         Será adicionado ao estoque:{' '}
                         <strong>
-                            {addedInBaseUnit.toLocaleString('pt-BR')} {' '}
+                            {quantityInBaseUnit.toLocaleString('pt-BR')}{' '}
                             {getMeasurementUnitLabel(ingredient.baseUnit)}
                         </strong>
                     </div>
@@ -157,14 +197,22 @@ export function IngredientStockEntryModal({ ingredient, open, onOpenChange }: Pr
                         <Button
                             type="submit"
                             disabled={
-                                isPending || isNaN(quantity) || quantity <= 0
+                                isPending ||
+                                Number.isNaN(quantity) ||
+                                quantity <= 0 ||
+                                Number.isNaN(unitCost) ||
+                                unitCost <= 0
                             }
                         >
-                            {isPending ? 'Salvando...' : 'Adicionar ao estoque'}
+                            {isPending ? 'Salvando...' : 'Registrar compra'}
                         </Button>
                     </DialogFooter>
 
-                    {error && <p className="text-sm text-red-500">{error.message}</p>}
+                    {formMessage && (
+                        <p className="text-sm text-muted-foreground">
+                            {formMessage}
+                        </p>
+                    )}
                 </form>
             </DialogContent>
         </Dialog>
