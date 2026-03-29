@@ -1,6 +1,7 @@
 import {
     ChefHatIcon,
     Home,
+    WalletCardsIcon,
     NotepadTextIcon,
     PackageIcon,
     ShoppingBagIcon,
@@ -27,6 +28,13 @@ export const navItems: NavItem[] = [
         title: 'Pedidos',
         url: '/orders',
         icon: NotepadTextIcon,
+        section: 'principal',
+    },
+
+    {
+        title: 'Financeiro',
+        url: '/financeiro',
+        icon: WalletCardsIcon,
         section: 'principal',
     },
     {

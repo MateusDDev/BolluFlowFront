@@ -25,6 +25,8 @@ import { EditSupplyModal } from '@/features/supplies/components/organisms/EditSu
 import { useDeleteSupply } from '@/features/supplies/hooks/mutations/useDeleteSupply'
 import { SupplyConversionsModal } from '@/features/supplies/components/organisms/SupplyConversionsModal'
 import { SupplyStockEntryModal } from '@/features/supplies/components/organisms/SupplyStockEntryModal'
+import { StockAdjustmentModal } from '@/features/stock/components/StockAdjustmentModal'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 type Props = {
     supply: SupplyModel
@@ -34,6 +36,7 @@ export function SupplyActions({ supply }: Props) {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isConversionsOpen, setIsConversionsOpen] = useState(false)
     const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
+    const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
 
     const { mutateAsync, isPending } = useDeleteSupply()
 
@@ -62,7 +65,12 @@ export function SupplyActions({ supply }: Props) {
                         Gerenciar conversoes
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
-                        Entrada de estoque por conversao
+                        Registrar compra
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => setIsStockAdjustmentOpen(true)}
+                    >
+                        Corrigir estoque
                     </DropdownMenuItem>
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
@@ -88,6 +96,14 @@ export function SupplyActions({ supply }: Props) {
                 supply={supply}
                 open={isStockEntryOpen}
                 onOpenChange={setIsStockEntryOpen}
+            />
+
+            <StockAdjustmentModal
+                open={isStockAdjustmentOpen}
+                onOpenChange={setIsStockAdjustmentOpen}
+                itemType="supply"
+                itemId={supply.id}
+                unitLabel={getMeasurementUnitLabel(supply.baseUnit)}
             />
 
             <AlertDialogContent>
