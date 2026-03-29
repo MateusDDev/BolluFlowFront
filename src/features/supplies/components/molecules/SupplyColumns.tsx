@@ -1,10 +1,11 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
-import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
-import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 import { SupplyActions } from '@/features/supplies/components/atoms/SupplyActions'
+import { SupplyReferenceSelectorCell } from '@/features/supplies/components/molecules/SupplyReferenceSelectorCell'
+import { SupplyStockDisplayCell } from '@/features/supplies/components/molecules/SupplyStockDisplayCell'
+import { SupplyCostDisplayCell } from '@/features/supplies/components/molecules/SupplyCostDisplayCell'
 
 export const supplyColumns: ColumnDef<SupplyModel>[] = [
     {
@@ -23,27 +24,33 @@ export const supplyColumns: ColumnDef<SupplyModel>[] = [
     },
     {
         accessorKey: 'baseUnit',
-        header: 'Unidade',
-        cell: ({ row }) => {
-            const supply = row.original
-            return <span>{getMeasurementUnitLabel(supply.baseUnit)}</span>
-        },
+        header: 'Unidade / referência',
+        cell: ({ row }) => <SupplyReferenceSelectorCell supply={row.original} />,
     },
     {
         accessorKey: 'stockQuantity',
-        header: 'Estoque',
+        header: 'Estoque disponível',
+        cell: ({ row }) => (
+            <SupplyStockDisplayCell
+                supply={row.original}
+                value={row.original.stockQuantity}
+            />
+        ),
     },
     {
         accessorKey: 'minimumStockQuantity',
-        header: 'Estoque minimo',
+        header: 'Estoque mínimo',
         cell: ({ row }) => (
-            <span>{row.original.minimumStockQuantity ?? 0}</span>
+            <SupplyStockDisplayCell
+                supply={row.original}
+                value={row.original.minimumStockQuantity ?? 0}
+            />
         ),
     },
     {
         accessorKey: 'unitCost',
         header: 'Custo',
-        cell: ({ row }) => <span>{formatCurrency(row.original.unitCost)}</span>,
+        cell: ({ row }) => <SupplyCostDisplayCell supply={row.original} />,
     },
     {
         id: 'actions',

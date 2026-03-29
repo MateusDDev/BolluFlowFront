@@ -15,7 +15,10 @@ import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGe
 import { useCreateSupplyConversion } from '@/features/supplies/hooks/mutations/useCreateSupplyConversion'
 import { useUpdateSupplyConversion } from '@/features/supplies/hooks/mutations/useUpdateSupplyConversion'
 import { useDeleteSupplyConversion } from '@/features/supplies/hooks/mutations/useDeleteSupplyConversion'
-import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import {
+    getDefaultConversionsForBaseUnit,
+    getMeasurementUnitLabel,
+} from '@/features/ingredients/services/measurementUnits'
 
 interface SupplyConversionsModalProps {
     supply: SupplyModel
@@ -30,23 +33,16 @@ export function SupplyConversionsModal({
 }: SupplyConversionsModalProps) {
     const [newConversionName, setNewConversionName] = useState('')
     const [newConversionQuantity, setNewConversionQuantity] = useState('')
-    const [editingConversionId, setEditingConversionId] = useState<
-        number | null
-    >(null)
-    const [editingConversionName, setEditingConversionName] = useState('')
-    const [editingConversionQuantity, setEditingConversionQuantity] =
-        useState('')
-
-    const { data: conversions, isLoading } = useGetSupplyConversions(
-        supply.id,
-        open
+    const [editingConversionId, setEditingConversionId] = useState<number | null>(
+        null
     )
+    const [editingConversionName, setEditingConversionName] = useState('')
+    const [editingConversionQuantity, setEditingConversionQuantity] = useState('')
 
-    const {
-        mutateAsync: createConversion,
-        isPending: isCreating,
-        error,
-    } = useCreateSupplyConversion()
+    const { data: conversions, isLoading } = useGetSupplyConversions(supply.id, open)
+
+    const { mutateAsync: createConversion, isPending: isCreating, error } =
+        useCreateSupplyConversion()
     const {
         mutateAsync: updateConversion,
         isPending: isUpdating,
@@ -58,15 +54,12 @@ export function SupplyConversionsModal({
         error: deleteError,
     } = useDeleteSupplyConversion()
 
-    const isBusy = isCreating || isUpdating || isDeleting
-
-    const sortedConversions = useMemo(
-        () =>
-            (conversions ?? [])
-                .slice()
-                .sort((a, b) => a.name.localeCompare(b.name)),
-        [conversions]
+    const defaultConversions = useMemo(
+        () => getDefaultConversionsForBaseUnit(supply.baseUnit),
+        [supply.baseUnit]
     )
+
+    const isBusy = isCreating || isUpdating || isDeleting
 
     const resetCreateFields = () => {
         setNewConversionName('')
@@ -113,17 +106,14 @@ export function SupplyConversionsModal({
     const handleUpdate = async () => {
         if (editingConversionId === null) return
 
-        const parsedQuantity = Number(
-            editingConversionQuantity.replace(',', '.')
-        )
+        const parsedQuantity = Number(editingConversionQuantity.replace(',', '.'))
 
         if (
             !editingConversionName.trim() ||
             isNaN(parsedQuantity) ||
             parsedQuantity <= 0
-        ) {
+        )
             return
-        }
 
         await updateConversion({
             supplyId: supply.id,
@@ -141,23 +131,20 @@ export function SupplyConversionsModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[720px]">
                 <DialogHeader>
-                    <DialogTitle>Conversoes personalizadas</DialogTitle>
+                    <DialogTitle>Conversões personalizadas</DialogTitle>
                     <DialogDescription>
-                        Defina formatos de compra desse insumo (ex: pacote,
-                        caixa, fardo). Conversao para unidade base{' '}
-                        <strong>
-                            {getMeasurementUnitLabel(supply.baseUnit)}
-                        </strong>
-                        .
+                        Defina como você compra esse insumo (ex: cartela, pote,
+                        vasilha). O sistema converte para a unidade base{' '}
+                        <strong>{getMeasurementUnitLabel(supply.baseUnit)}</strong>.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4">
                     <div className="rounded-md border p-3 grid gap-3">
-                        <Label>Nova conversao</Label>
+                        <Label>Nova conversão</Label>
                         <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_auto] gap-2">
                             <Input
-                                placeholder="Nome (ex: caixa)"
+                                placeholder="Nome (ex: cartela)"
                                 value={newConversionName}
                                 onChange={(e) =>
                                     setNewConversionName(e.target.value)
@@ -175,143 +162,151 @@ export function SupplyConversionsModal({
                             />
                             <Button
                                 type="button"
+                                variant="secondary"
                                 onClick={() => handleCreate()}
                                 disabled={isBusy}
                             >
-                                <Plus className="w-4 h-4 mr-1" />
-                                Adicionar
+                                <Plus className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
 
-                    <div className="rounded-md border overflow-hidden">
-                        <div className="px-3 py-2 bg-muted text-sm font-medium">
-                            Conversoes cadastradas
-                        </div>
-                        <div className="divide-y">
-                            {isLoading && (
-                                <div className="p-3 text-sm text-muted-foreground">
-                                    Carregando conversoes...
+                    {!isLoading &&
+                        !conversions?.length &&
+                        defaultConversions.length > 0 && (
+                            <div className="rounded-md border border-dashed p-3 grid gap-2">
+                                <p className="text-sm font-medium">
+                                    Nenhuma conversão personalizada cadastrada.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Você pode usar as padrão abaixo para começar.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {defaultConversions.map((defaultConversion) => (
+                                        <Button
+                                            key={defaultConversion.name}
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                handleCreate(
+                                                    defaultConversion.name,
+                                                    String(
+                                                        defaultConversion.quantityInBaseUnit
+                                                    )
+                                                )
+                                            }
+                                            disabled={isBusy}
+                                        >
+                                            {defaultConversion.name} ={' '}
+                                            {defaultConversion.quantityInBaseUnit}
+                                        </Button>
+                                    ))}
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {!isLoading && sortedConversions.length === 0 && (
-                                <div className="p-3 text-sm text-muted-foreground">
-                                    Nenhuma conversao cadastrada.
-                                </div>
-                            )}
-
-                            {sortedConversions.map((conversion) => {
+                    <div className="grid gap-2">
+                        <Label>Conversões cadastradas</Label>
+                        {isLoading ? (
+                            <p className="text-sm text-muted-foreground">
+                                Carregando conversões...
+                            </p>
+                        ) : conversions?.length ? (
+                            conversions.map((conversion) => {
                                 const isEditing =
                                     editingConversionId === conversion.id
 
                                 return (
                                     <div
                                         key={conversion.id}
-                                        className="p-3 grid grid-cols-1 md:grid-cols-[1fr_180px_auto] gap-2 items-center"
+                                        className="grid grid-cols-1 md:grid-cols-[1fr_180px_auto_auto_auto] gap-2 items-center"
                                     >
-                                        {isEditing ? (
-                                            <>
-                                                <Input
-                                                    value={
-                                                        editingConversionName
-                                                    }
-                                                    onChange={(e) =>
-                                                        setEditingConversionName(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="Nome"
-                                                />
-                                                <Input
-                                                    inputMode="decimal"
-                                                    value={
-                                                        editingConversionQuantity
-                                                    }
-                                                    onChange={(e) =>
-                                                        setEditingConversionQuantity(
-                                                            e.target.value.replace(
-                                                                /[^\d,.]/g,
-                                                                ''
-                                                            )
-                                                        )
-                                                    }
-                                                />
-                                                <div className="flex gap-1 justify-end">
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        onClick={handleUpdate}
-                                                        disabled={isBusy}
-                                                    >
-                                                        <Save className="w-4 h-4 mr-1" />
-                                                        Salvar
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={stopEdit}
-                                                        disabled={isBusy}
-                                                    >
-                                                        <X className="w-4 h-4 mr-1" />
-                                                        Cancelar
-                                                    </Button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="text-sm font-medium">
-                                                    {conversion.name}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {
-                                                        conversion.quantityInBaseUnit
-                                                    }{' '}
-                                                    {getMeasurementUnitLabel(
-                                                        supply.baseUnit
-                                                    )}
-                                                </div>
-                                                <div className="flex gap-1 justify-end">
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            startEdit(
-                                                                conversion
-                                                            )
-                                                        }
-                                                        disabled={isBusy}
-                                                    >
-                                                        <Pencil className="w-4 h-4 mr-1" />
-                                                        Editar
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() =>
-                                                            deleteConversion({
-                                                                supplyId:
-                                                                    supply.id,
-                                                                conversionId:
-                                                                    conversion.id,
-                                                            })
-                                                        }
-                                                        disabled={isBusy}
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-1" />
-                                                        Excluir
-                                                    </Button>
-                                                </div>
-                                            </>
-                                        )}
+                                        <Input
+                                            value={
+                                                isEditing
+                                                    ? editingConversionName
+                                                    : conversion.name
+                                            }
+                                            onChange={(e) =>
+                                                setEditingConversionName(
+                                                    e.target.value
+                                                )
+                                            }
+                                            disabled={!isEditing}
+                                        />
+                                        <Input
+                                            value={
+                                                isEditing
+                                                    ? editingConversionQuantity
+                                                    : conversion.quantityInBaseUnit
+                                                          .toString()
+                                                          .replace('.', ',')
+                                            }
+                                            onChange={(e) =>
+                                                setEditingConversionQuantity(
+                                                    e.target.value.replace(
+                                                        /[^\d,.]/g,
+                                                        ''
+                                                    )
+                                                )
+                                            }
+                                            disabled={!isEditing}
+                                        />
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => startEdit(conversion)}
+                                            disabled={isBusy}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleUpdate}
+                                            disabled={!isEditing || isBusy}
+                                        >
+                                            <Save className="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            onClick={async () =>
+                                                await deleteConversion({
+                                                    supplyId: supply.id,
+                                                    conversionId: conversion.id,
+                                                })
+                                            }
+                                            disabled={isBusy}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 )
-                            })}
-                        </div>
+                            })
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Nenhuma conversão cadastrada.
+                            </p>
+                        )}
                     </div>
+
+                    {editingConversionId !== null && (
+                        <div className="flex justify-end">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={stopEdit}
+                            >
+                                <X className="h-4 w-4 mr-1" />
+                                Cancelar edição
+                            </Button>
+                        </div>
+                    )}
 
                     {(error || updateError || deleteError) && (
                         <p className="text-sm text-red-500">
