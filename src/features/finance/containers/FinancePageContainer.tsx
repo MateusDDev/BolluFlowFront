@@ -88,19 +88,25 @@ export function FinancePageContainer() {
 
     const queryType = typeFilter === 'all' ? undefined : typeFilter
 
-    const { data: entries, isLoading: isLoadingEntries, error: entriesError } =
-        useGetFinancialEntries(selectedMonth, selectedYear, queryType)
-    const { data: balance, isLoading: isLoadingBalance, error: balanceError } =
-        useGetFinancialBalance(selectedMonth, selectedYear)
+    const {
+        data: entries,
+        isLoading: isLoadingEntries,
+        error: entriesError,
+    } = useGetFinancialEntries(selectedMonth, selectedYear, queryType)
+    const {
+        data: balance,
+        isLoading: isLoadingBalance,
+        error: balanceError,
+    } = useGetFinancialBalance(selectedMonth, selectedYear)
     const { mutateAsync: createFinancialEntry, isPending: isSavingEntry } =
         useCreateFinancialEntry()
 
-    const isCurrentMonthSelected =
-        selectedMonth === currentMonth && selectedYear === currentYear
-
     const monthYearLabel = getMonthYearLabel(selectedMonth, selectedYear)
 
-    const yearOptions = useMemo(() => getYearOptions(currentYear), [currentYear])
+    const yearOptions = useMemo(
+        () => getYearOptions(currentYear),
+        [currentYear]
+    )
 
     const goToPreviousMonth = () => {
         setSelectedMonth((previousMonth) => {
@@ -114,8 +120,6 @@ export function FinancePageContainer() {
     }
 
     const goToNextMonth = () => {
-        if (isCurrentMonthSelected) return
-
         setSelectedMonth((previousMonth) => {
             if (previousMonth === 12) {
                 setSelectedYear((previousYear) => previousYear + 1)
@@ -226,12 +230,7 @@ export function FinancePageContainer() {
                     </PopoverContent>
                 </Popover>
 
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={goToNextMonth}
-                    disabled={isCurrentMonthSelected}
-                >
+                <Button variant="outline" size="icon" onClick={goToNextMonth}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
             </div>
@@ -303,23 +302,32 @@ export function FinancePageContainer() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos</SelectItem>
-                                    <SelectItem value="income">Entrada</SelectItem>
-                                    <SelectItem value="expense">Saída</SelectItem>
+                                    <SelectItem value="income">
+                                        Entrada
+                                    </SelectItem>
+                                    <SelectItem value="expense">
+                                        Saída
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <Dialog
+                            open={isDialogOpen}
+                            onOpenChange={setIsDialogOpen}
+                        >
                             <DialogTrigger asChild>
                                 <Button>Novo lançamento manual</Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Novo lançamento manual</DialogTitle>
+                                    <DialogTitle>
+                                        Novo lançamento manual
+                                    </DialogTitle>
                                     <DialogDescription>
-                                        Use este formulário para despesas e receitas
-                                        que não são geradas automaticamente pelo
-                                        backend.
+                                        Use este formulário para despesas e
+                                        receitas que não são geradas
+                                        automaticamente pelo backend.
                                     </DialogDescription>
                                 </DialogHeader>
 
@@ -384,7 +392,10 @@ export function FinancePageContainer() {
                                     </div>
 
                                     <DialogFooter>
-                                        <Button type="submit" disabled={isSavingEntry}>
+                                        <Button
+                                            type="submit"
+                                            disabled={isSavingEntry}
+                                        >
                                             {isSavingEntry
                                                 ? 'Salvando...'
                                                 : 'Salvar lançamento'}
@@ -405,7 +416,9 @@ export function FinancePageContainer() {
                                     <TableHead>Tipo</TableHead>
                                     <TableHead>Descrição</TableHead>
                                     <TableHead>Origem</TableHead>
-                                    <TableHead className="text-right">Valor</TableHead>
+                                    <TableHead className="text-right">
+                                        Valor
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -436,7 +449,9 @@ export function FinancePageContainer() {
                                                         : 'Saída'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{entry.description}</TableCell>
+                                            <TableCell>
+                                                {entry.description}
+                                            </TableCell>
                                             <TableCell>
                                                 {originLabelMap[entry.origin] ??
                                                     'Manual'}

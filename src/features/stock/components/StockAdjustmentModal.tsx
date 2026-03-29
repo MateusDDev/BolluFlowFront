@@ -23,7 +23,6 @@ import {
     StockMovementItemType,
 } from '@/features/stock/services/stockMovement.model'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
-import { ApiError } from '@/shared/api/client'
 
 type Props = {
     open: boolean
@@ -31,25 +30,6 @@ type Props = {
     itemType: StockMovementItemType
     itemId: number
     unitLabel: string
-}
-
-function getFriendlyErrorMessage(error: unknown) {
-    const apiError = error as ApiError | { errors?: Record<string, string[]> }
-
-    if ('message' in (apiError ?? {}) && apiError.message) {
-        return apiError.message
-    }
-
-    if ('errors' in (apiError ?? {}) && apiError.errors) {
-        const firstErrorKey = Object.keys(apiError.errors)[0]
-        const firstError = firstErrorKey
-            ? apiError.errors[firstErrorKey]?.[0]
-            : null
-
-        if (firstError) return firstError
-    }
-
-    return 'Não foi possível registrar a correção de estoque.'
 }
 
 export function StockAdjustmentModal({
@@ -108,7 +88,7 @@ export function StockAdjustmentModal({
             setFormMessage('Correção de estoque registrada com sucesso!')
             onOpenChange(false)
         } catch (error) {
-            setFormMessage(getFriendlyErrorMessage(error))
+            return error
         }
     }
 
