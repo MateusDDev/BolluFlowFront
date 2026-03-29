@@ -66,19 +66,35 @@ import {
 import { useState } from 'react'
 import { AlertCircleIcon, FileText } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from 'ui/alert'
+import { useCreateFinancialEntry } from '@/features/finance/hooks/mutations/useCreateFinancialEntry'
 
 export function OrderStatusActions({
     orderStatus,
     orderId,
+    orderTotal,
 }: {
     orderStatus: OrderStatus
     orderId: number
+    orderTotal: number
 }) {
-    const startAction = useOrderAction(startProductionOrder)
-    const finishAction = useOrderAction(finishProductionOrder)
-    const deliverAction = useOrderAction(deliverOrder)
-    const cancelAction = useOrderAction(cancelOrder)
-    const reopenAction = useOrderAction(reopenOrder)
+    const { mutateAsync: createFinancialEntry } = useCreateFinancialEntry()
+
+    const startAction = useOrderAction({ action: startProductionOrder })
+    const finishAction = useOrderAction({ action: finishProductionOrder })
+    const deliverAction = useOrderAction({
+        action: deliverOrder,
+        onSuccess: async (deliveredOrderId) => {
+            await createFinancialEntry({
+                tipo: 'saida',
+                valor: orderTotal,
+                descricao: `Saída automática do pedido #${deliveredOrderId}`,
+                origem: 'pedido',
+                origem_id: deliveredOrderId,
+            })
+        },
+    })
+    const cancelAction = useOrderAction({ action: cancelOrder })
+    const reopenAction = useOrderAction({ action: reopenOrder })
 
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
 

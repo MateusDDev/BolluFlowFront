@@ -331,6 +331,7 @@ export function OrderDetails() {
                             <OrderStatusActions
                                 orderStatus={order.status}
                                 orderId={orderId}
+                                orderTotal={total}
                             />
                         </CardContent>
                     </Card>
