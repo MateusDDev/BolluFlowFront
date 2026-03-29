@@ -9,6 +9,7 @@ import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
 import { RecipeDetails } from '@/features/recipes/details/components/organisms/RecipeDetails'
 import { RecipeIngredientsTable } from '@/features/recipes/details/components/organisms/RecipeIngredientsTable'
+import { RecipeConversionsSection } from '@/features/recipes/details/components/organisms/RecipeConversionsSection'
 
 export function RecipeTabs() {
     const { id } = useParams<{ id: string }>()
@@ -34,6 +35,7 @@ export function RecipeTabs() {
                         <TabsTrigger value="ingredients">
                             Ingredientes
                         </TabsTrigger>
+                        <TabsTrigger value="conversions">Conversões</TabsTrigger>
                     </TabsList>
                     <BackButton className="[&_svg]:size-6" />
                 </div>
@@ -46,6 +48,9 @@ export function RecipeTabs() {
                         isLoading={ingredientsQuery.isLoading}
                         error={ingredientsQuery.error}
                     />
+                </TabsContent>
+                <TabsContent value="conversions">
+                    <RecipeConversionsSection />
                 </TabsContent>
             </Tabs>
         </section>

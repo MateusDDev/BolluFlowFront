@@ -5,4 +5,6 @@ export interface RecipeModel {
     preparationTime: number
     finalPrice: number
     isActive: boolean
+    stockQuantity: number
+    minimumStockQuantity?: number | null
 }
