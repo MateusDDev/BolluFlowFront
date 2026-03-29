@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from 'ui/card'
 import {
     Table,
@@ -21,11 +21,14 @@ import { Badge } from 'ui/badge'
 import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
 import { useGetFinancialEntries } from '@/features/finance/hooks/queries/useGetFinancialEntries'
 import { useGetFinancialBalance } from '@/features/finance/hooks/queries/useGetFinancialBalance'
-import { FinancialEntryType } from '@/features/finance/services/finance.model'
+import {
+    FinancialEntryOrigin,
+    FinancialEntryType,
+} from '@/features/finance/services/finance.model'
 
 type TypeFilter = FinancialEntryType | 'todos'
 
-const originLabelMap = {
+const originLabelMap: Record<FinancialEntryOrigin, string> = {
     pedido: 'Pedido',
     insumo: 'Insumo',
     ingrediente: 'Ingrediente',
@@ -34,17 +37,12 @@ const originLabelMap = {
 export function FinancePageContainer() {
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('todos')
 
+    const queryType = typeFilter === 'todos' ? undefined : typeFilter
+
     const { data: entries, isLoading: isLoadingEntries, error: entriesError } =
-        useGetFinancialEntries()
+        useGetFinancialEntries(queryType)
     const { data: balance, isLoading: isLoadingBalance, error: balanceError } =
         useGetFinancialBalance()
-
-    const filteredEntries = useMemo(() => {
-        if (!entries) return []
-        if (typeFilter === 'todos') return entries
-
-        return entries.filter((entry) => entry.tipo === typeFilter)
-    }, [entries, typeFilter])
 
     if (isLoadingEntries || isLoadingBalance) {
         return <p>Carregando financeiro...</p>
@@ -53,6 +51,8 @@ export function FinancePageContainer() {
     if (entriesError || balanceError) {
         return <p>Não foi possível carregar os dados financeiros.</p>
     }
+
+    const saldo = balance?.saldo ?? 0
 
     return (
         <section className="container mx-auto py-8 space-y-6">
@@ -79,8 +79,12 @@ export function FinancePageContainer() {
                     <CardHeader>
                         <CardTitle>Saldo</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-2xl font-semibold">
-                        {formatCurrency(balance?.saldo ?? 0)}
+                    <CardContent
+                        className={`text-2xl font-semibold ${
+                            saldo >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                    >
+                        {formatCurrency(saldo)}
                     </CardContent>
                 </Card>
             </div>
@@ -120,9 +124,16 @@ export function FinancePageContainer() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredEntries.length ? (
-                                    filteredEntries.map((entry) => (
-                                        <TableRow key={entry.id}>
+                                {entries?.length ? (
+                                    entries.map((entry) => (
+                                        <TableRow
+                                            key={entry.id}
+                                            className={
+                                                entry.tipo === 'entrada'
+                                                    ? 'bg-green-50/40'
+                                                    : 'bg-red-50/40'
+                                            }
+                                        >
                                             <TableCell>
                                                 {formatDate(entry.createdAt)}
                                             </TableCell>
@@ -131,8 +142,8 @@ export function FinancePageContainer() {
                                                     variant="outline"
                                                     className={
                                                         entry.tipo === 'entrada'
-                                                            ? 'text-green-600 border-green-600'
-                                                            : 'text-red-600 border-red-600'
+                                                            ? 'text-green-600 border-green-600 bg-green-50'
+                                                            : 'text-red-600 border-red-600 bg-red-50'
                                                     }
                                                 >
                                                     {entry.tipo === 'entrada'
@@ -142,11 +153,7 @@ export function FinancePageContainer() {
                                             </TableCell>
                                             <TableCell>{entry.descricao}</TableCell>
                                             <TableCell>
-                                                {
-                                                    originLabelMap[
-                                                        entry.origem
-                                                    ]
-                                                }
+                                                {originLabelMap[entry.origem]}
                                             </TableCell>
                                             <TableCell
                                                 className={`text-right font-medium ${
