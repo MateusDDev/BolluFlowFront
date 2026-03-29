@@ -68,6 +68,13 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
     const unitCost = Number(unitCostInput.replace(',', '.'))
     const quantityInBaseUnit =
         !Number.isNaN(quantity) && quantity > 0 ? quantity * selectedFactor : 0
+    const totalCostPreview =
+        !Number.isNaN(quantity) &&
+        quantity > 0 &&
+        !Number.isNaN(unitCost) &&
+        unitCost > 0
+            ? quantity * unitCost
+            : 0
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -76,13 +83,18 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
         if (Number.isNaN(quantity) || quantity <= 0) return
         if (Number.isNaN(unitCost) || unitCost <= 0) return
 
+        const unitCostNormalized =
+            selectedConversion === BASE_OPTION_VALUE
+                ? unitCost
+                : unitCost / selectedFactor
+
         try {
             await createStockPurchase({
                 itemType: 'supply',
                 itemId: supply.id,
                 movementType: 'purchase',
                 quantity: quantityInBaseUnit,
-                unitCost,
+                unitCost: unitCostNormalized,
                 notes: notes.trim() || undefined,
             })
 
@@ -93,7 +105,9 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
             setFormMessage('Compra registrada com sucesso!')
             onOpenChange(false)
         } catch {
-            setFormMessage('Não foi possível registrar a compra. Tente novamente.')
+            setFormMessage(
+                'Não foi possível registrar a compra. Tente novamente.'
+            )
         }
     }
 
@@ -179,11 +193,22 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                     </div>
 
                     <div className="rounded border p-3 text-sm text-muted-foreground">
-                        Será adicionado ao estoque:{' '}
-                        <strong>
-                            {quantityInBaseUnit.toLocaleString('pt-BR')}{' '}
-                            {getMeasurementUnitLabel(supply.baseUnit)}
-                        </strong>
+                        <p>
+                            Será adicionado ao estoque:{' '}
+                            <strong>
+                                {quantityInBaseUnit.toLocaleString('pt-BR')}{' '}
+                                {getMeasurementUnitLabel(supply.baseUnit)}
+                            </strong>
+                        </p>
+                        <p>
+                            Custo total da compra:{' '}
+                            <strong>
+                                {totalCostPreview.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                })}
+                            </strong>
+                        </p>
                     </div>
 
                     <DialogFooter>
