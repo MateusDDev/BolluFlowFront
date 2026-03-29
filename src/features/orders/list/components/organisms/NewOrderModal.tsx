@@ -23,12 +23,19 @@ import {
     SelectValue,
 } from 'ui/select'
 import { useGetOrderCustomers } from '@/features/orders/list/hooks/queries/useGetOrderCustomers'
+import { PaymentMethod } from '@/features/orders/services/order.model'
+
+const PAYMENT_METHOD_UNDEFINED = 'UNDEFINED'
+type PaymentMethodFormValue = PaymentMethod | typeof PAYMENT_METHOD_UNDEFINED
 
 export const NewOrderModal = () => {
     const [open, setOpen] = useState(false)
     const [customerId, setCustomerId] = useState('')
     const [notes, setNotes] = useState('')
     const [deliveryDate, setDeliveryDate] = useState<Date>()
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodFormValue>(
+        PAYMENT_METHOD_UNDEFINED
+    )
 
     const { mutateAsync: createOrder, isPending, error } = useCreateOrder()
     const { data: customers, isLoading } = useGetOrderCustomers()
@@ -37,6 +44,7 @@ export const NewOrderModal = () => {
         setCustomerId('')
         setNotes('')
         setDeliveryDate(undefined)
+        setPaymentMethod(PAYMENT_METHOD_UNDEFINED)
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,6 +54,10 @@ export const NewOrderModal = () => {
             customerId: Number(customerId),
             notes,
             deliveryDate,
+            paymentMethod:
+                paymentMethod === PAYMENT_METHOD_UNDEFINED
+                    ? null
+                    : paymentMethod,
         }
 
         await createOrder(payload)
@@ -114,6 +126,33 @@ export const NewOrderModal = () => {
                         setDateAction={setDeliveryDate}
                         label="Data de entrega*"
                     />
+
+                    <div className="grid gap-3">
+                        <Label>Forma de pagamento</Label>
+
+                        <Select
+                            value={paymentMethod}
+                            onValueChange={setPaymentMethod}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione a forma de pagamento" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectItem value={PAYMENT_METHOD_UNDEFINED}>
+                                    Não definida
+                                </SelectItem>
+                                <SelectItem value="Cash">Dinheiro</SelectItem>
+                                <SelectItem value="Pix">Pix</SelectItem>
+                                <SelectItem value="CreditCard">
+                                    Cartão de crédito
+                                </SelectItem>
+                                <SelectItem value="DebitCard">
+                                    Cartão de débito
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     <DialogFooter className="flex flex-col gap-2">
                         <div className="flex justify-end gap-2">

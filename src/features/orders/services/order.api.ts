@@ -49,6 +49,7 @@ export type CreateOrderDataType = {
     customerId: number
     notes?: string
     deliveryDate?: Date
+    paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null
 }
 
 export function createOrder(data: CreateOrderDataType) {
@@ -59,6 +60,7 @@ export type UpdateOrderDataType = {
     notes?: string
     deliveryDate?: Date
     customerId?: number
+    paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null
 }
 
 export function updateOrder(id: number, data: UpdateOrderDataType) {
