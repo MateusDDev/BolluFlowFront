@@ -57,7 +57,7 @@ export function createOrder(data: CreateOrderDataType) {
 }
 
 export type UpdateOrderDataType = {
-    notes?: string
+    note?: string
     deliveryDate?: Date
     customerId?: number
     paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null

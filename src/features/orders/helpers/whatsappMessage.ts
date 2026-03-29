@@ -13,7 +13,9 @@ export type OrderWhatsappMessageModel = OrderModel & {
     totalValue?: number
 }
 
-export function buildOrderWhatsappMessage(order: OrderWhatsappMessageModel): string {
+export function buildOrderWhatsappMessage(
+    order: OrderWhatsappMessageModel
+): string {
     const lines: string[] = []
 
     const items = order.items ?? []
@@ -35,7 +37,9 @@ export function buildOrderWhatsappMessage(order: OrderWhatsappMessageModel): str
     lines.push(`💰 *Total: ${formatCurrency(computedTotal)}*`)
 
     if (order.paymentMethod) {
-        lines.push(`💳 Pagamento: ${getPaymentMethodLabel(order.paymentMethod)}`)
+        lines.push(
+            `💳 Pagamento: ${getPaymentMethodLabel(order.paymentMethod)}`
+        )
     }
 
     if (order.deliveryDate) {
@@ -47,8 +51,13 @@ export function buildOrderWhatsappMessage(order: OrderWhatsappMessageModel): str
         lines.push(`📍 ${street}, ${number} — ${neighborhood}`)
     }
 
+    if (order.note) {
+        lines.push('')
+        lines.push(`OBS: ${order.note}`)
+    }
+
     lines.push('')
-    lines.push('Qualquer dúvida estou à disposição! 😊')
+    lines.push('Qualquer dúvida estou à disposição!')
 
     return lines.join('\n')
 }

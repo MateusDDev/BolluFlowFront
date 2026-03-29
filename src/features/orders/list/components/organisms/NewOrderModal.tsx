@@ -132,7 +132,11 @@ export const NewOrderModal = () => {
 
                         <Select
                             value={paymentMethod}
-                            onValueChange={setPaymentMethod}
+                            onValueChange={(value) =>
+                                setPaymentMethod(
+                                    value as PaymentMethodFormValue
+                                )
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecione a forma de pagamento" />

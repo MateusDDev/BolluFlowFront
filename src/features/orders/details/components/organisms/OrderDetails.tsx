@@ -45,7 +45,7 @@ const PAYMENT_METHOD_UNDEFINED = 'UNDEFINED'
 interface FormState {
     customerId: string
     deliveryDate?: Date
-    notes: string
+    note: string
     paymentMethod: PaymentMethod | typeof PAYMENT_METHOD_UNDEFINED
 }
 
@@ -55,7 +55,7 @@ function mapOrderToForm(order: OrderModel): FormState {
         deliveryDate: order.deliveryDate
             ? new Date(order.deliveryDate)
             : undefined,
-        notes: order.note ?? '',
+        note: order.note ?? '',
         paymentMethod: order.paymentMethod ?? PAYMENT_METHOD_UNDEFINED,
     }
 }
@@ -115,7 +115,7 @@ export function OrderDetails() {
 
         const payload: UpdateOrderDataType = {
             customerId: Number(form.customerId),
-            notes: form.notes,
+            note: form.note,
             deliveryDate: form.deliveryDate,
             paymentMethod:
                 form.paymentMethod === PAYMENT_METHOD_UNDEFINED
@@ -272,7 +272,10 @@ export function OrderDetails() {
                                     <Select
                                         value={form.paymentMethod}
                                         onValueChange={(value) =>
-                                            setField('paymentMethod', value)
+                                            setField(
+                                                'paymentMethod',
+                                                value as FormState['paymentMethod']
+                                            )
                                         }
                                     >
                                         <SelectTrigger>
@@ -322,9 +325,9 @@ export function OrderDetails() {
                         <CardContent>
                             {isEditing ? (
                                 <Textarea
-                                    value={form.notes}
+                                    value={form.note}
                                     onChange={(e) =>
-                                        setField('notes', e.target.value)
+                                        setField('note', e.target.value)
                                     }
                                 />
                             ) : (
