@@ -1,13 +1,13 @@
-﻿import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { Button } from 'ui/button'
-import { ArrowUpDown, EyeIcon } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 import { Badge } from 'ui/badge'
-import Link from 'next/link'
 import {
     OrderModel,
     orderStatusLabelMap,
     orderStatusVariantMap,
 } from '@/features/orders/services/order.model'
+import { OrderActions } from '@/features/orders/list/components/atoms/OrderActions'
 
 export const orderColumns: ColumnDef<OrderModel>[] = [
     {
@@ -61,13 +61,7 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         cell: ({ row }) => {
             const order = row.original as OrderModel
 
-            return (
-                <div className="flex gap-2">
-                    <Link href={`/orders/${order.id}`}>
-                        <EyeIcon className="text-primary" />
-                    </Link>
-                </div>
-            )
+            return <OrderActions order={order} />
         },
     },
 ]
