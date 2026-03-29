@@ -17,8 +17,10 @@ export interface FinancialEntryModel {
 }
 
 export interface FinancialBalanceModel {
+    monthIncome: number
+    monthExpenses: number
     totalIncome: number
-    totalExpense: number
+    totalExpenses: number
     balance: number
 }
 

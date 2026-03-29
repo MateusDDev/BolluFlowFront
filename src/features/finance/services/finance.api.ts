@@ -10,12 +10,25 @@ export function createFinancialEntry(data: CreateFinancialEntryDataType) {
     return apiClient<FinancialEntryModel>('/financial/entries', 'POST', data)
 }
 
-export function getFinancialEntries(type?: FinancialEntryType) {
-    const queryString = type ? `?type=${type}` : ''
+export function getFinancialEntries(
+    month: number,
+    year: number,
+    type?: FinancialEntryType
+) {
+    const params = new URLSearchParams({
+        month: String(month),
+        year: String(year),
+        ...(type ? { type } : {}),
+    })
 
-    return apiClient<FinancialEntryModel[]>(`/financial/entries${queryString}`, 'GET')
+    return apiClient<FinancialEntryModel[]>(`/financial/entries?${params}`, 'GET')
 }
 
-export function getFinancialBalance() {
-    return apiClient<FinancialBalanceModel>('/financial/balance', 'GET')
+export function getFinancialBalance(month: number, year: number) {
+    const params = new URLSearchParams({
+        month: String(month),
+        year: String(year),
+    })
+
+    return apiClient<FinancialBalanceModel>(`/financial/balance?${params}`, 'GET')
 }
