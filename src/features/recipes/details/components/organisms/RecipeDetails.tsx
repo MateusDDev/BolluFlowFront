@@ -17,10 +17,23 @@ import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
+import {
+    isMeasurementUnitOption,
+    MEASUREMENT_UNITS,
+    normalizeMeasurementUnit,
+} from '@/features/ingredients/services/measurementUnits'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
 
 interface FormState {
     name: string
     category: string
+    baseUnit: string
     hours: string
     minutes: string
     isActive: boolean
@@ -51,6 +64,7 @@ const mapRecipeToForm = (recipe: RecipeModel): FormState => {
     return {
         name: recipe.name,
         category: recipe.category,
+        baseUnit: normalizeMeasurementUnit(recipe.baseUnit),
         hours,
         minutes,
         isActive: recipe.isActive,
@@ -110,6 +124,7 @@ export function RecipeDetails() {
         const payload: UpdateRecipeDataType = {
             name: form.name,
             category: form.category,
+            baseUnit: form.baseUnit,
             isActive: form.isActive,
             finalPrice:
                 form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
@@ -153,6 +168,38 @@ export function RecipeDetails() {
                                 setField('category', e.target.value)
                             }
                         />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Unidade base de cálculo</Label>
+                        <Select
+                            value={form.baseUnit}
+                            onValueChange={(value) =>
+                                setField('baseUnit', value)
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione a unidade" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                {MEASUREMENT_UNITS.map((measurementUnit) => (
+                                    <SelectItem
+                                        key={measurementUnit.value}
+                                        value={measurementUnit.value}
+                                    >
+                                        {measurementUnit.label}
+                                    </SelectItem>
+                                ))}
+
+                                {form.baseUnit &&
+                                    !isMeasurementUnitOption(form.baseUnit) && (
+                                        <SelectItem value={form.baseUnit}>
+                                            {form.baseUnit}
+                                        </SelectItem>
+                                    )}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid gap-2">

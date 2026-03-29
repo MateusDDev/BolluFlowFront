@@ -1,9 +1,11 @@
-﻿import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, EyeIcon } from 'lucide-react'
+import { ColumnDef } from '@tanstack/react-table'
+import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { Badge } from 'ui/badge'
-import Link from 'next/link'
+import { RecipeActions } from '@/features/recipes/list/components/atoms/RecipeActions'
+import { RecipeReferenceSelectorCell } from '@/features/recipes/list/components/molecules/RecipeReferenceSelectorCell'
+import { RecipeStockDisplayCell } from '@/features/recipes/list/components/molecules/RecipeStockDisplayCell'
 
 export const recipeColumns: ColumnDef<RecipeModel>[] = [
     {
@@ -27,6 +29,31 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
         header: 'Categoria',
     },
     {
+        accessorKey: 'baseUnit',
+        header: 'Unidade / referência',
+        cell: ({ row }) => <RecipeReferenceSelectorCell recipe={row.original} />,
+    },
+    {
+        accessorKey: 'stockQuantity',
+        header: 'Estoque disponível',
+        cell: ({ row }) => (
+            <RecipeStockDisplayCell
+                recipe={row.original}
+                value={row.original.stockQuantity}
+            />
+        ),
+    },
+    {
+        accessorKey: 'minimumStockQuantity',
+        header: 'Estoque mínimo',
+        cell: ({ row }) => (
+            <RecipeStockDisplayCell
+                recipe={row.original}
+                value={row.original.minimumStockQuantity ?? 0}
+            />
+        ),
+    },
+    {
         accessorKey: 'isActive',
         header: 'Status',
         cell: ({ row }) => {
@@ -40,14 +67,6 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => {
-            const recipe = row.original as RecipeModel
-
-            return (
-                <Link href={`/recipes/${recipe.id}`}>
-                    <EyeIcon className="text-primary h-5 w-5 cursor-pointer hover:text-secondary" />
-                </Link>
-            )
-        },
+        cell: ({ row }) => <RecipeActions recipe={row.original} />,
     },
 ]
