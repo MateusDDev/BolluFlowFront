@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,6 +25,8 @@ import { EditIngredientModal } from '@/features/ingredients/components/organisms
 import { IngredientConversionsModal } from '@/features/ingredients/components/organisms/IngredientConversionsModal'
 import { IngredientStockEntryModal } from '@/features/ingredients/components/organisms/IngredientStockEntryModal'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import { StockAdjustmentModal } from '@/features/stock/components/StockAdjustmentModal'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 type Props = {
     ingredient: IngredientModel
@@ -35,6 +37,7 @@ export function IngredientActions({ ingredient }: Props) {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isConversionsOpen, setIsConversionsOpen] = useState(false)
     const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
+    const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
 
     async function handleConfirmDelete() {
         await deleteIngredient(ingredient.id)
@@ -66,6 +69,11 @@ export function IngredientActions({ ingredient }: Props) {
                         Registrar compra
                     </DropdownMenuItem>
 
+                    <DropdownMenuItem
+                        onClick={() => setIsStockAdjustmentOpen(true)}
+                    >
+                        Corrigir estoque
+                    </DropdownMenuItem>
 
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
@@ -93,6 +101,13 @@ export function IngredientActions({ ingredient }: Props) {
                 onOpenChange={setIsStockEntryOpen}
             />
 
+            <StockAdjustmentModal
+                open={isStockAdjustmentOpen}
+                onOpenChange={setIsStockAdjustmentOpen}
+                itemType="ingredient"
+                itemId={ingredient.id}
+                unitLabel={getMeasurementUnitLabel(ingredient.baseUnit)}
+            />
 
             <AlertDialogContent>
                 <AlertDialogHeader>

@@ -11,6 +11,17 @@ export interface CreateStockMovementDataType {
     notes?: string
 }
 
+export type StockAdjustmentDirection = 'add' | 'remove'
+
+export interface CreateStockAdjustmentDataType {
+    itemType: StockMovementItemType
+    itemId: number
+    quantity: number
+    direction: StockAdjustmentDirection
+    unitCost: number
+    reason: string
+}
+
 export interface StockMovementModel {
     id: number
     itemType: StockMovementItemType

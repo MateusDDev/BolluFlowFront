@@ -1,5 +1,6 @@
 import { apiClient } from '@/shared/api/client'
 import {
+    CreateStockAdjustmentDataType,
     CreateStockMovementDataType,
     StockMovementModel,
 } from '@/features/stock/services/stockMovement.model'
@@ -13,4 +14,8 @@ export function createStockPurchase(data: CreateStockMovementDataType) {
         UnitCost: data.unitCost,
         Notes: data.notes,
     })
+}
+
+export function createStockAdjustment(data: CreateStockAdjustmentDataType) {
+    return apiClient<StockMovementModel>('/stock/movements/adjustment', 'POST', data)
 }
