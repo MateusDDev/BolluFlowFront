@@ -62,7 +62,7 @@ export function SupplyActions({ supply }: Props) {
                         Gerenciar conversoes
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
-                        Entrada de estoque por conversao
+                        Registrar compra
                     </DropdownMenuItem>
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">

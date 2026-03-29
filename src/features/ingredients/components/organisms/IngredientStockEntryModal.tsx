@@ -113,14 +113,14 @@ export function IngredientStockEntryModal({
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label>Conversão</Label>
+                        <Label>Compra</Label>
                         <Select
                             value={selectedConversion}
                             onValueChange={setSelectedConversion}
                             disabled={isLoading || isPending}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma conversão" />
+                                <SelectValue placeholder="Selecione uma compra" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>

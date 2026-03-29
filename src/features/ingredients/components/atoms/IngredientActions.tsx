@@ -63,7 +63,7 @@ export function IngredientActions({ ingredient }: Props) {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
-                        Entrada de estoque por conversão
+                        Registrar compra
                     </DropdownMenuItem>
 
 
