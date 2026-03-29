@@ -5,6 +5,8 @@ export type OrderStatus =
     | 'Delivered'
     | 'Canceled'
 
+export type PaymentMethod = 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard'
+
 export const orderStatusLabelMap: Record<OrderStatus, string> = {
     Pending: 'Pendente',
     InProduction: 'Em preparo',
@@ -47,6 +49,7 @@ export interface OrderModel {
     customer: CustomerModel
     status: OrderStatus
     note: string
+    paymentMethod?: PaymentMethod | null
     createdAt: Date
     deliveryDate?: Date
 }

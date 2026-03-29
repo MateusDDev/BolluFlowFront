@@ -67,3 +67,18 @@ export function formatQuantityDisplay(value: number) {
         maximumFractionDigits: 2,
     })
 }
+
+export function getPaymentMethodLabel(method?: string | null): string {
+    switch (method) {
+        case 'Cash':
+            return 'Dinheiro'
+        case 'Pix':
+            return 'Pix'
+        case 'CreditCard':
+            return 'Cartão de crédito'
+        case 'DebitCard':
+            return 'Cartão de débito'
+        default:
+            return 'Não definida'
+    }
+}

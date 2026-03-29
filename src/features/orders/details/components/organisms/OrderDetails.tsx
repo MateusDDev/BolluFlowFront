@@ -22,22 +22,30 @@ import {
 
 import {
     OrderModel,
+    PaymentMethod,
     orderStatusLabelMap,
     orderStatusVariantMap,
 } from '@/features/orders/services/order.model'
 import { useGetOrder } from '@/features/orders/details/hooks/queries/useGetOrder'
 import { useGetOrderItems } from '@/features/orders/details/hooks/queries/useGetOrderItems'
 import { OrderStatusActions } from '@/features/orders/details/components/atoms/OrderStatusActions'
-import { formatCurrency, formatWhatsapp } from '@/shared/helpers/formatHelper'
+import {
+    formatCurrency,
+    formatWhatsapp,
+    getPaymentMethodLabel,
+} from '@/shared/helpers/formatHelper'
 import { useGetOrderCustomers } from '@/features/orders/list/hooks/queries/useGetOrderCustomers'
 import { useUpdateOrder } from '@/features/orders/details/hooks/mutations/useUpdateOrder'
 import { UpdateOrderDataType } from '@/features/orders/services/order.api'
 import { DatePicker } from 'components/DatePicker'
 
+const PAYMENT_METHOD_UNDEFINED = 'UNDEFINED'
+
 interface FormState {
     customerId: string
     deliveryDate?: Date
     notes: string
+    paymentMethod: PaymentMethod | typeof PAYMENT_METHOD_UNDEFINED
 }
 
 function mapOrderToForm(order: OrderModel): FormState {
@@ -47,6 +55,7 @@ function mapOrderToForm(order: OrderModel): FormState {
             ? new Date(order.deliveryDate)
             : undefined,
         notes: order.note ?? '',
+        paymentMethod: order.paymentMethod ?? PAYMENT_METHOD_UNDEFINED,
     }
 }
 
@@ -107,6 +116,10 @@ export function OrderDetails() {
             customerId: Number(form.customerId),
             notes: form.notes,
             deliveryDate: form.deliveryDate,
+            paymentMethod:
+                form.paymentMethod === PAYMENT_METHOD_UNDEFINED
+                    ? null
+                    : form.paymentMethod,
         }
 
         await updateOrder({
@@ -235,6 +248,51 @@ export function OrderDetails() {
                                     disabled
                                 />
                             </div>
+
+                            <div className="grid gap-2">
+                                <Label>Forma de pagamento</Label>
+
+                                {isEditing ? (
+                                    <Select
+                                        value={form.paymentMethod}
+                                        onValueChange={(value) =>
+                                            setField('paymentMethod', value)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione a forma de pagamento" />
+                                        </SelectTrigger>
+
+                                        <SelectContent>
+                                            <SelectItem
+                                                value={PAYMENT_METHOD_UNDEFINED}
+                                            >
+                                                Não definida
+                                            </SelectItem>
+                                            <SelectItem value="Cash">
+                                                Dinheiro
+                                            </SelectItem>
+                                            <SelectItem value="Pix">
+                                                Pix
+                                            </SelectItem>
+                                            <SelectItem value="CreditCard">
+                                                Cartão de crédito
+                                            </SelectItem>
+                                            <SelectItem value="DebitCard">
+                                                Cartão de débito
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                ) : order.paymentMethod ? (
+                                    <div>
+                                        <Badge variant="outline">
+                                            {getPaymentMethodLabel(
+                                                order.paymentMethod
+                                            )}
+                                        </Badge>
+                                    </div>
+                                ) : null}
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -317,6 +375,17 @@ export function OrderDetails() {
                                     {formatCurrency(total)}
                                 </span>
                             </div>
+
+                            {order.paymentMethod && (
+                                <div className="flex justify-between items-center">
+                                    <span>Pagamento:</span>
+                                    <Badge variant="outline">
+                                        {getPaymentMethodLabel(
+                                            order.paymentMethod
+                                        )}
+                                    </Badge>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
