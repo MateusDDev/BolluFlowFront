@@ -20,6 +20,7 @@ export function getRecipeIngredients(id: number) {
 export type CreateRecipeDataType = {
     name: string
     category: string
+    baseUnit: string
     preparationTime?: number
 }
 
@@ -46,6 +47,7 @@ export function createRecipeIngredient(
 export type UpdateRecipeDataType = {
     name?: string
     category?: string
+    baseUnit?: string
     preparationTime?: number
     isActive?: boolean
     finalPrice?: number

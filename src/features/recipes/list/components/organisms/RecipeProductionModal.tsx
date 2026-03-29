@@ -21,6 +21,7 @@ import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { useGetRecipeConversions } from '@/features/recipes/hooks/queries/useGetRecipeConversions'
 import { useCreateRecipeProduction } from '@/features/recipes/hooks/mutations/useCreateRecipeProduction'
 import { RecipeStockErrorModel } from '@/features/recipes/services/recipeStock.api'
+import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
 
 type Props = {
     recipe: RecipeModel
@@ -30,8 +31,17 @@ type Props = {
 
 const BASE_OPTION_VALUE = '__base__'
 
+const getBaseUnitShortLabel = (baseUnit: string | number) => {
+    const normalized = normalizeMeasurementUnit(baseUnit)
+
+    if (normalized === 'Gram') return 'g'
+    if (normalized === 'Milliliter') return 'ml'
+    return 'un'
+}
+
 export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
-    const [selectedConversion, setSelectedConversion] = useState(BASE_OPTION_VALUE)
+    const [selectedConversion, setSelectedConversion] =
+        useState(BASE_OPTION_VALUE)
     const [quantityInput, setQuantityInput] = useState('')
     const [notes, setNotes] = useState('')
     const [formMessage, setFormMessage] = useState<string | null>(null)
@@ -70,9 +80,10 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
 
     const selectedLabel =
         selectedConversion === BASE_OPTION_VALUE
-            ? 'un'
-            : availableConversions.find((item) => item.value === selectedConversion)
-                  ?.label ?? 'un'
+            ? getBaseUnitShortLabel(recipe.baseUnit)
+            : (availableConversions.find(
+                  (item) => item.value === selectedConversion
+              )?.label ?? getBaseUnitShortLabel(recipe.baseUnit))
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -99,12 +110,16 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
             const apiError = error as RecipeStockErrorModel
 
             if (apiError.code === 'INSUFFICIENT_STOCK') {
-                setFormMessage('Estoque insuficiente para produzir esta receita:')
+                setFormMessage(
+                    'Estoque insuficiente para produzir esta receita:'
+                )
                 setInsufficientIngredients(apiError.insufficientIngredients)
                 return
             }
 
-            setFormMessage('Não foi possível registrar a produção. Tente novamente.')
+            setFormMessage(
+                'Não foi possível registrar a produção. Tente novamente.'
+            )
         }
     }
 
@@ -131,11 +146,17 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base (un)
+                                    Unidade base (
+                                    {getBaseUnitShortLabel(recipe.baseUnit)})
                                 </SelectItem>
                                 {availableConversions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label} = {option.quantityInBaseUnit} un
+                                    <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label} ={' '}
+                                        {option.quantityInBaseUnit}{' '}
+                                        {getBaseUnitShortLabel(recipe.baseUnit)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -149,7 +170,9 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                             placeholder="Ex: 2"
                             value={quantityInput}
                             onChange={(e) =>
-                                setQuantityInput(e.target.value.replace(/[^\d,.]/g, ''))
+                                setQuantityInput(
+                                    e.target.value.replace(/[^\d,.]/g, '')
+                                )
                             }
                             required
                         />
@@ -167,7 +190,9 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                     <div className="rounded border p-3 text-sm text-muted-foreground">
                         Serão produzidas{' '}
                         <strong>
-                            {quantity.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}{' '}
+                            {quantity.toLocaleString('pt-BR', {
+                                maximumFractionDigits: 2,
+                            })}{' '}
                             {selectedLabel}
                         </strong>{' '}
                         e os ingredientes serão debitados automaticamente.
@@ -180,8 +205,9 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                                 {insufficientIngredients.map((item) => (
                                     <li key={item.ingredientId}>
                                         {item.ingredientName} — necessário:{' '}
-                                        {item.required.toLocaleString('pt-BR')} {item.unit},
-                                        disponível: {item.available.toLocaleString('pt-BR')}{' '}
+                                        {item.required.toLocaleString('pt-BR')}{' '}
+                                        {item.unit}, disponível:{' '}
+                                        {item.available.toLocaleString('pt-BR')}{' '}
                                         {item.unit}
                                     </li>
                                 ))}
@@ -193,7 +219,9 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                         <Button
                             type="submit"
                             disabled={
-                                isPending || Number.isNaN(quantity) || quantity <= 0
+                                isPending ||
+                                Number.isNaN(quantity) ||
+                                quantity <= 0
                             }
                         >
                             {isPending ? 'Salvando...' : 'Registrar produção'}
@@ -201,7 +229,9 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                     </DialogFooter>
 
                     {formMessage && !insufficientIngredients?.length && (
-                        <p className="text-sm text-muted-foreground">{formMessage}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {formMessage}
+                        </p>
                     )}
                 </form>
             </DialogContent>

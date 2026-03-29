@@ -9,18 +9,34 @@ import { useParams } from 'next/navigation'
 import { useGetRecipeConversions } from '@/features/recipes/hooks/queries/useGetRecipeConversions'
 import { useCreateRecipeConversion } from '@/features/recipes/hooks/mutations/useCreateRecipeConversion'
 import { useDeleteRecipeConversion } from '@/features/recipes/hooks/mutations/useDeleteRecipeConversion'
+import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe'
+import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
 
 export function RecipeConversionsSection() {
     const { id } = useParams<{ id: string }>()
     const recipeId = Number(id)
 
     const [newConversionName, setNewConversionName] = useState('')
+    const { data: recipe } = useGetRecipe(recipeId)
     const [newConversionQuantity, setNewConversionQuantity] = useState('')
 
-    const { data: conversions, isLoading } = useGetRecipeConversions(recipeId, true)
+    const { data: conversions, isLoading } = useGetRecipeConversions(
+        recipeId,
+        true
+    )
 
-    const { mutateAsync: createConversion, isPending: isCreating, error } =
-        useCreateRecipeConversion()
+    const baseUnit = (() => {
+        const normalized = normalizeMeasurementUnit(recipe?.baseUnit ?? 'Unit')
+        if (normalized === 'Gram') return 'g'
+        if (normalized === 'Milliliter') return 'ml'
+        return 'un'
+    })()
+
+    const {
+        mutateAsync: createConversion,
+        isPending: isCreating,
+        error,
+    } = useCreateRecipeConversion()
     const {
         mutateAsync: deleteConversion,
         isPending: isDeleting,
@@ -32,7 +48,11 @@ export function RecipeConversionsSection() {
     const handleCreate = async () => {
         const parsedQuantity = Number(newConversionQuantity.replace(',', '.'))
 
-        if (!newConversionName.trim() || isNaN(parsedQuantity) || parsedQuantity <= 0)
+        if (
+            !newConversionName.trim() ||
+            isNaN(parsedQuantity) ||
+            parsedQuantity <= 0
+        )
             return
 
         await createConversion({
@@ -58,7 +78,7 @@ export function RecipeConversionsSection() {
                         onChange={(e) => setNewConversionName(e.target.value)}
                     />
                     <Input
-                        placeholder="Qtd em un"
+                        placeholder={`Qtd em ${baseUnit}`}
                         inputMode="decimal"
                         value={newConversionQuantity}
                         onChange={(e) =>
