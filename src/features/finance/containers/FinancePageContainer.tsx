@@ -23,6 +23,7 @@ import { useGetFinancialEntries } from '@/features/finance/hooks/queries/useGetF
 import { useGetFinancialBalance } from '@/features/finance/hooks/queries/useGetFinancialBalance'
 import {
     FinancialEntryOrigin,
+    FinancialEntryModel,
     FinancialEntryType,
 } from '@/features/finance/services/finance.model'
 import { Button } from 'ui/button'
@@ -38,8 +39,20 @@ import {
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
 import { useCreateFinancialEntry } from '@/features/finance/hooks/mutations/useCreateFinancialEntry'
+import { useDeleteFinancialEntry } from '@/features/finance/hooks/mutations/useDeleteFinancialEntry'
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from 'ui/popover'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from 'ui/alert-dialog'
+import { Checkbox } from 'ui/checkbox'
 
 type TypeFilter = FinancialEntryType | 'all'
 
@@ -73,6 +86,14 @@ function getYearOptions(currentYear: number) {
     return Array.from({ length: 11 }, (_, index) => currentYear - 5 + index)
 }
 
+function isStockPurchaseOrigin(origin: FinancialEntryOrigin) {
+    return origin === 'ingredient_purchase' || origin === 'supply_purchase'
+}
+
+function getFinancialActionLabel(origin: FinancialEntryOrigin) {
+    return isStockPurchaseOrigin(origin) ? 'Desfazer' : 'Excluir'
+}
+
 export function FinancePageContainer() {
     const now = new Date()
     const currentMonth = now.getMonth() + 1
@@ -85,6 +106,10 @@ export function FinancePageContainer() {
     const [manualType, setManualType] = useState<FinancialEntryType>('expense')
     const [amount, setAmount] = useState('')
     const [description, setDescription] = useState('')
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [selectedEntry, setSelectedEntry] =
+        useState<FinancialEntryModel | null>(null)
+    const [shouldRevertStock, setShouldRevertStock] = useState(false)
 
     const queryType = typeFilter === 'all' ? undefined : typeFilter
 
@@ -100,6 +125,8 @@ export function FinancePageContainer() {
     } = useGetFinancialBalance(selectedMonth, selectedYear)
     const { mutateAsync: createFinancialEntry, isPending: isSavingEntry } =
         useCreateFinancialEntry()
+    const { mutateAsync: deleteFinancialEntry, isPending: isDeletingEntry } =
+        useDeleteFinancialEntry()
 
     const monthYearLabel = getMonthYearLabel(selectedMonth, selectedYear)
 
@@ -160,6 +187,42 @@ export function FinancePageContainer() {
         setManualType('expense')
         setIsDialogOpen(false)
     }
+
+    const handleOpenDeleteDialog = (entry: FinancialEntryModel) => {
+        setSelectedEntry(entry)
+        setShouldRevertStock(false)
+        setIsDeleteDialogOpen(true)
+    }
+
+    const handleDeleteDialogChange = (open: boolean) => {
+        setIsDeleteDialogOpen(open)
+
+        if (!open) {
+            setSelectedEntry(null)
+            setShouldRevertStock(false)
+        }
+    }
+
+    const handleConfirmDelete = async () => {
+        if (!selectedEntry) return
+
+        const shouldUseRevertStock =
+            isStockPurchaseOrigin(selectedEntry.origin) && shouldRevertStock
+
+        await deleteFinancialEntry({
+            id: selectedEntry.id,
+            origin: selectedEntry.origin,
+            revertStock: shouldUseRevertStock,
+        })
+
+        handleDeleteDialogChange(false)
+    }
+
+    const dialogActionLabel = selectedEntry
+        ? selectedEntry.origin === 'order'
+            ? 'Excluir lançamento'
+            : getFinancialActionLabel(selectedEntry.origin)
+        : 'Excluir'
 
     return (
         <section className="container mx-auto py-8 space-y-6">
@@ -419,6 +482,9 @@ export function FinancePageContainer() {
                                     <TableHead className="text-right">
                                         Valor
                                     </TableHead>
+                                    <TableHead className="text-right">
+                                        Ações
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -465,12 +531,28 @@ export function FinancePageContainer() {
                                             >
                                                 {formatCurrency(entry.amount)}
                                             </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-destructive"
+                                                    onClick={() =>
+                                                        handleOpenDeleteDialog(
+                                                            entry
+                                                        )
+                                                    }
+                                                >
+                                                    {getFinancialActionLabel(
+                                                        entry.origin
+                                                    )}
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={5}
+                                            colSpan={6}
                                             className="h-24 text-center"
                                         >
                                             Nenhum lançamento encontrado em{' '}
@@ -483,6 +565,96 @@ export function FinancePageContainer() {
                     </div>
                 </CardContent>
             </Card>
+
+            <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={handleDeleteDialogChange}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {selectedEntry &&
+                            isStockPurchaseOrigin(selectedEntry.origin)
+                                ? 'Desfazer lançamento'
+                                : 'Excluir lançamento'}
+                        </AlertDialogTitle>
+
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-4">
+                                {selectedEntry?.origin === 'manual' && (
+                                    <div className="space-y-1">
+                                        <p>
+                                            Tem certeza que deseja excluir este
+                                            lançamento?
+                                        </p>
+                                        <p>Esta ação não pode ser desfeita.</p>
+                                    </div>
+                                )}
+
+                                {selectedEntry?.origin === 'order' && (
+                                    <p>
+                                        Este lançamento foi gerado
+                                        automaticamente pela confirmação de um
+                                        pedido. Excluir remove apenas o registro
+                                        financeiro — o pedido não será alterado.
+                                    </p>
+                                )}
+
+                                {selectedEntry &&
+                                    isStockPurchaseOrigin(
+                                        selectedEntry.origin
+                                    ) && (
+                                        <div className="space-y-3">
+                                            <p>
+                                                Este lançamento foi gerado
+                                                automaticamente por uma compra
+                                                de estoque.
+                                            </p>
+
+                                            <div className="flex items-start gap-2">
+                                                <Checkbox
+                                                    id="revert-stock"
+                                                    checked={shouldRevertStock}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        setShouldRevertStock(
+                                                            checked === true
+                                                        )
+                                                    }
+                                                />
+                                                <Label
+                                                    htmlFor="revert-stock"
+                                                    className="text-sm font-normal leading-relaxed"
+                                                >
+                                                    Reverter também o estoque
+                                                    <span className="block text-muted-foreground">
+                                                        (remove as unidades
+                                                        adicionadas por essa
+                                                        compra)
+                                                    </span>
+                                                </Label>
+                                            </div>
+                                        </div>
+                                    )}
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            disabled={isDeletingEntry || !selectedEntry}
+                            className="bg-destructive text-destructive-foreground"
+                        >
+                            {isDeletingEntry
+                                ? 'Processando...'
+                                : dialogActionLabel}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </section>
     )
 }

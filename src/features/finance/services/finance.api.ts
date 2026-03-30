@@ -21,7 +21,10 @@ export function getFinancialEntries(
         ...(type ? { type } : {}),
     })
 
-    return apiClient<FinancialEntryModel[]>(`/financial/entries?${params}`, 'GET')
+    return apiClient<FinancialEntryModel[]>(
+        `/financial/entries?${params}`,
+        'GET'
+    )
 }
 
 export function getFinancialBalance(month: number, year: number) {
@@ -30,5 +33,16 @@ export function getFinancialBalance(month: number, year: number) {
         year: String(year),
     })
 
-    return apiClient<FinancialBalanceModel>(`/financial/balance?${params}`, 'GET')
+    return apiClient<FinancialBalanceModel>(
+        `/financial/balance?${params}`,
+        'GET'
+    )
+}
+
+export function deleteFinancialEntry(id: number, revertStock: boolean) {
+    const params = new URLSearchParams({
+        revertStock: String(revertStock),
+    })
+
+    return apiClient<void>(`/financial/entries/${id}?${params}`, 'DELETE')
 }
