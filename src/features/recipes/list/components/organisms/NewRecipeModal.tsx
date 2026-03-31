@@ -121,7 +121,6 @@ export const NewRecipeModal = () => {
         const createdRecipe = await createRecipe(payload)
 
         if (usePurchaseConversion) {
-            console.log(createdRecipe)
             await createRecipeConversion(createdRecipe.id, {
                 name: conversionName.trim(),
                 quantityInBaseUnit: parsedConversionFactor,

@@ -15,7 +15,6 @@ export function createRecipeConversion(
     recipeId: number,
     data: UpsertRecipeConversionDataType
 ) {
-    console.log(recipeId)
     return apiClient<null>(`/recipes/${recipeId}/conversions`, 'POST', data)
 }
 
