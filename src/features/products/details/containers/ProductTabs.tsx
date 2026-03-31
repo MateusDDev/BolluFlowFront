@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from 'ui/tabs'
 import { BackButton } from 'components/BackButton'
@@ -10,12 +10,15 @@ import { useGetProductComponents } from '@/features/products/details/hooks/queri
 import { ProductDetails } from '@/features/products/details/components/organisms/ProductDetails'
 import { ProductComponentsTable } from '@/features/products/details/components/organisms/ProductComponentsTable'
 import { ProductPricing } from '@/features/products/details/components/organisms/ProductPricing'
+import { Button } from 'ui/button'
+import { ProductProductionModal } from '@/features/products/list/components/organisms/ProductProductionModal'
 
 export function ProductTabs() {
     const { id } = useParams<{ id: string }>()
     const productId = Number(id)
 
     const { data: product } = useGetProduct(productId)
+    const [isProductionOpen, setIsProductionOpen] = useState(false)
     const componentsQuery = useGetProductComponents(productId)
     const { setTitle } = usePageTitle()
 
@@ -34,7 +37,17 @@ export function ProductTabs() {
                         <TabsTrigger value="components">Composicao</TabsTrigger>
                         <TabsTrigger value="pricing">Precificacao</TabsTrigger>
                     </TabsList>
-                    <BackButton className="[&_svg]:size-6" />
+                    <div className="flex items-center gap-2">
+                        {product && (
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsProductionOpen(true)}
+                            >
+                                Registrar produção
+                            </Button>
+                        )}
+                        <BackButton className="[&_svg]:size-6" />
+                    </div>
                 </div>
 
                 <TabsContent value="details">
@@ -53,6 +66,14 @@ export function ProductTabs() {
                     <ProductPricing />
                 </TabsContent>
             </Tabs>
+
+            {product && (
+                <ProductProductionModal
+                    product={product}
+                    open={isProductionOpen}
+                    onOpenChange={setIsProductionOpen}
+                />
+            )}
         </section>
     )
 }

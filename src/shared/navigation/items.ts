@@ -38,12 +38,6 @@ export const navItems: NavItem[] = [
         section: 'principal',
     },
     {
-        title: 'Produtos',
-        url: '/products',
-        icon: PackageIcon,
-        section: 'estoque',
-    },
-    {
         title: 'Ingredientes',
         url: '/ingredients',
         icon: WheatIcon,
@@ -59,7 +53,13 @@ export const navItems: NavItem[] = [
         title: 'Receitas',
         url: '/recipes',
         icon: ChefHatIcon,
-        section: 'cadastros',
+        section: 'estoque',
+    },
+    {
+        title: 'Produtos',
+        url: '/products',
+        icon: PackageIcon,
+        section: 'estoque',
     },
     {
         title: 'Clientes',
