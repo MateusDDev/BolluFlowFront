@@ -9,8 +9,11 @@ export function useCreateSupply() {
 
     return useMutation({
         mutationFn: async (data: CreateSupplyDataType) => createSupply(data),
-        onSuccess: async () => {
+        onSuccess: async (createdSupply) => {
             await client.invalidateQueries({ queryKey: ['supplies'] })
+            await client.invalidateQueries({
+                queryKey: ['supply-conversions', createdSupply.id],
+            })
         },
         onError: (error) => console.error(error),
     })

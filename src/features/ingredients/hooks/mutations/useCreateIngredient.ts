@@ -1,4 +1,4 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     createIngredient,
     CreateIngredientDataType,
@@ -11,8 +11,11 @@ export function useCreateIngredient() {
         mutationFn: async (data: CreateIngredientDataType) =>
             await createIngredient(data),
 
-        onSuccess: async () => {
+        onSuccess: async (createdIngredient) => {
             await client.invalidateQueries({ queryKey: ['ingredients'] })
+            await client.invalidateQueries({
+                queryKey: ['ingredient-conversions', createdIngredient.id],
+            })
         },
 
         onError: (error) => {

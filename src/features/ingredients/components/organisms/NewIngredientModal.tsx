@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from 'ui/select'
 import React, { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
@@ -43,6 +44,7 @@ export const NewIngredientModal = () => {
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [localError, setLocalError] = useState('')
 
+    const queryClient = useQueryClient()
     const {
         mutateAsync: createIngredient,
         isPending,
@@ -202,6 +204,10 @@ export const NewIngredientModal = () => {
             await createIngredientConversion(createdIngredient.id, {
                 name: conversionName.trim(),
                 quantityInBaseUnit: parsedConversionFactor,
+            })
+
+            await queryClient.invalidateQueries({
+                queryKey: ['ingredient-conversions', createdIngredient.id],
             })
         }
 
