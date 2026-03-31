@@ -25,7 +25,6 @@ interface Props {
 export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
     const [name, setName] = useState('')
     const [unitCost, setUnitCost] = useState('')
-    const [stockQuantity, setStockQuantity] = useState('')
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
 
     const { mutateAsync, isPending, error } = useUpdateSupply()
@@ -36,7 +35,6 @@ export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setName(supply.name)
         setUnitCost(Math.round(supply.unitCost * 100).toString())
-        setStockQuantity(supply.stockQuantity.toString())
         setMinimumStockQuantity((supply.minimumStockQuantity ?? '').toString())
     }, [open, supply])
 
@@ -48,7 +46,6 @@ export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
             data: {
                 name,
                 unitCost: Number(unitCost) / 100,
-                stockQuantity: Number(stockQuantity),
                 minimumStockQuantity:
                     minimumStockQuantity === ''
                         ? undefined
@@ -85,16 +82,6 @@ export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
                                 const digits = e.target.value.replace(/\D/g, '')
                                 setUnitCost(digits)
                             }}
-                        />
-                    </div>
-
-                    <div className="grid gap-3">
-                        <Label>Estoque disponivel</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            value={stockQuantity}
-                            onChange={(e) => setStockQuantity(e.target.value)}
                         />
                     </div>
 

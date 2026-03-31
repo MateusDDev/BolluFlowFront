@@ -37,7 +37,6 @@ interface FormState {
     name: string
     baseUnit: string
     unitCost: string
-    stockQuantity: string
     minimumStockQuantity: string
 }
 
@@ -45,7 +44,6 @@ const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     name: ingredient.name,
     baseUnit: normalizeMeasurementUnit(ingredient.baseUnit),
     unitCost: String(Math.round(ingredient.unitCost * 100)),
-    stockQuantity: ingredient.stockQuantity.toString(),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
 })
 
@@ -82,7 +80,6 @@ export const EditIngredientModal = ({
             name: form.name,
             baseUnit: form.baseUnit,
             unitCost: form.unitCost === '' ? 0 : Number(form.unitCost) / 100,
-            stockQuantity: Number(form.stockQuantity),
         }
 
         if (form.minimumStockQuantity !== '')
@@ -119,7 +116,9 @@ export const EditIngredientModal = ({
                         <Label>Unidade base de cálculo</Label>
                         <Select
                             value={form.baseUnit}
-                            onValueChange={(value) => setField('baseUnit', value)}
+                            onValueChange={(value) =>
+                                setField('baseUnit', value)
+                            }
                             required
                         >
                             <SelectTrigger>
@@ -160,18 +159,6 @@ export const EditIngredientModal = ({
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Quantidade em estoque</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            value={form.stockQuantity}
-                            onChange={(e) =>
-                                setField('stockQuantity', e.target.value)
-                            }
-                        />
-                    </div>
-
-                    <div className="grid gap-3">
                         <Label>Estoque mínimo</Label>
                         <Input
                             type="number"
@@ -196,7 +183,9 @@ export const EditIngredientModal = ({
                             </DialogClose>
 
                             <Button type="submit" disabled={isPending}>
-                                {isPending ? 'Salvando...' : 'Salvar alterações'}
+                                {isPending
+                                    ? 'Salvando...'
+                                    : 'Salvar alterações'}
                             </Button>
                         </div>
 
