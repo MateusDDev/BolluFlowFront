@@ -13,7 +13,6 @@ import { UpdateProductDataType } from '@/features/products/services/product.api'
 
 interface FormState {
     name: string
-    stockQuantity: string
     minimumStockQuantity: string
     isActive: boolean
 }
@@ -21,7 +20,6 @@ interface FormState {
 const mapProductToForm = (product: ProductModel): FormState => {
     return {
         name: product.name,
-        stockQuantity: product.stockQuantity.toString(),
         minimumStockQuantity: product.minimumStockQuantity?.toString() ?? '',
         isActive: product.isActive,
     }
@@ -67,7 +65,6 @@ export function ProductDetails() {
         const payload: UpdateProductDataType = {
             name: form.name,
             isActive: form.isActive,
-            stockQuantity: Number(form.stockQuantity) || 0,
         }
 
         if (form.minimumStockQuantity !== '') {
@@ -95,18 +92,6 @@ export function ProductDetails() {
                         <Input
                             value={form.name}
                             onChange={(e) => setField('name', e.target.value)}
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Estoque atual</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            value={form.stockQuantity}
-                            onChange={(e) =>
-                                setField('stockQuantity', e.target.value)
-                            }
                         />
                     </div>
 

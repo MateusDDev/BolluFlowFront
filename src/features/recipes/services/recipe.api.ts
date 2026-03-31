@@ -22,6 +22,7 @@ export type CreateRecipeDataType = {
     category: string
     baseUnit: string
     preparationTime?: number
+    minimumStockQuantity?: number
 }
 
 export function createRecipe(data: CreateRecipeDataType) {

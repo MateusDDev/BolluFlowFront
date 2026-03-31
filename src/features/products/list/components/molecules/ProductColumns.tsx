@@ -1,10 +1,10 @@
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, EyeIcon } from 'lucide-react'
-import Link from 'next/link'
+import { ArrowUpDown } from 'lucide-react'
 import { Button } from 'ui/button'
 import { Badge } from 'ui/badge'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { ProductModel } from '@/features/products/services/product.model'
+import { ProductActions } from '@/features/products/list/components/atoms/ProductActions'
 
 export const productColumns: ColumnDef<ProductModel>[] = [
     {
@@ -51,12 +51,7 @@ export const productColumns: ColumnDef<ProductModel>[] = [
         id: 'actions',
         cell: ({ row }) => {
             const product = row.original as ProductModel
-
-            return (
-                <Link href={`/products/${product.id}`}>
-                    <EyeIcon className="text-primary h-5 w-5 cursor-pointer hover:text-secondary" />
-                </Link>
-            )
+            return <ProductActions product={product} />
         },
     },
 ]

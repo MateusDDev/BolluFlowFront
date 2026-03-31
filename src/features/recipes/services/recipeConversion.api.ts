@@ -5,7 +5,10 @@ import {
 } from '@/features/recipes/services/recipeConversion.model'
 
 export function getRecipeConversions(recipeId: number) {
-    return apiClient<RecipeConversionModel[]>(`/recipes/${recipeId}/conversions`, 'GET')
+    return apiClient<RecipeConversionModel[]>(
+        `/recipes/${recipeId}/conversions`,
+        'GET'
+    )
 }
 
 export function createRecipeConversion(
@@ -16,5 +19,8 @@ export function createRecipeConversion(
 }
 
 export function deleteRecipeConversion(recipeId: number, conversionId: number) {
-    return apiClient<null>(`/recipes/${recipeId}/conversions/${conversionId}`, 'DELETE')
+    return apiClient<null>(
+        `/recipes/${recipeId}/conversions/${conversionId}`,
+        'DELETE'
+    )
 }

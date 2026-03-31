@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
     Dialog,
     DialogClose,
@@ -43,6 +44,7 @@ export function NewSupplyModal() {
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [localError, setLocalError] = useState('')
 
+    const queryClient = useQueryClient()
     const { mutateAsync, isPending, error } = useCreateSupply()
 
     const parsedConversionFactor = parseDecimalInput(conversionQuantityInBase)
@@ -80,6 +82,25 @@ export function NewSupplyModal() {
         usePurchaseConversion,
         parsedConversionFactor,
         parsedInitialPurchaseQuantity,
+    ])
+
+    const previewMinimumStockInBase = useMemo(() => {
+        if (!usePurchaseConversion || minimumStockQuantity === '') return null
+
+        if (
+            isNaN(parsedMinimumStockInput) ||
+            isNaN(parsedConversionFactor) ||
+            parsedConversionFactor <= 0
+        ) {
+            return null
+        }
+
+        return parsedMinimumStockInput * parsedConversionFactor
+    }, [
+        usePurchaseConversion,
+        minimumStockQuantity,
+        parsedMinimumStockInput,
+        parsedConversionFactor,
     ])
 
     const reset = () => {
@@ -120,7 +141,7 @@ export function NewSupplyModal() {
                 isNaN(parsedPurchasePrice) ||
                 parsedPurchasePrice <= 0 ||
                 isNaN(parsedInitialPurchaseQuantity) ||
-                parsedInitialPurchaseQuantity <= 0
+                parsedInitialPurchaseQuantity < 0
             ) {
                 setLocalError(
                     'Preencha os dados da compra inicial corretamente.'
@@ -137,10 +158,10 @@ export function NewSupplyModal() {
             isNaN(calculatedUnitCost) ||
             calculatedUnitCost <= 0 ||
             isNaN(calculatedStockQuantity) ||
-            calculatedStockQuantity <= 0
+            calculatedStockQuantity < 0
         ) {
             setLocalError(
-                'Custo base e estoque inicial precisam ser maiores que zero.'
+                'Custo base precisa ser maior que zero e estoque inicial não pode ser negativo.'
             )
             return
         }
@@ -175,6 +196,10 @@ export function NewSupplyModal() {
             await createSupplyConversion(created.id, {
                 name: conversionName.trim(),
                 quantityInBaseUnit: parsedConversionFactor,
+            })
+
+            await queryClient.invalidateQueries({
+                queryKey: ['supply-conversions', created.id],
             })
         }
 
@@ -365,16 +390,13 @@ export function NewSupplyModal() {
                             <div className="grid gap-3">
                                 <Label>Estoque inicial*</Label>
                                 <Input
-                                    inputMode="decimal"
+                                    type="number"
+                                    min={0}
+                                    step="any"
                                     placeholder="Ex: 100"
                                     value={stockQuantity}
                                     onChange={(e) =>
-                                        setStockQuantity(
-                                            e.target.value.replace(
-                                                /[^\d,.]/g,
-                                                ''
-                                            )
-                                        )
+                                        setStockQuantity(e.target.value)
                                     }
                                     required={!usePurchaseConversion}
                                 />
@@ -383,7 +405,11 @@ export function NewSupplyModal() {
                     )}
 
                     <div className="grid gap-3">
-                        <Label>Estoque minimo</Label>
+                        <Label>
+                            {usePurchaseConversion
+                                ? 'Estoque mínimo (na unidade de compra)'
+                                : 'Estoque mínimo'}
+                        </Label>
                         <Input
                             inputMode="decimal"
                             placeholder="Ex: 10"
@@ -394,6 +420,16 @@ export function NewSupplyModal() {
                                 )
                             }
                         />
+                        {usePurchaseConversion &&
+                            previewMinimumStockInBase !== null && (
+                                <p className="text-xs text-muted-foreground">
+                                    Equivale a{' '}
+                                    {previewMinimumStockInBase.toLocaleString(
+                                        'pt-BR'
+                                    )}{' '}
+                                    na unidade base.
+                                </p>
+                            )}
                     </div>
 
                     <DialogFooter className="flex flex-col gap-2">

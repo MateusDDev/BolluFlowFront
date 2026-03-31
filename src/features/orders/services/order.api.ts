@@ -67,8 +67,10 @@ export function updateOrder(id: number, data: UpdateOrderDataType) {
     return apiClient(`/orders/${id}`, 'PUT', data)
 }
 
-export function cancelOrder(id: number) {
-    return apiClient(`/orders/${id}/cancel`, 'POST')
+export function cancelOrder(id: number, revertStock?: boolean) {
+    const query =
+        revertStock === undefined ? '' : `?revertStock=${String(revertStock)}`
+    return apiClient(`/orders/${id}/cancel${query}`, 'POST')
 }
 
 export function deliverOrder(id: number) {

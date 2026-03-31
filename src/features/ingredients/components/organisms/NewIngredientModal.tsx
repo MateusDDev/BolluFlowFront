@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from 'ui/select'
 import React, { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateIngredient } from '@/features/ingredients/hooks/mutations/useCreateIngredient'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 import { CreateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
@@ -43,6 +44,7 @@ export const NewIngredientModal = () => {
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [localError, setLocalError] = useState('')
 
+    const queryClient = useQueryClient()
     const {
         mutateAsync: createIngredient,
         isPending,
@@ -51,7 +53,9 @@ export const NewIngredientModal = () => {
 
     const parsedConversionFactor = parseDecimalInput(conversionQuantityInBase)
     const parsedPurchasePrice = Number(purchasePrice) / 100
-    const parsedInitialPurchaseQuantity = parseDecimalInput(initialPurchaseQuantity)
+    const parsedInitialPurchaseQuantity = parseDecimalInput(
+        initialPurchaseQuantity
+    )
     const parsedMinimumStockInput = parseDecimalInput(minimumStockQuantity)
 
     const previewBaseUnitCost = useMemo(() => {
@@ -142,9 +146,11 @@ export const NewIngredientModal = () => {
                 isNaN(conversionPrice) ||
                 conversionPrice <= 0 ||
                 isNaN(purchaseQuantity) ||
-                purchaseQuantity <= 0
+                purchaseQuantity < 0
             ) {
-                setLocalError('Preencha os dados da compra inicial corretamente.')
+                setLocalError(
+                    'Preencha os dados da compra inicial corretamente.'
+                )
                 return
             }
 
@@ -156,10 +162,10 @@ export const NewIngredientModal = () => {
             isNaN(calculatedUnitCost) ||
             calculatedUnitCost <= 0 ||
             isNaN(calculatedStockQuantity) ||
-            calculatedStockQuantity <= 0
+            calculatedStockQuantity < 0
         ) {
             setLocalError(
-                'Custo base e estoque inicial precisam ser maiores que zero.'
+                'Custo base precisa ser maior que zero e estoque inicial não pode ser negativo.'
             )
             return
         }
@@ -198,6 +204,10 @@ export const NewIngredientModal = () => {
             await createIngredientConversion(createdIngredient.id, {
                 name: conversionName.trim(),
                 quantityInBaseUnit: parsedConversionFactor,
+            })
+
+            await queryClient.invalidateQueries({
+                queryKey: ['ingredient-conversions', createdIngredient.id],
             })
         }
 
@@ -261,7 +271,9 @@ export const NewIngredientModal = () => {
                             <Button
                                 type="button"
                                 variant={
-                                    usePurchaseConversion ? 'default' : 'outline'
+                                    usePurchaseConversion
+                                        ? 'default'
+                                        : 'outline'
                                 }
                                 size="sm"
                                 onClick={() =>
@@ -281,7 +293,9 @@ export const NewIngredientModal = () => {
                                             placeholder="Ex: cartela"
                                             value={conversionName}
                                             onChange={(e) =>
-                                                setConversionName(e.target.value)
+                                                setConversionName(
+                                                    e.target.value
+                                                )
                                             }
                                             required={usePurchaseConversion}
                                         />
@@ -347,10 +361,13 @@ export const NewIngredientModal = () => {
 
                                 <p className="text-xs text-muted-foreground">
                                     Preview: custo base ≈{' '}
-                                    {previewBaseUnitCost.toLocaleString('pt-BR', {
-                                        style: 'currency',
-                                        currency: 'BRL',
-                                    })}{' '}
+                                    {previewBaseUnitCost.toLocaleString(
+                                        'pt-BR',
+                                        {
+                                            style: 'currency',
+                                            currency: 'BRL',
+                                        }
+                                    )}{' '}
                                     • estoque inicial ≈{' '}
                                     {previewInitialStockInBase.toLocaleString(
                                         'pt-BR'
@@ -391,7 +408,9 @@ export const NewIngredientModal = () => {
                                     min={0}
                                     placeholder="20"
                                     value={stockQuantity}
-                                    onChange={(e) => setStockQuantity(e.target.value)}
+                                    onChange={(e) =>
+                                        setStockQuantity(e.target.value)
+                                    }
                                     required
                                 />
                             </div>
