@@ -87,7 +87,7 @@ export const NewRecipeModal = () => {
 
         if (usePurchaseConversion) {
             if (!conversionName.trim()) {
-                setLocalError('Informe o nome da conversão de compra.')
+                setLocalError('Informe o nome da conversão de rendimento.')
                 return
             }
 
@@ -121,6 +121,7 @@ export const NewRecipeModal = () => {
         const createdRecipe = await createRecipe(payload)
 
         if (usePurchaseConversion) {
+            console.log(createdRecipe)
             await createRecipeConversion(createdRecipe.id, {
                 name: conversionName.trim(),
                 quantityInBaseUnit: parsedConversionFactor,
@@ -187,7 +188,7 @@ export const NewRecipeModal = () => {
 
                     <div className="rounded-md border p-3 grid gap-3">
                         <div className="flex items-center justify-between">
-                            <Label>Cadastro pela unidade de compra</Label>
+                            <Label>Rendimento</Label>
                             <Button
                                 type="button"
                                 variant={
@@ -207,7 +208,7 @@ export const NewRecipeModal = () => {
                         {usePurchaseConversion ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div className="grid gap-2">
-                                    <Label>Nome da compra*</Label>
+                                    <Label>Nome do rendimento*</Label>
                                     <Input
                                         placeholder="Ex: forma"
                                         value={conversionName}
@@ -246,7 +247,7 @@ export const NewRecipeModal = () => {
                     <div className="grid gap-3">
                         <Label>
                             {usePurchaseConversion
-                                ? 'Estoque mínimo (na unidade de compra)'
+                                ? 'Estoque mínimo (na unidade de rendimento)'
                                 : 'Estoque mínimo'}
                         </Label>
                         <Input
