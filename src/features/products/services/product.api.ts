@@ -37,6 +37,7 @@ export function getProductComponentCatalog(productId: number) {
 export type CreateProductDataType = {
     name: string
     salePrice?: number
+    indirectCostRate?: number
 }
 
 export function createProduct(data: CreateProductDataType) {
@@ -55,7 +56,8 @@ export function updateProduct(id: number, data: UpdateProductDataType) {
 }
 
 export type UpdateProductPricingDataType = {
-    indirectCostPercentage: number
+    indirectCostPercentage?: number | null
+    indirectCostRate?: number | null
     markupPercentage: number
     finalPrice: number
     discountPercentage?: number

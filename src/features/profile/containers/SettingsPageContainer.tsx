@@ -16,30 +16,10 @@ import { Textarea } from 'ui/textarea'
 import { badgeVariants } from 'ui/badge'
 import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 import { useUpdateProfile } from '@/features/profile/hooks/mutations/useUpdateProfile'
-
-const DEFAULT_WHATSAPP_TEMPLATE_PLACEHOLDER = `Olá, *{customerName}*! 🍰
-
-Segue o resumo do seu pedido:
-
-📦 *Pedido #{orderNumber}*
-{items}
-
-💰 *Total: {total}*
-💳 Pagamento: {paymentMethod}
-📅 Entrega: {deliveryDate}
-📍 {address}
-
-Qualquer dúvida estou à disposição! 😊`
-
-const TEMPLATE_VARIABLES = [
-    { variable: '{customerName}', label: 'Nome do cliente' },
-    { variable: '{orderNumber}', label: 'Número do pedido' },
-    { variable: '{items}', label: 'Itens do pedido' },
-    { variable: '{total}', label: 'Total' },
-    { variable: '{paymentMethod}', label: 'Forma de pagamento' },
-    { variable: '{deliveryDate}', label: 'Data de entrega' },
-    { variable: '{address}', label: 'Endereço' },
-]
+import {
+    DEFAULT_WHATSAPP_TEMPLATE,
+    TEMPLATE_VARIABLES,
+} from '@/features/orders/helpers/whatsappTemplate.constants'
 
 export default function SettingsPageContainer() {
     const { setTitle } = usePageTitle()
@@ -192,7 +172,7 @@ export default function SettingsPageContainer() {
                         ref={textareaRef}
                         rows={12}
                         value={currentTemplate}
-                        placeholder={DEFAULT_WHATSAPP_TEMPLATE_PLACEHOLDER}
+                        placeholder={DEFAULT_WHATSAPP_TEMPLATE}
                         onChange={(event) => {
                             setTemplateFeedback(null)
                             setWhatsappTemplate(event.target.value)

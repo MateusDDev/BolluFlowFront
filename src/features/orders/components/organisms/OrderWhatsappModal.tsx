@@ -51,7 +51,11 @@ export function OrderWhatsappModal({
     }
 
     const suggestion = profile?.whatsappMessageTemplate
-        ? applyWhatsappTemplate(profile.whatsappMessageTemplate, orderWithItems)
+        ? applyWhatsappTemplate(
+              profile.whatsappMessageTemplate,
+              order,
+              orderWithItems.items
+          )
         : buildOrderWhatsappMessage(orderWithItems)
 
     const handleOpenChange = (nextOpen: boolean) => {

@@ -30,26 +30,37 @@ function formatDeliveryAddress(order: OrderModel): string {
 
 export function applyWhatsappTemplate(
     template: string,
-    order: OrderWhatsappMessageModel
+    order: OrderModel,
+    orderItems?: OrderItemModel[]
 ): string {
-    const replaceMap: Record<string, string> = {
-        '{customerName}': order.customer.name,
-        '{orderNumber}': String(order.number),
-        '{items}': formatOrderItems(order.items ?? []),
+    const replacements: Record<string, string> = {
+        '{nomeDoCliente}': order.customer?.name ?? '',
+        '{numeroDoPedido}': String(order.number),
+        '{itensDoPedido}': formatOrderItems(orderItems ?? []),
         '{total}': formatCurrency(order.total),
-        '{paymentMethod}': order.paymentMethod
+        '{formaDePagamento}': order.paymentMethod
             ? getPaymentMethodLabel(order.paymentMethod)
             : '',
-        '{deliveryDate}': order.deliveryDate
+        '{dataDeEntrega}': order.deliveryDate
             ? formatDate(order.deliveryDate)
             : '',
-        '{address}': formatDeliveryAddress(order),
+        '{endereco}': formatDeliveryAddress(order),
     }
 
-    return Object.entries(replaceMap).reduce(
-        (result, [key, value]) => result.replaceAll(key, value),
-        template
-    )
+    let result = template
+
+    for (const [variable, value] of Object.entries(replacements)) {
+        result = result.replaceAll(variable, value)
+    }
+
+    result = result
+        .split('\n')
+        .filter((line) => !line.match(/:\s*$/))
+        .join('\n')
+
+    result = result.replace(/\n{3,}/g, '\n\n')
+
+    return result.trim()
 }
 
 export function buildOrderWhatsappMessage(
