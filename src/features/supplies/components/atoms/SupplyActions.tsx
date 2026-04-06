@@ -110,7 +110,7 @@ export function SupplyActions({ supply }: Props) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Excluir insumo?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Esta acao nao pode ser desfeita.
+                        Esta ação não pode ser desfeita.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

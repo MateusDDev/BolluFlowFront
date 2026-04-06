@@ -19,7 +19,7 @@ export const ProductsTableContainer = () => {
 
     if (isLoading) return <p>Carregando produtos...</p>
 
-    if (error) return <p>Nao foi possivel carregar os produtos</p>
+    if (error) return <p>Não foi possivel carregar os produtos</p>
 
     return (
         <section className="container mx-auto py-10">

@@ -7,6 +7,7 @@ import {
     formatDate,
     getPaymentMethodLabel,
 } from '@/shared/helpers/formatHelper'
+import { TEMPLATE_KEYS } from '@/features/orders/helpers/whatsappTemplate.constants'
 
 export type OrderWhatsappMessageModel = OrderModel & {
     items?: OrderItemModel[]
@@ -34,17 +35,17 @@ export function applyWhatsappTemplate(
     orderItems?: OrderItemModel[]
 ): string {
     const replacements: Record<string, string> = {
-        '{nomeDoCliente}': order.customer?.name ?? '',
-        '{numeroDoPedido}': String(order.number),
-        '{itensDoPedido}': formatOrderItems(orderItems ?? []),
-        '{total}': formatCurrency(order.total),
-        '{formaDePagamento}': order.paymentMethod
+        [TEMPLATE_KEYS.CUSTOMER_NAME]: order.customer?.name ?? '',
+        [TEMPLATE_KEYS.ORDER_NUMBER]: String(order.number),
+        [TEMPLATE_KEYS.ORDER_ITEMS]: formatOrderItems(orderItems ?? []),
+        [TEMPLATE_KEYS.TOTAL]: formatCurrency(order.total),
+        [TEMPLATE_KEYS.PAYMENT_METHOD]: order.paymentMethod
             ? getPaymentMethodLabel(order.paymentMethod)
             : '',
-        '{dataDeEntrega}': order.deliveryDate
+        [TEMPLATE_KEYS.DELIVERY_DATE]: order.deliveryDate
             ? formatDate(order.deliveryDate)
             : '',
-        '{endereco}': formatDeliveryAddress(order),
+        [TEMPLATE_KEYS.ADDRESS]: formatDeliveryAddress(order),
     }
 
     let result = template
@@ -69,40 +70,38 @@ export function buildOrderWhatsappMessage(
     const lines: string[] = []
 
     const items = order.items ?? []
-    lines.push(`Olá, *${order.customer.name}*! 🍰`)
+    lines.push(`Olá, *${order.customer.name}*!`)
     lines.push('')
     lines.push('Segue o resumo do seu pedido:')
     lines.push('')
-    lines.push(`📦 *Pedido #${order.number}*`)
+    lines.push(`*Pedido #${order.number}*`)
 
     for (const item of items) {
         lines.push(`• ${item.product.name} x${item.quantity}`)
     }
 
     lines.push('')
-    lines.push(`💰 *Total: ${formatCurrency(order.total)}*`)
+    lines.push(`*Total: ${formatCurrency(order.total)}*`)
 
     if (order.shippingFee > 0) {
-        lines.push(`🚚 Frete: ${formatCurrency(order.shippingFee)}`)
+        lines.push(`Frete: ${formatCurrency(order.shippingFee)}`)
     }
 
     if (order.discountValue > 0) {
-        lines.push(`🏷️ Desconto: -${formatCurrency(order.discountValue)}`)
+        lines.push(`Desconto: -${formatCurrency(order.discountValue)}`)
     }
 
     if (order.paymentMethod) {
-        lines.push(
-            `💳 Pagamento: ${getPaymentMethodLabel(order.paymentMethod)}`
-        )
+        lines.push(`Pagamento: ${getPaymentMethodLabel(order.paymentMethod)}`)
     }
 
     if (order.deliveryDate) {
-        lines.push(`📅 Entrega: ${formatDate(order.deliveryDate)}`)
+        lines.push(`Entrega: ${formatDate(order.deliveryDate)}`)
     }
 
     if (order.customer.deliveryAddress) {
         const { street, number, neighborhood } = order.customer.deliveryAddress
-        lines.push(`📍 ${street}, ${number} — ${neighborhood}`)
+        lines.push(`${street}, ${number} — ${neighborhood}`)
     }
 
     if (order.note) {

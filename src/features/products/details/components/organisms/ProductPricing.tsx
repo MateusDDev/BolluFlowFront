@@ -148,7 +148,7 @@ export function ProductPricing() {
         <form className="my-6 space-y-6" onSubmit={(e) => e.preventDefault()}>
             <section className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Precificacao
+                    Precificação
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -204,7 +204,7 @@ export function ProductPricing() {
                                     <p>
                                         Calculado com base no custo dos
                                         componentes e parametros de
-                                        precificacao.
+                                        precificação.
                                     </p>
                                 </TooltipContent>
                             </Tooltip>

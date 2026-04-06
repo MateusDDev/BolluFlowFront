@@ -131,7 +131,7 @@ export function NewSupplyModal() {
 
         if (usePurchaseConversion) {
             if (!conversionName.trim()) {
-                setLocalError('Informe o nome da conversao de compra.')
+                setLocalError('Informe o nome da conversão de compra.')
                 return
             }
 

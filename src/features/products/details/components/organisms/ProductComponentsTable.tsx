@@ -25,7 +25,7 @@ export function ProductComponentsTable({
     const [searchValue, setSearchValue] = useState('')
 
     if (isLoading) return <p>Carregando componentes...</p>
-    if (error) return <p>Nao foi possivel carregar os componentes</p>
+    if (error) return <p>Não foi possivel carregar os componentes</p>
 
     return (
         <section className="container mx-auto py-10">

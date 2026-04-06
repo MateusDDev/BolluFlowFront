@@ -72,7 +72,7 @@ export function ProductComponentsActions({ component }: Props) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Excluir componente?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Esta acao nao pode ser desfeita.
+                        Esta ação não pode ser desfeita.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

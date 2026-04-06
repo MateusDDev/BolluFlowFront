@@ -37,41 +37,50 @@ export function OrderWhatsappModal({
     orderItems,
 }: OrderWhatsappModalProps) {
     const [open, setOpen] = useState(false)
-    const [message, setMessage] = useState('')
+
+    const [isDirty, setIsDirty] = useState(false)
 
     const { data: fetchedItems } = useGetOrderItems(
         order.id,
         open && !orderItems
     )
+
     const { data: profile } = useGetProfile(open)
 
-    const orderWithItems = {
-        ...order,
-        items: orderItems ?? fetchedItems ?? [],
-    }
+    const items = orderItems ?? fetchedItems ?? []
 
     const suggestion = profile?.whatsappMessageTemplate
-        ? applyWhatsappTemplate(
-              profile.whatsappMessageTemplate,
-              order,
-              orderWithItems.items
-          )
-        : buildOrderWhatsappMessage(orderWithItems)
+        ? applyWhatsappTemplate(profile.whatsappMessageTemplate, order, items)
+        : buildOrderWhatsappMessage({
+              ...order,
+              items,
+          })
+
+    const [message, setMessage] = useState('')
+
+    const displayedMessage = isDirty ? message : suggestion
 
     const handleOpenChange = (nextOpen: boolean) => {
         setOpen(nextOpen)
 
-        if (nextOpen) {
-            setMessage(suggestion)
+        if (!nextOpen) {
+            setMessage('')
+            setIsDirty(false)
         }
     }
 
+    const handleChange = (value: string) => {
+        setMessage(value)
+        setIsDirty(true)
+    }
+
     const handleRestoreSuggestion = () => {
-        setMessage(suggestion)
+        setIsDirty(false)
+        setMessage('')
     }
 
     const handleSend = () => {
-        openWhatsapp(order.customer.whatsapp, message)
+        openWhatsapp(order.customer.whatsapp, displayedMessage)
         setOpen(false)
     }
 
@@ -91,8 +100,8 @@ export function OrderWhatsappModal({
                 </DialogHeader>
 
                 <Textarea
-                    value={message}
-                    onChange={(event) => setMessage(event.target.value)}
+                    value={displayedMessage}
+                    onChange={(event) => handleChange(event.target.value)}
                     rows={10}
                     className="min-h-[220px]"
                 />
