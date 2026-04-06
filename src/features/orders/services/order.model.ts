@@ -50,6 +50,12 @@ export interface OrderModel {
     status: OrderStatus
     note: string
     paymentMethod?: PaymentMethod | null
+    subtotal: number
+    discount?: number | null
+    discountType?: 'Percentage' | 'Fixed' | null
+    discountValue: number
+    shippingFee: number
+    total: number
     createdAt: Date
     deliveryDate?: Date
 }

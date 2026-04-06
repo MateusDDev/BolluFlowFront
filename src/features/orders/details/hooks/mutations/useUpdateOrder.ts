@@ -16,8 +16,11 @@ export function useUpdateOrder() {
             data: UpdateOrderDataType
         }) => await updateOrder(orderId, data),
 
-        onSuccess: async () => {
+        onSuccess: async (_, variables) => {
             await client.invalidateQueries({ queryKey: ['orders'] })
+            await client.invalidateQueries({
+                queryKey: ['orders', variables.orderId],
+            })
         },
     })
 }

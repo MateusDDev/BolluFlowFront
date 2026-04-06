@@ -61,6 +61,9 @@ export type UpdateOrderDataType = {
     deliveryDate?: Date
     customerId?: number
     paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null
+    discount?: number | null
+    discountType?: 'Percentage' | 'Fixed' | null
+    shippingFee?: number
 }
 
 export function updateOrder(id: number, data: UpdateOrderDataType) {

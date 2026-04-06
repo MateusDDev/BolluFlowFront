@@ -31,6 +31,7 @@ import { useGetOrderItems } from '@/features/orders/details/hooks/queries/useGet
 import { OrderStatusActions } from '@/features/orders/details/components/atoms/OrderStatusActions'
 import {
     formatCurrency,
+    formatCurrencyFromInput,
     formatWhatsapp,
     getPaymentMethodLabel,
 } from '@/shared/helpers/formatHelper'
@@ -41,12 +42,17 @@ import { DatePicker } from 'components/DatePicker'
 import { OrderWhatsappModal } from '@/features/orders/components/organisms/OrderWhatsappModal'
 
 const PAYMENT_METHOD_UNDEFINED = 'UNDEFINED'
+const DISCOUNT_TYPE_NONE = 'None'
+type DiscountTypeFormValue = 'Percentage' | 'Fixed' | typeof DISCOUNT_TYPE_NONE
 
 interface FormState {
     customerId: string
     deliveryDate?: Date
     note: string
     paymentMethod: PaymentMethod | typeof PAYMENT_METHOD_UNDEFINED
+    discountType: DiscountTypeFormValue
+    discount: string
+    shippingFee: string
 }
 
 function mapOrderToForm(order: OrderModel): FormState {
@@ -57,6 +63,12 @@ function mapOrderToForm(order: OrderModel): FormState {
             : undefined,
         note: order.note ?? '',
         paymentMethod: order.paymentMethod ?? PAYMENT_METHOD_UNDEFINED,
+        discountType: order.discountType ?? DISCOUNT_TYPE_NONE,
+        discount:
+            order.discountType === 'Fixed'
+                ? String(Math.round((order.discount ?? 0) * 100))
+                : (order.discount?.toString() ?? ''),
+        shippingFee: String(Math.round(order.shippingFee * 100)),
     }
 }
 
@@ -93,11 +105,6 @@ export function OrderDetails() {
 
     if (isLoading || !order || !form) return null
 
-    const total =
-        orderItems?.reduce((total, item) => {
-            return total + item.quantity * item.unitPrice
-        }, 0) ?? 0
-
     const setField = <K extends keyof FormState>(
         field: K,
         value: FormState[K]
@@ -113,6 +120,13 @@ export function OrderDetails() {
     const handleSave = async () => {
         if (!isDirty || !form) return
 
+        const parsedDiscount =
+            form.discountType === 'Fixed'
+                ? Number(form.discount) / 100
+                : Number(form.discount)
+
+        const parsedShippingFee = Number(form.shippingFee) / 100
+
         const payload: UpdateOrderDataType = {
             customerId: Number(form.customerId),
             note: form.note,
@@ -121,6 +135,18 @@ export function OrderDetails() {
                 form.paymentMethod === PAYMENT_METHOD_UNDEFINED
                     ? null
                     : form.paymentMethod,
+            discount:
+                form.discountType === DISCOUNT_TYPE_NONE ||
+                Number.isNaN(parsedDiscount)
+                    ? null
+                    : parsedDiscount,
+            discountType:
+                form.discountType === DISCOUNT_TYPE_NONE
+                    ? null
+                    : form.discountType,
+            shippingFee: Number.isNaN(parsedShippingFee)
+                ? 0
+                : parsedShippingFee,
         }
 
         await updateOrder({
@@ -131,6 +157,13 @@ export function OrderDetails() {
         setInitialForm(form)
         setIsEditing(false)
     }
+
+    const editDiscountValue =
+        form.discountType === DISCOUNT_TYPE_NONE || !form.discount
+            ? 0
+            : form.discountType === 'Percentage'
+              ? order.subtotal * (Number(form.discount) / 100)
+              : Number(form.discount) / 100
 
     return (
         <div className="my-6 space-y-6">
@@ -312,6 +345,117 @@ export function OrderDetails() {
                                     </div>
                                 ) : null}
                             </div>
+
+                            {isEditing && (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label>Desconto</Label>
+
+                                        <Select
+                                            value={form.discountType}
+                                            onValueChange={(value) =>
+                                                setField(
+                                                    'discountType',
+                                                    value as DiscountTypeFormValue
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione o tipo de desconto" />
+                                            </SelectTrigger>
+
+                                            <SelectContent>
+                                                <SelectItem
+                                                    value={DISCOUNT_TYPE_NONE}
+                                                >
+                                                    Sem desconto
+                                                </SelectItem>
+                                                <SelectItem value="Percentage">
+                                                    Porcentagem (%)
+                                                </SelectItem>
+                                                <SelectItem value="Fixed">
+                                                    Valor fixo (R$)
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {form.discountType !==
+                                        DISCOUNT_TYPE_NONE && (
+                                        <div className="grid gap-2">
+                                            <Label>
+                                                {form.discountType ===
+                                                'Percentage'
+                                                    ? 'Valor do desconto (%)'
+                                                    : 'Valor do desconto (R$)'}
+                                            </Label>
+
+                                            {form.discountType ===
+                                            'Percentage' ? (
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    placeholder="0"
+                                                    value={form.discount}
+                                                    onChange={(e) =>
+                                                        setField(
+                                                            'discount',
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            ) : (
+                                                <Input
+                                                    placeholder="0,00"
+                                                    value={formatCurrencyFromInput(
+                                                        form.discount
+                                                    )}
+                                                    onChange={(e) =>
+                                                        setField(
+                                                            'discount',
+                                                            e.target.value.replace(
+                                                                /\D/g,
+                                                                ''
+                                                            )
+                                                        )
+                                                    }
+                                                />
+                                            )}
+
+                                            <p className="text-sm text-muted-foreground">
+                                                Desconto de{' '}
+                                                {formatCurrency(
+                                                    Number.isNaN(
+                                                        editDiscountValue
+                                                    )
+                                                        ? 0
+                                                        : editDiscountValue
+                                                )}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="grid gap-2">
+                                        <Label>Frete (R$)</Label>
+                                        <Input
+                                            placeholder="0,00"
+                                            value={formatCurrencyFromInput(
+                                                form.shippingFee
+                                            )}
+                                            onChange={(e) =>
+                                                setField(
+                                                    'shippingFee',
+                                                    e.target.value.replace(
+                                                        /\D/g,
+                                                        ''
+                                                    )
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -389,9 +533,43 @@ export function OrderDetails() {
 
                         <CardContent className="space-y-3 text-sm">
                             <div className="flex justify-between">
-                                <span>Total</span>
-                                <span className="font-medium">
-                                    {formatCurrency(total)}
+                                <span>Subtotal</span>
+                                <span>{formatCurrency(order.subtotal)}</span>
+                            </div>
+
+                            {order.discountValue > 0 && (
+                                <div className="flex justify-between text-red-500">
+                                    <span>
+                                        Desconto
+                                        {order.discountType === 'Percentage' &&
+                                            order.discount && (
+                                                <span>
+                                                    {' '}
+                                                    ({order.discount}%)
+                                                </span>
+                                            )}
+                                    </span>
+                                    <span>
+                                        -{formatCurrency(order.discountValue)}
+                                    </span>
+                                </div>
+                            )}
+
+                            {order.shippingFee > 0 && (
+                                <div className="flex justify-between">
+                                    <span>Frete</span>
+                                    <span>
+                                        {formatCurrency(order.shippingFee)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <Separator />
+
+                            <div className="flex justify-between">
+                                <span className="font-semibold">Total</span>
+                                <span className="font-semibold">
+                                    {formatCurrency(order.total)}
                                 </span>
                             </div>
 
