@@ -10,7 +10,6 @@ import {
 
 export type OrderWhatsappMessageModel = OrderModel & {
     items?: OrderItemModel[]
-    totalValue?: number
 }
 
 export function buildOrderWhatsappMessage(
@@ -19,10 +18,6 @@ export function buildOrderWhatsappMessage(
     const lines: string[] = []
 
     const items = order.items ?? []
-    const computedTotal =
-        order.totalValue ??
-        items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0)
-
     lines.push(`Olá, *${order.customer.name}*! 🍰`)
     lines.push('')
     lines.push('Segue o resumo do seu pedido:')
@@ -34,7 +29,15 @@ export function buildOrderWhatsappMessage(
     }
 
     lines.push('')
-    lines.push(`💰 *Total: ${formatCurrency(computedTotal)}*`)
+    lines.push(`💰 *Total: ${formatCurrency(order.total)}*`)
+
+    if (order.shippingFee > 0) {
+        lines.push(`🚚 Frete: ${formatCurrency(order.shippingFee)}`)
+    }
+
+    if (order.discountValue > 0) {
+        lines.push(`🏷️ Desconto: -${formatCurrency(order.discountValue)}`)
+    }
 
     if (order.paymentMethod) {
         lines.push(
