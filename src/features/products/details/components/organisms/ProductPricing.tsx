@@ -15,6 +15,7 @@ import { useGetProduct } from '@/features/products/list/hooks/queries/useGetProd
 import { useGetProductComponents } from '@/features/products/details/hooks/queries/useGetProductComponents'
 import { useUpdateProductPricing } from '@/features/products/details/hooks/mutations/useUpdateProductPricing'
 import { UpdateProductPricingDataType } from '@/features/products/services/product.api'
+import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 interface PricingFormState {
     indirectCost: string
@@ -55,17 +56,20 @@ export function ProductPricing() {
         useGetProductComponents(productId)
 
     const { mutateAsync, isPending } = useUpdateProductPricing()
+    const { data: profile } = useGetProfile()
 
     const initialForm = useMemo<PricingFormState | null>(() => {
         if (!product) return null
 
         return {
-            indirectCost: product.indirectCostPercentage.toString(),
+            indirectCost: (
+                profile?.indirectCostRate ?? product.indirectCostPercentage
+            ).toString(),
             markup: product.markupPercentage.toString(),
             discount: product.discountPercentage?.toString() ?? '',
             finalPrice: Math.round(product.finalPrice * 100).toString(),
         }
-    }, [product])
+    }, [product, profile?.indirectCostRate])
 
     const [form, setForm] = useState<PricingFormState | null>(null)
 
@@ -148,6 +152,10 @@ export function ProductPricing() {
                                 setField('indirectCost', e.target.value)
                             }
                         />
+                        <p className="text-sm text-muted-foreground">
+                            Valor padrão das configurações. Altere aqui para
+                            aplicar apenas neste produto.
+                        </p>
                     </div>
 
                     <div className="grid gap-2">

@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { LogOut } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import {
     Avatar,
     AvatarFallback,
@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu'
 import { SidebarTrigger } from 'ui/sidebar'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { navItems } from '@/shared/navigation/items'
 import ThemeButton from 'components/ThemeButton'
 import { useLogout } from '@/features/login/hooks/mutations/useLogout'
@@ -29,6 +29,7 @@ const NavBar = () => {
     const { title } = usePageTitle()
 
     const pathname = usePathname()
+    const router = useRouter()
 
     const pageName =
         title ?? navItems.find((item) => item.url === pathname)?.title
@@ -56,6 +57,12 @@ const NavBar = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={8}>
                         <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+                        <DropdownMenuItem
+                            onClick={() => router.push('/configuracoes')}
+                        >
+                            <Settings />
+                            Configurações
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-red-400"

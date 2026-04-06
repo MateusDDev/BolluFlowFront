@@ -12,6 +12,46 @@ export type OrderWhatsappMessageModel = OrderModel & {
     items?: OrderItemModel[]
 }
 
+function formatOrderItems(items: OrderItemModel[]): string {
+    if (!items.length) return ''
+
+    return items
+        .map((item) => `• ${item.product.name} x${item.quantity}`)
+        .join('\n')
+}
+
+function formatDeliveryAddress(order: OrderModel): string {
+    const deliveryAddress = order.customer.deliveryAddress
+
+    if (!deliveryAddress) return ''
+
+    return `${deliveryAddress.street}, ${deliveryAddress.number} — ${deliveryAddress.neighborhood}`
+}
+
+export function applyWhatsappTemplate(
+    template: string,
+    order: OrderWhatsappMessageModel
+): string {
+    const replaceMap: Record<string, string> = {
+        '{customerName}': order.customer.name,
+        '{orderNumber}': String(order.number),
+        '{items}': formatOrderItems(order.items ?? []),
+        '{total}': formatCurrency(order.total),
+        '{paymentMethod}': order.paymentMethod
+            ? getPaymentMethodLabel(order.paymentMethod)
+            : '',
+        '{deliveryDate}': order.deliveryDate
+            ? formatDate(order.deliveryDate)
+            : '',
+        '{address}': formatDeliveryAddress(order),
+    }
+
+    return Object.entries(replaceMap).reduce(
+        (result, [key, value]) => result.replaceAll(key, value),
+        template
+    )
+}
+
 export function buildOrderWhatsappMessage(
     order: OrderWhatsappMessageModel
 ): string {
