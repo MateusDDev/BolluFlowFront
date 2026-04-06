@@ -20,7 +20,6 @@ export const NewProductModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [salePrice, setSalePrice] = useState('')
-
     const { mutateAsync: createProduct, isPending, error } = useCreateProduct()
 
     const resetForm = () => {

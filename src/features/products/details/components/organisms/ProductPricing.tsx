@@ -15,6 +15,7 @@ import { useGetProduct } from '@/features/products/list/hooks/queries/useGetProd
 import { useGetProductComponents } from '@/features/products/details/hooks/queries/useGetProductComponents'
 import { useUpdateProductPricing } from '@/features/products/details/hooks/mutations/useUpdateProductPricing'
 import { UpdateProductPricingDataType } from '@/features/products/services/product.api'
+import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 interface PricingFormState {
     indirectCost: string
@@ -55,17 +56,26 @@ export function ProductPricing() {
         useGetProductComponents(productId)
 
     const { mutateAsync, isPending } = useUpdateProductPricing()
+    const { data: profile } = useGetProfile()
+
+    const isUsingProductSpecificIndirectCost =
+        product?.indirectCostPercentage != null
 
     const initialForm = useMemo<PricingFormState | null>(() => {
         if (!product) return null
 
+        const indirectCostValue =
+            product.indirectCostPercentage != null
+                ? product.indirectCostPercentage
+                : (profile?.indirectCostRate ?? 0)
+
         return {
-            indirectCost: product.indirectCostPercentage.toString(),
+            indirectCost: indirectCostValue.toString(),
             markup: product.markupPercentage.toString(),
             discount: product.discountPercentage?.toString() ?? '',
             finalPrice: Math.round(product.finalPrice * 100).toString(),
         }
-    }, [product])
+    }, [product, profile?.indirectCostRate])
 
     const [form, setForm] = useState<PricingFormState | null>(null)
 
@@ -114,8 +124,11 @@ export function ProductPricing() {
     }
 
     const handleSave = async () => {
+        const indirectCostValue =
+            form.indirectCost.trim() === '' ? null : Number(form.indirectCost)
+
         const payload: UpdateProductPricingDataType = {
-            indirectCostPercentage: Number(form.indirectCost) || 0,
+            indirectCostPercentage: indirectCostValue,
             markupPercentage: Number(form.markup) || 0,
             finalPrice:
                 form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
@@ -148,6 +161,14 @@ export function ProductPricing() {
                                 setField('indirectCost', e.target.value)
                             }
                         />
+                        <p className="text-sm text-muted-foreground">
+                            {product.indirectCostPercentage === null &&
+                            profile?.indirectCostRate != null
+                                ? 'Sugerido pelas configurações — salve para aplicar a este produto'
+                                : isUsingProductSpecificIndirectCost
+                                  ? 'Valor definido para este produto'
+                                  : 'Defina a taxa nas configurações ou diretamente aqui'}
+                        </p>
                     </div>
 
                     <div className="grid gap-2">

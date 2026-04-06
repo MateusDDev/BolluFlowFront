@@ -6,7 +6,7 @@ export interface ProductModel {
     salePrice: number
     stockQuantity: number
     minimumStockQuantity?: number
-    indirectCostPercentage: number
+    indirectCostPercentage: number | null
     markupPercentage: number
     finalPrice: number
     discountPercentage: number

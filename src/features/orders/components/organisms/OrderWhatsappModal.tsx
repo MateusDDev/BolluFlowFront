@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -14,6 +14,7 @@ import { Button } from 'ui/button'
 import { Textarea } from 'ui/textarea'
 
 import {
+    applyWhatsappTemplate,
     buildOrderWhatsappMessage,
     openWhatsapp,
 } from '@/features/orders/helpers/whatsappMessage'
@@ -22,6 +23,7 @@ import {
     OrderModel,
 } from '@/features/orders/services/order.model'
 import { useGetOrderItems } from '@/features/orders/details/hooks/queries/useGetOrderItems'
+import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 interface OrderWhatsappModalProps {
     order: OrderModel
@@ -41,13 +43,20 @@ export function OrderWhatsappModal({
         order.id,
         open && !orderItems
     )
+    const { data: profile } = useGetProfile(open)
 
-    const suggestion = useMemo(() => {
-        return buildOrderWhatsappMessage({
-            ...order,
-            items: orderItems ?? fetchedItems ?? [],
-        })
-    }, [fetchedItems, order, orderItems])
+    const orderWithItems = {
+        ...order,
+        items: orderItems ?? fetchedItems ?? [],
+    }
+
+    const suggestion = profile?.whatsappMessageTemplate
+        ? applyWhatsappTemplate(
+              profile.whatsappMessageTemplate,
+              order,
+              orderWithItems.items
+          )
+        : buildOrderWhatsappMessage(orderWithItems)
 
     const handleOpenChange = (nextOpen: boolean) => {
         setOpen(nextOpen)
@@ -76,8 +85,8 @@ export function OrderWhatsappModal({
                         Mensagem para {order.customer.name}
                     </DialogTitle>
                     <DialogDescription>
-                        Edite a mensagem antes de enviar. Formatação do
-                        WhatsApp é suportada (*negrito*, _itálico_).
+                        Edite a mensagem antes de enviar. Formatação do WhatsApp
+                        é suportada (*negrito*, _itálico_).
                     </DialogDescription>
                 </DialogHeader>
 
@@ -93,7 +102,10 @@ export function OrderWhatsappModal({
                         Restaurar sugestão
                     </Button>
 
-                    <Button onClick={handleSend} disabled={!order.customer.whatsapp}>
+                    <Button
+                        onClick={handleSend}
+                        disabled={!order.customer.whatsapp}
+                    >
                         Enviar no WhatsApp
                     </Button>
                 </DialogFooter>

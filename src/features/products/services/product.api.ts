@@ -55,7 +55,7 @@ export function updateProduct(id: number, data: UpdateProductDataType) {
 }
 
 export type UpdateProductPricingDataType = {
-    indirectCostPercentage: number
+    indirectCostPercentage: number | null
     markupPercentage: number
     finalPrice: number
     discountPercentage?: number

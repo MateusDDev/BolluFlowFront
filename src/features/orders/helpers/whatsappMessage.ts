@@ -12,6 +12,57 @@ export type OrderWhatsappMessageModel = OrderModel & {
     items?: OrderItemModel[]
 }
 
+function formatOrderItems(items: OrderItemModel[]): string {
+    if (!items.length) return ''
+
+    return items
+        .map((item) => `• ${item.product.name} x${item.quantity}`)
+        .join('\n')
+}
+
+function formatDeliveryAddress(order: OrderModel): string {
+    const deliveryAddress = order.customer.deliveryAddress
+
+    if (!deliveryAddress) return ''
+
+    return `${deliveryAddress.street}, ${deliveryAddress.number} — ${deliveryAddress.neighborhood}`
+}
+
+export function applyWhatsappTemplate(
+    template: string,
+    order: OrderModel,
+    orderItems?: OrderItemModel[]
+): string {
+    const replacements: Record<string, string> = {
+        '{nomeDoCliente}': order.customer?.name ?? '',
+        '{numeroDoPedido}': String(order.number),
+        '{itensDoPedido}': formatOrderItems(orderItems ?? []),
+        '{total}': formatCurrency(order.total),
+        '{formaDePagamento}': order.paymentMethod
+            ? getPaymentMethodLabel(order.paymentMethod)
+            : '',
+        '{dataDeEntrega}': order.deliveryDate
+            ? formatDate(order.deliveryDate)
+            : '',
+        '{endereco}': formatDeliveryAddress(order),
+    }
+
+    let result = template
+
+    for (const [variable, value] of Object.entries(replacements)) {
+        result = result.replaceAll(variable, value)
+    }
+
+    result = result
+        .split('\n')
+        .filter((line) => !line.match(/:\s*$/))
+        .join('\n')
+
+    result = result.replace(/\n{3,}/g, '\n\n')
+
+    return result.trim()
+}
+
 export function buildOrderWhatsappMessage(
     order: OrderWhatsappMessageModel
 ): string {
