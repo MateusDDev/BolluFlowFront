@@ -16,7 +16,7 @@ export function SuppliesTableContainer() {
     const { data: supplies, isLoading, error } = useGetSupplies()
 
     if (isLoading) return <p>Carregando insumos...</p>
-    if (error) return <p>Nao foi possivel carregar os insumos</p>
+    if (error) return <p>Não foi possivel carregar os insumos</p>
 
     return (
         <section className="container mx-auto py-10">

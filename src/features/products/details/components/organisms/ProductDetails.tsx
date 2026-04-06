@@ -117,7 +117,7 @@ export function ProductDetails() {
                     <div>
                         <p className="font-medium">Produto ativo</p>
                         <p className="text-sm text-muted-foreground">
-                            Produtos inativos nao ficam disponiveis para novos
+                            Produtos inativos não ficam disponiveis para novos
                             pedidos.
                         </p>
                     </div>
