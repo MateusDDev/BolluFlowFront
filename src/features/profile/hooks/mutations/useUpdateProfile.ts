@@ -7,8 +7,8 @@ export function useUpdateProfile() {
 
     return useMutation({
         mutationFn: async (data: UpdateProfileDataType) => updateProfile(data),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['profile'] })
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile'] })
         },
     })
 }

@@ -15,27 +15,16 @@ import React, { useState } from 'react'
 import { useCreateProduct } from '@/features/products/list/hooks/mutations/useCreateProduct'
 import { CreateProductDataType } from '@/features/products/services/product.api'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
-import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 export const NewProductModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [salePrice, setSalePrice] = useState('')
-    const [indirectCostRate, setIndirectCostRate] = useState<
-        string | undefined
-    >(undefined)
-
-    const { data: profile } = useGetProfile(open)
-
     const { mutateAsync: createProduct, isPending, error } = useCreateProduct()
-
-    const currentIndirectCostRate =
-        indirectCostRate ?? (profile?.indirectCostRate ?? 0).toString()
 
     const resetForm = () => {
         setName('')
         setSalePrice('')
-        setIndirectCostRate(undefined)
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,7 +32,6 @@ export const NewProductModal = () => {
 
         const payload: CreateProductDataType = {
             name,
-            indirectCostRate: Number(currentIndirectCostRate) || 0,
         }
 
         if (salePrice) {
@@ -93,19 +81,6 @@ export const NewProductModal = () => {
                                 const digits = e.target.value.replace(/\D/g, '')
                                 setSalePrice(digits)
                             }}
-                        />
-                    </div>
-
-                    <div className="grid gap-3">
-                        <Label>Custo indireto (%)</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={currentIndirectCostRate}
-                            onChange={(e) =>
-                                setIndirectCostRate(e.target.value)
-                            }
                         />
                     </div>
 

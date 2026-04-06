@@ -50,7 +50,9 @@ export default function SettingsPageContainer() {
 
     const currentName = name ?? profile?.name ?? ''
     const currentTemplate =
-        whatsappTemplate ?? profile?.whatsappMessageTemplate ?? ''
+        whatsappTemplate !== undefined
+            ? whatsappTemplate
+            : (profile?.whatsappMessageTemplate ?? DEFAULT_WHATSAPP_TEMPLATE)
     const currentIndirectCostRate =
         indirectCostRate ?? (profile?.indirectCostRate ?? 0).toString()
 
@@ -79,10 +81,9 @@ export default function SettingsPageContainer() {
     }
 
     const handleRestoreTemplate = async () => {
-        setWhatsappTemplate('')
         await updateProfile({ whatsappMessageTemplate: null })
-        setTemplateFeedback('Template restaurado para o padrão com sucesso!')
         setWhatsappTemplate(undefined)
+        setTemplateFeedback('Template restaurado para o padrão com sucesso!')
     }
 
     const handleSaveIndirectCost = async () => {

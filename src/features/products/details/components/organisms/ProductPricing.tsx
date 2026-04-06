@@ -58,24 +58,15 @@ export function ProductPricing() {
     const { mutateAsync, isPending } = useUpdateProductPricing()
     const { data: profile } = useGetProfile()
 
-    const productIndirectCostRate = useMemo(() => {
-        if (!product) return null
-
-        return (
-            product.indirectCostRate ?? product.indirectCostPercentage ?? null
-        )
-    }, [product])
-
     const isUsingProductSpecificIndirectCost =
-        productIndirectCostRate !== null &&
-        productIndirectCostRate !== undefined
+        product?.indirectCostPercentage != null
 
     const initialForm = useMemo<PricingFormState | null>(() => {
         if (!product) return null
 
         const indirectCostValue =
-            productIndirectCostRate != null
-                ? productIndirectCostRate
+            product.indirectCostPercentage != null
+                ? product.indirectCostPercentage
                 : (profile?.indirectCostRate ?? 0)
 
         return {
@@ -84,7 +75,7 @@ export function ProductPricing() {
             discount: product.discountPercentage?.toString() ?? '',
             finalPrice: Math.round(product.finalPrice * 100).toString(),
         }
-    }, [product, productIndirectCostRate, profile?.indirectCostRate])
+    }, [product, profile?.indirectCostRate])
 
     const [form, setForm] = useState<PricingFormState | null>(null)
 
@@ -138,7 +129,6 @@ export function ProductPricing() {
 
         const payload: UpdateProductPricingDataType = {
             indirectCostPercentage: indirectCostValue,
-            indirectCostRate: indirectCostValue,
             markupPercentage: Number(form.markup) || 0,
             finalPrice:
                 form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
@@ -172,9 +162,12 @@ export function ProductPricing() {
                             }
                         />
                         <p className="text-sm text-muted-foreground">
-                            {isUsingProductSpecificIndirectCost
-                                ? 'Valor personalizado para este produto'
-                                : 'Valor padrão das configurações'}
+                            {product.indirectCostPercentage === null &&
+                            profile?.indirectCostRate != null
+                                ? 'Sugerido pelas configurações — salve para aplicar a este produto'
+                                : isUsingProductSpecificIndirectCost
+                                  ? 'Valor definido para este produto'
+                                  : 'Defina a taxa nas configurações ou diretamente aqui'}
                         </p>
                     </div>
 
