@@ -58,18 +58,33 @@ export function ProductPricing() {
     const { mutateAsync, isPending } = useUpdateProductPricing()
     const { data: profile } = useGetProfile()
 
+    const productSpecificIndirectCost = useMemo(() => {
+        if (!product) return null
+
+        const mappedProduct = product as typeof product & {
+            indirectCostRate?: number | null
+        }
+
+        return mappedProduct.indirectCostRate ?? product.indirectCostPercentage
+    }, [product])
+
+    const isUsingProductSpecificIndirectCost =
+        productSpecificIndirectCost !== null &&
+        productSpecificIndirectCost !== undefined
+
     const initialForm = useMemo<PricingFormState | null>(() => {
         if (!product) return null
 
+        const indirectCostValue =
+            productSpecificIndirectCost ?? profile?.indirectCostRate ?? 0
+
         return {
-            indirectCost: (
-                profile?.indirectCostRate ?? product.indirectCostPercentage
-            ).toString(),
+            indirectCost: indirectCostValue.toString(),
             markup: product.markupPercentage.toString(),
             discount: product.discountPercentage?.toString() ?? '',
             finalPrice: Math.round(product.finalPrice * 100).toString(),
         }
-    }, [product, profile?.indirectCostRate])
+    }, [product, productSpecificIndirectCost, profile?.indirectCostRate])
 
     const [form, setForm] = useState<PricingFormState | null>(null)
 
@@ -153,8 +168,10 @@ export function ProductPricing() {
                             }
                         />
                         <p className="text-sm text-muted-foreground">
-                            Valor padrão das configurações. Altere aqui para
-                            aplicar apenas neste produto.
+                            {isUsingProductSpecificIndirectCost
+                                ? 'Valor personalizado para este produto.'
+                                : 'Valor padrão das configurações.'}{' '}
+                            Altere aqui para aplicar apenas neste produto.
                         </p>
                     </div>
 

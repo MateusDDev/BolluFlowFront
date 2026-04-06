@@ -13,6 +13,7 @@ import {
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
 import { Textarea } from 'ui/textarea'
+import { badgeVariants } from 'ui/badge'
 import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 import { useUpdateProfile } from '@/features/profile/hooks/mutations/useUpdateProfile'
 
@@ -30,14 +31,14 @@ Segue o resumo do seu pedido:
 
 Qualquer dúvida estou à disposição! 😊`
 
-const AVAILABLE_VARIABLES = [
-    '{customerName}',
-    '{orderNumber}',
-    '{items}',
-    '{total}',
-    '{paymentMethod}',
-    '{deliveryDate}',
-    '{address}',
+const TEMPLATE_VARIABLES = [
+    { variable: '{customerName}', label: 'Nome do cliente' },
+    { variable: '{orderNumber}', label: 'Número do pedido' },
+    { variable: '{items}', label: 'Itens do pedido' },
+    { variable: '{total}', label: 'Total' },
+    { variable: '{paymentMethod}', label: 'Forma de pagamento' },
+    { variable: '{deliveryDate}', label: 'Data de entrega' },
+    { variable: '{address}', label: 'Endereço' },
 ]
 
 export default function SettingsPageContainer() {
@@ -201,18 +202,19 @@ export default function SettingsPageContainer() {
                     <div className="space-y-2 text-sm text-muted-foreground">
                         <p>Variáveis disponíveis:</p>
                         <div className="flex flex-wrap items-center gap-2">
-                            {AVAILABLE_VARIABLES.map((variable) => (
-                                <Button
+                            {TEMPLATE_VARIABLES.map(({ variable, label }) => (
+                                <button
                                     key={variable}
                                     type="button"
-                                    variant="link"
-                                    className="h-auto p-0 text-sm"
+                                    className={badgeVariants({
+                                        variant: 'outline',
+                                    })}
                                     onClick={() =>
                                         handleInsertVariable(variable)
                                     }
                                 >
-                                    {variable}
-                                </Button>
+                                    {label}
+                                </button>
                             ))}
                         </div>
                     </div>

@@ -34,8 +34,8 @@ export function ProductTabs() {
                 <div className="flex justify-between items-center">
                     <TabsList>
                         <TabsTrigger value="details">Detalhes</TabsTrigger>
-                        <TabsTrigger value="components">Composicao</TabsTrigger>
-                        <TabsTrigger value="pricing">Precificacao</TabsTrigger>
+                        <TabsTrigger value="components">Composição</TabsTrigger>
+                        <TabsTrigger value="pricing">Precificação</TabsTrigger>
                     </TabsList>
                     <div className="flex items-center gap-2">
                         {product && (
