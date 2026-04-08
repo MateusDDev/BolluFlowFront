@@ -129,6 +129,9 @@ export function FinancePageContainer() {
     const { mutateAsync: deleteFinancialEntry, isPending: isDeletingEntry } =
         useDeleteFinancialEntry()
 
+    const isCurrentMonthSelected =
+        selectedMonth === currentMonth && selectedYear === currentYear
+
     const monthYearLabel = getMonthYearLabel(selectedMonth, selectedYear)
 
     const yearOptions = useMemo(
@@ -240,7 +243,10 @@ export function FinancePageContainer() {
 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="min-w-48">
+                        <Button
+                            variant="outline"
+                            className={`min-w-48 ${isCurrentMonthSelected ? 'border-yellow-500' : ''}`}
+                        >
                             {monthYearLabel}
                             <ChevronDown className="h-4 w-4 ml-2" />
                         </Button>
