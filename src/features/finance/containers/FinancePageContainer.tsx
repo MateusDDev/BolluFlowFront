@@ -53,6 +53,7 @@ import {
     AlertDialogTitle,
 } from 'ui/alert-dialog'
 import { Checkbox } from 'ui/checkbox'
+import { Separator } from 'ui/separator'
 
 type TypeFilter = FinancialEntryType | 'all'
 
@@ -128,6 +129,9 @@ export function FinancePageContainer() {
     const { mutateAsync: deleteFinancialEntry, isPending: isDeletingEntry } =
         useDeleteFinancialEntry()
 
+    const isCurrentMonthSelected =
+        selectedMonth === currentMonth && selectedYear === currentYear
+
     const monthYearLabel = getMonthYearLabel(selectedMonth, selectedYear)
 
     const yearOptions = useMemo(
@@ -166,6 +170,8 @@ export function FinancePageContainer() {
     }
 
     const currentBalance = balance?.balance ?? 0
+    const projectedBalance = balance?.projectedBalance ?? 0
+    const pendingOrdersTotal = balance?.pendingOrdersTotal ?? 0
 
     const handleCreateManualEntry = async (
         event: FormEvent<HTMLFormElement>
@@ -237,7 +243,10 @@ export function FinancePageContainer() {
 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="min-w-48">
+                        <Button
+                            variant="outline"
+                            className={`min-w-48 ${isCurrentMonthSelected ? 'border-yellow-500' : ''}`}
+                        >
                             {monthYearLabel}
                             <ChevronDown className="h-4 w-4 ml-2" />
                         </Button>
@@ -298,40 +307,39 @@ export function FinancePageContainer() {
                 </Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Entradas do mês</CardTitle>
+                        <CardTitle>Movimento de {monthYearLabel}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-1">
-                        <p className="text-2xl font-semibold text-green-600">
-                            {formatCurrency(balance?.monthIncome ?? 0)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            Entradas em {monthYearLabel}
-                        </p>
+                    <CardContent className="space-y-3">
+                        <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm text-muted-foreground">
+                                Entradas
+                            </p>
+                            <p className="text-xl font-semibold text-green-600">
+                                {formatCurrency(balance?.monthIncome ?? 0)} ↑
+                            </p>
+                        </div>
+
+                        <Separator />
+
+                        <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm text-muted-foreground">
+                                Saídas
+                            </p>
+                            <p className="text-xl font-semibold text-red-600">
+                                {formatCurrency(balance?.monthExpenses ?? 0)} ↓
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Saídas do mês</CardTitle>
+                        <CardTitle>Saldo até {monthYearLabel}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-1">
-                        <p className="text-2xl font-semibold text-red-600">
-                            {formatCurrency(balance?.monthExpenses ?? 0)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            Saídas em {monthYearLabel}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Saldo acumulado</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-1">
+                    <CardContent className="space-y-3">
                         <p
                             className={`text-2xl font-semibold ${
                                 currentBalance >= 0
@@ -341,9 +349,28 @@ export function FinancePageContainer() {
                         >
                             {formatCurrency(currentBalance)}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                            Saldo até {monthYearLabel}
+                        <p
+                            className={`text-sm ${
+                                (pendingOrdersTotal > 0
+                                    ? projectedBalance
+                                    : currentBalance) >= 0
+                                    ? 'text-green-600'
+                                    : 'text-red-600'
+                            }`}
+                        >
+                            Previsto:{' '}
+                            {formatCurrency(
+                                pendingOrdersTotal > 0
+                                    ? projectedBalance
+                                    : currentBalance
+                            )}
                         </p>
+                        {pendingOrdersTotal > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                                + {formatCurrency(pendingOrdersTotal)} em
+                                pedidos operacionais
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

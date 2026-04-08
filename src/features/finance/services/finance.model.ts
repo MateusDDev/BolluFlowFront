@@ -22,6 +22,8 @@ export interface FinancialBalanceModel {
     totalIncome: number
     totalExpenses: number
     balance: number
+    pendingOrdersTotal: number
+    projectedBalance: number
 }
 
 export interface CreateFinancialEntryDataType {
