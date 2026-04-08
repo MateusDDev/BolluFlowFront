@@ -3,6 +3,7 @@ import {
     OrderItemModel,
     OrderModel,
 } from '@/features/orders/services/order.model'
+import { fileClient } from '@/shared/api/fileClient'
 
 export function getOrders() {
     return apiClient<OrderModel[]>('/orders', 'GET')
@@ -92,8 +93,9 @@ export function reopenOrder(id: number) {
     return apiClient(`/orders/${id}/reopen`, 'POST')
 }
 
-export function openOrderReport(orderId: number) {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/reports/order/${orderId}`
+export async function openOrderReport(orderId: number) {
+    const blob = await fileClient(`/reports/order/${orderId}`)
 
-    window.open(url, '_blank')
+    const url = window.URL.createObjectURL(blob)
+    window.open(url)
 }
