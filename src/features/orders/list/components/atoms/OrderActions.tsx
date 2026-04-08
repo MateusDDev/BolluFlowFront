@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { EyeIcon, MessageCircle, MoreHorizontal } from 'lucide-react'
+import { EyeIcon, FileText, MessageCircle, MoreHorizontal } from 'lucide-react'
 
 import { Button } from 'ui/button'
 import {
@@ -15,6 +15,10 @@ import {
 
 import { OrderModel } from '@/features/orders/services/order.model'
 import { OrderWhatsappModal } from '@/features/orders/components/organisms/OrderWhatsappModal'
+import {
+    openCustomerOrderReport,
+    openOrderReport,
+} from '@/features/orders/services/order.api'
 
 interface OrderActionsProps {
     order: OrderModel
@@ -35,10 +39,35 @@ export function OrderActions({ order }: OrderActionsProps) {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem asChild>
-                    <Link href={`/orders/${order.id}`} className="flex items-center gap-2">
+                    <Link
+                        href={`/orders/${order.id}`}
+                        className="flex items-center gap-2"
+                    >
                         <EyeIcon className="h-4 w-4" />
                         Ver detalhes
                     </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                    onSelect={(event) => {
+                        event.preventDefault()
+                        openOrderReport(order.id)
+                    }}
+                    className="flex items-center gap-2"
+                >
+                    <FileText className="h-4 w-4" />
+                    Comanda do entregador
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                    onSelect={(event) => {
+                        event.preventDefault()
+                        openCustomerOrderReport(order.id)
+                    }}
+                    className="flex items-center gap-2"
+                >
+                    <FileText className="h-4 w-4" />
+                    Comanda do cliente
                 </DropdownMenuItem>
 
                 {order.customer.whatsapp && (

@@ -25,6 +25,7 @@ import {
     cancelOrder,
     deliverOrder,
     finishProductionOrder,
+    openCustomerOrderReport,
     openOrderReport,
     reopenOrder,
     startProductionOrder,
@@ -266,6 +267,13 @@ export function OrderStatusActions({
                 >
                     <FileText className="h-4 w-4 mr-2" />
                     Gerar comanda
+                </Button>
+                <Button
+                    variant="secondary"
+                    onClick={() => openCustomerOrderReport(orderId)}
+                >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Comanda do cliente
                 </Button>
             </div>
 

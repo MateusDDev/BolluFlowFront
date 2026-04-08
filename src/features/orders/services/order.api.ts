@@ -99,3 +99,14 @@ export async function openOrderReport(orderId: number) {
     const url = window.URL.createObjectURL(blob)
     window.open(url)
 }
+
+export async function getCustomerOrderReport(orderId: number): Promise<Blob> {
+    return fileClient(`/orders/${orderId}/report/customer`)
+}
+
+export async function openCustomerOrderReport(orderId: number) {
+    const blob = await getCustomerOrderReport(orderId)
+
+    const url = window.URL.createObjectURL(blob)
+    window.open(url)
+}
