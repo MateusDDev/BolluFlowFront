@@ -301,28 +301,28 @@ export function FinancePageContainer() {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Movimento do mês</CardTitle>
+                        <CardTitle>Movimento de {monthYearLabel}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">
-                                Entradas em {monthYearLabel}
+                        <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm text-muted-foreground">
+                                Entradas
                             </p>
-                            <p className="text-2xl font-semibold text-green-600">
+                            <p className="text-xl font-semibold text-green-600">
                                 {formatCurrency(balance?.monthIncome ?? 0)} ↑
                             </p>
                         </div>
 
                         <Separator />
 
-                        <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">
-                                Saídas em {monthYearLabel}
+                        <div className="flex items-center justify-between gap-4">
+                            <p className="text-sm text-muted-foreground">
+                                Saídas
                             </p>
-                            <p className="text-2xl font-semibold text-red-600">
+                            <p className="text-xl font-semibold text-red-600">
                                 {formatCurrency(balance?.monthExpenses ?? 0)} ↓
                             </p>
                         </div>
@@ -331,12 +331,9 @@ export function FinancePageContainer() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Saldo acumulado</CardTitle>
+                        <CardTitle>Saldo até {monthYearLabel}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                            Saldo até {monthYearLabel}
-                        </p>
+                    <CardContent className="space-y-3">
                         <p
                             className={`text-2xl font-semibold ${
                                 currentBalance >= 0
@@ -346,31 +343,26 @@ export function FinancePageContainer() {
                         >
                             {formatCurrency(currentBalance)}
                         </p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Saldo previsto</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-1">
                         <p
-                            className={`text-2xl font-semibold ${
-                                projectedBalance >= 0
+                            className={`text-sm ${
+                                (pendingOrdersTotal > 0
+                                    ? projectedBalance
+                                    : currentBalance) >= 0
                                     ? 'text-green-600'
                                     : 'text-red-600'
                             }`}
                         >
-                            {formatCurrency(projectedBalance)}
+                            Previsto:{' '}
+                            {formatCurrency(
+                                pendingOrdersTotal > 0
+                                    ? projectedBalance
+                                    : currentBalance
+                            )}
                         </p>
-                        {pendingOrdersTotal > 0 ? (
+                        {pendingOrdersTotal > 0 && (
                             <p className="text-xs text-muted-foreground">
                                 + {formatCurrency(pendingOrdersTotal)} em
-                                pedidos em aberto
-                            </p>
-                        ) : (
-                            <p className="text-xs text-muted-foreground">
-                                Nenhum pedido em aberto
+                                pedidos operacionais
                             </p>
                         )}
                     </CardContent>
