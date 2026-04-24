@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGetSupplyConversions'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
@@ -33,9 +33,23 @@ export function SupplyReferenceSelectorCell({ supply }: Props) {
     const { selectedConversion, setSelectedConversion, BASE_OPTION_VALUE } =
         useSupplyReferenceSelection(supply.id)
 
+    const isSelectedOptionAvailable =
+        selectedConversion === BASE_OPTION_VALUE ||
+        options.some((option) => option.value === selectedConversion)
+
+    const resolvedSelectedConversion = isSelectedOptionAvailable
+        ? selectedConversion
+        : BASE_OPTION_VALUE
+
+    useEffect(() => {
+        if (!isSelectedOptionAvailable) {
+            setSelectedConversion(BASE_OPTION_VALUE)
+        }
+    }, [BASE_OPTION_VALUE, isSelectedOptionAvailable, setSelectedConversion])
+
     return (
         <Select
-            value={selectedConversion}
+            value={resolvedSelectedConversion}
             onValueChange={setSelectedConversion}
             disabled={isLoading}
         >

@@ -135,6 +135,9 @@ export function OrderStatusActions({
 
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+    const [cancelDialogStatus, setCancelDialogStatus] = useState<OrderStatus | null>(
+        null
+    )
     const [revertStock, setRevertStock] = useState(false)
     const [stockErrorOpen, setStockErrorOpen] = useState(false)
     const [stockErrorItems, setStockErrorItems] = useState<
@@ -163,6 +166,7 @@ export function OrderStatusActions({
 
         if (action === 'cancel') {
             setRevertStock(false)
+            setCancelDialogStatus(orderStatus)
             setCancelDialogOpen(true)
             return
         }
@@ -195,17 +199,24 @@ export function OrderStatusActions({
     }
 
     const handleConfirmCancel = () => {
+        if (!cancelDialogStatus) return
+
+        const canRevertStock =
+            cancelDialogStatus === 'InProduction' || cancelDialogStatus === 'Ready'
+
         const shouldSendRevert =
-            orderStatus === 'Pending' ? undefined : revertStock
+            canRevertStock && revertStock ? true : undefined
 
         cancelAction.mutate(
             { id: orderId, revertStock: shouldSendRevert },
             {
                 onSuccess: () => {
                     setCancelDialogOpen(false)
+                    setCancelDialogStatus(null)
                 },
                 onError: (error: Error) => {
                     setCancelDialogOpen(false)
+                    setCancelDialogStatus(null)
                     setErrorMessage(error.message)
                 },
             }
@@ -320,16 +331,25 @@ export function OrderStatusActions({
 
             <AlertDialog
                 open={cancelDialogOpen}
-                onOpenChange={setCancelDialogOpen}
+                onOpenChange={(isOpen) => {
+                    setCancelDialogOpen(isOpen)
+                    if (!isOpen) {
+                        setCancelDialogStatus(null)
+                        setRevertStock(false)
+                    }
+                }}
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Cancelar pedido</AlertDialogTitle>
-                        {orderStatus === 'Pending' ? (
+                        {cancelDialogStatus === 'Pending' ? (
                             <AlertDialogDescription>
                                 Tem certeza que deseja cancelar este pedido?
+                                <br />
+                                Esta ação não pode ser desfeita.
                             </AlertDialogDescription>
-                        ) : (
+                        ) : cancelDialogStatus === 'InProduction' ||
+                          cancelDialogStatus === 'Ready' ? (
                             <AlertDialogDescription asChild>
                                 <div className="space-y-4 text-sm text-muted-foreground">
                                     <p>
@@ -357,10 +377,14 @@ export function OrderStatusActions({
                                     </div>
                                 </div>
                             </AlertDialogDescription>
+                        ) : (
+                            <AlertDialogDescription>
+                                Tem certeza que deseja cancelar este pedido?
+                            </AlertDialogDescription>
                         )}
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel>Voltar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => {
                                 e.preventDefault()

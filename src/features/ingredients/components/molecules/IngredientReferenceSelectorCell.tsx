@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
@@ -36,9 +36,23 @@ export function IngredientReferenceSelectorCell({ ingredient }: Props) {
     const { selectedConversion, setSelectedConversion, BASE_OPTION_VALUE } =
         useIngredientReferenceSelection(ingredient.id)
 
+    const isSelectedOptionAvailable =
+        selectedConversion === BASE_OPTION_VALUE ||
+        options.some((option) => option.value === selectedConversion)
+
+    const resolvedSelectedConversion = isSelectedOptionAvailable
+        ? selectedConversion
+        : BASE_OPTION_VALUE
+
+    useEffect(() => {
+        if (!isSelectedOptionAvailable) {
+            setSelectedConversion(BASE_OPTION_VALUE)
+        }
+    }, [BASE_OPTION_VALUE, isSelectedOptionAvailable, setSelectedConversion])
+
     return (
         <Select
-            value={selectedConversion}
+            value={resolvedSelectedConversion}
             onValueChange={setSelectedConversion}
             disabled={isLoading}
         >
