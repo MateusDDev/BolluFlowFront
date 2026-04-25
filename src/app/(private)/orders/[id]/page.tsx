@@ -1,4 +1,6 @@
-﻿import { OrderTabs } from '@/features/orders/details/containers/OrderTabs'
+'use client'
+
+import { OrderTabs } from '@/features/orders/details/containers/OrderTabs'
 
 export default function OrderDetailsPage() {
     return (

@@ -1,9 +1,9 @@
-﻿import ChartsContainer from "@/features/dashboard/containers/ChartsContainer";
+'use client'
+
+import ChartsContainer from '@/features/dashboard/containers/ChartsContainer'
 
 const DashboardPage = () => {
-    return (
-        <ChartsContainer />
-    );
+    return <ChartsContainer />
 }
 
-export default DashboardPage;
+export default DashboardPage
