@@ -4,7 +4,7 @@ export interface DashboardStockAlertItemModel {
     id: number
     name: string
     category: 'Product' | 'Ingredient' | 'Supply'
-    baseUnit?: string | number
+    baseUnit: string
     stockQuantity: number
     minimumStockQuantity: number
     stockCoveragePercent: number

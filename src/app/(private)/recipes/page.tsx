@@ -1,5 +1,3 @@
-'use client'
-
 import { RecipesTableContainer } from '@/features/recipes/list/containers/RecipesTableContainer'
 
 export default function RecipesPage() {

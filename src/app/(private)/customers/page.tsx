@@ -1,5 +1,3 @@
-'use client'
-
 import CustomersTableContainer from '@/features/customers/containers/CustomersTableContainer'
 
 export default function CustomersPage() {

@@ -1,5 +1,3 @@
-'use client'
-
 import ChartsContainer from '@/features/dashboard/containers/ChartsContainer'
 
 const DashboardPage = () => {

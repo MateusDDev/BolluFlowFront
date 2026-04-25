@@ -1,5 +1,3 @@
-'use client'
-
 import { IngredientsTableContainer } from '@/features/ingredients/containers/IngredientsTableContainer'
 
 export default function IngredientsPage() {

@@ -1,5 +1,3 @@
-'use client'
-
 import { SuppliesTableContainer } from '@/features/supplies/containers/SuppliesTableContainer'
 
 export default function SuppliesPage() {

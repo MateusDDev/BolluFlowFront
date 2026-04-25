@@ -1,5 +1,3 @@
-'use client'
-
 import { ProductsTableContainer } from '@/features/products/list/containers/ProductsTableContainer'
 
 export default function ProductsPage() {

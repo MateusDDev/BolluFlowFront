@@ -91,7 +91,7 @@ const categoryLabelMap: Record<string, string> = {
     Supply: 'Insumo',
 }
 
-const getUnitDisplayLabel = (baseUnit: string | number | undefined) => {
+const getUnitDisplayLabel = (baseUnit: string | undefined) => {
     if (baseUnit == null) return ''
     return getMeasurementUnitLabel(baseUnit)
 }
@@ -378,12 +378,17 @@ const ChartsContainer = () => {
                                                 {categoryLabelMap[
                                                     item.category
                                                 ] ?? item.category}{' '}
-                                                · Atual: {item.stockQuantity}{' '}
+                                                · Atual:{' '}
+                                                {item.stockQuantity.toLocaleString(
+                                                    'pt-BR'
+                                                )}{' '}
                                                 {getUnitDisplayLabel(
                                                     item.baseUnit
                                                 )}{' '}
                                                 · Mínimo:{' '}
-                                                {item.minimumStockQuantity}{' '}
+                                                {item.minimumStockQuantity.toLocaleString(
+                                                    'pt-BR'
+                                                )}{' '}
                                                 {getUnitDisplayLabel(
                                                     item.baseUnit
                                                 )}

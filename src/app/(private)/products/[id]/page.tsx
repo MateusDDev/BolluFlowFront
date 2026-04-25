@@ -1,5 +1,3 @@
-'use client'
-
 import { ProductTabs } from '@/features/products/details/containers/ProductTabs'
 
 export default function ProductDetailsPage() {
