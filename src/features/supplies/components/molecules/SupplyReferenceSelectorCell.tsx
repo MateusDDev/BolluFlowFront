@@ -18,7 +18,10 @@ type Props = {
 }
 
 export function SupplyReferenceSelectorCell({ supply }: Props) {
-    const { data: conversions, isLoading } = useGetSupplyConversions(supply.id, true)
+    const { data: conversions, isLoading } = useGetSupplyConversions(
+        supply.id,
+        true
+    )
 
     const options = useMemo(
         () =>
@@ -58,7 +61,7 @@ export function SupplyReferenceSelectorCell({ supply }: Props) {
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value={BASE_OPTION_VALUE}>
-                    Base ({getMeasurementUnitLabel(supply.baseUnit)})
+                    Base {getMeasurementUnitLabel(supply.baseUnit)}
                 </SelectItem>
 
                 {options.map((option) => (

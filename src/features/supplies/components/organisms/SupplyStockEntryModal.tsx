@@ -134,8 +134,8 @@ export function SupplyStockEntryModal({ supply, open, onOpenChange }: Props) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base (
-                                    {getMeasurementUnitLabel(supply.baseUnit)})
+                                    Unidade base{' '}
+                                    {getMeasurementUnitLabel(supply.baseUnit)}
                                 </SelectItem>
                                 {availableConversions.map((option) => (
                                     <SelectItem
