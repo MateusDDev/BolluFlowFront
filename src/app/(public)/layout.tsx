@@ -3,7 +3,7 @@
 import ThemeButton from 'components/ThemeButton'
 import { PublicAuthWrapper } from '@/features/login/components/PublicAuthWrapper'
 
-export default async function PublicLayout({
+export default function PublicLayout({
     children,
 }: {
     children: React.ReactNode

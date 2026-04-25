@@ -1,3 +1,5 @@
+'use client'
+
 import { AppSidebar } from '@/shared/components/app-sidebar'
 import {
     Breadcrumb,

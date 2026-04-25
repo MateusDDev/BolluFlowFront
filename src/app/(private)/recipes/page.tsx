@@ -1,4 +1,4 @@
-﻿import { RecipesTableContainer } from '@/features/recipes/list/containers/RecipesTableContainer'
+import { RecipesTableContainer } from '@/features/recipes/list/containers/RecipesTableContainer'
 
 export default function RecipesPage() {
     return (

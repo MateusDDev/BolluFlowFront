@@ -1,4 +1,4 @@
-﻿import { OrdersTableContainer } from '@/features/orders/list/containers/OrdersTableContainer'
+import { OrdersTableContainer } from '@/features/orders/list/containers/OrdersTableContainer'
 
 export default function RecipesPage() {
     return (

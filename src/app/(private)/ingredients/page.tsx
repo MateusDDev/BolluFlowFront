@@ -1,4 +1,4 @@
-﻿import { IngredientsTableContainer } from '@/features/ingredients/containers/IngredientsTableContainer'
+import { IngredientsTableContainer } from '@/features/ingredients/containers/IngredientsTableContainer'
 
 export default function IngredientsPage() {
     return (

@@ -138,11 +138,10 @@ export function IngredientStockEntryModal({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={BASE_OPTION_VALUE}>
-                                    Unidade base (
+                                    Unidade base{' '}
                                     {getMeasurementUnitLabel(
                                         ingredient.baseUnit
                                     )}
-                                    )
                                 </SelectItem>
                                 {availableConversions.map((option) => (
                                     <SelectItem

@@ -46,7 +46,7 @@ export function RecipeReferenceSelectorCell({ recipe }: Props) {
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value={BASE_OPTION_VALUE}>
-                    Base ({getMeasurementUnitLabel(recipe.baseUnit)})
+                    Base {getMeasurementUnitLabel(recipe.baseUnit)}
                 </SelectItem>
                 {options.map((option) => (
                     <SelectItem key={option.value} value={option.value}>

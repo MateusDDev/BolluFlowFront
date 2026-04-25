@@ -43,6 +43,7 @@ import {
 import { Alert, AlertTitle } from '@/shared/components/ui/alert'
 import { Skeleton } from '@/shared/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/shared/helpers/formatHelper'
+import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
     Pending: '#3b82f6',
@@ -88,6 +89,11 @@ const categoryLabelMap: Record<string, string> = {
     Product: 'Produto',
     Ingredient: 'Ingrediente',
     Supply: 'Insumo',
+}
+
+const getUnitDisplayLabel = (baseUnit: string | undefined) => {
+    if (baseUnit == null) return ''
+    return getMeasurementUnitLabel(baseUnit)
 }
 
 const ChartsContainer = () => {
@@ -372,9 +378,20 @@ const ChartsContainer = () => {
                                                 {categoryLabelMap[
                                                     item.category
                                                 ] ?? item.category}{' '}
-                                                · Atual: {item.stockQuantity} ·
-                                                Mínimo:{' '}
-                                                {item.minimumStockQuantity}
+                                                · Atual:{' '}
+                                                {item.stockQuantity.toLocaleString(
+                                                    'pt-BR'
+                                                )}{' '}
+                                                {getUnitDisplayLabel(
+                                                    item.baseUnit
+                                                )}{' '}
+                                                · Mínimo:{' '}
+                                                {item.minimumStockQuantity.toLocaleString(
+                                                    'pt-BR'
+                                                )}{' '}
+                                                {getUnitDisplayLabel(
+                                                    item.baseUnit
+                                                )}
                                             </p>
                                         </div>
                                         <Badge

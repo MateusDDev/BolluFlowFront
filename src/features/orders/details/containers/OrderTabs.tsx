@@ -1,4 +1,6 @@
-﻿import { Tabs, TabsContent, TabsList, TabsTrigger } from 'ui/tabs'
+'use client'
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'ui/tabs'
 import { BackButton } from 'components/BackButton'
 import { OrderItemsTable } from '@/features/orders/details/components/organisms/OrderItemsTable'
 import OrderDetails from '@/features/orders/details/components/organisms/OrderDetails'

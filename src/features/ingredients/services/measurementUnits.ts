@@ -1,7 +1,7 @@
 export const MEASUREMENT_UNITS = [
-    { value: 'Unit', label: 'Unidade (un)', enumValue: 0 },
-    { value: 'Gram', label: 'Grama (g)', enumValue: 1 },
-    { value: 'Milliliter', label: 'Mililitro (ml)', enumValue: 2 },
+    { value: 'Unit', label: '(un)', enumValue: 0 },
+    { value: 'Gram', label: '(g)', enumValue: 1 },
+    { value: 'Milliliter', label: '(ml)', enumValue: 2 },
 ] as const
 
 export type MeasurementUnitValue = (typeof MEASUREMENT_UNITS)[number]['value']
@@ -18,9 +18,9 @@ const enumToMeasurementUnit: Record<string, MeasurementUnitValue> = {
 }
 
 const measurementUnitLabelMap: Record<MeasurementUnitValue, string> = {
-    Unit: 'Unidade (un)',
-    Gram: 'Grama (g)',
-    Milliliter: 'Mililitro (ml)',
+    Unit: '(un)',
+    Gram: '(g)',
+    Milliliter: '(ml)',
 }
 
 export const normalizeMeasurementUnit = (
@@ -47,7 +47,8 @@ export const getMeasurementUnitLabel = (unit: string | number) =>
 
 export const isMeasurementUnitOption = (unit: string | number) =>
     MEASUREMENT_UNITS.some(
-        (measurementUnit) => measurementUnit.value === normalizeMeasurementUnit(unit)
+        (measurementUnit) =>
+            measurementUnit.value === normalizeMeasurementUnit(unit)
     )
 
 export const DEFAULT_CONVERSIONS_BY_BASE_UNIT: Record<

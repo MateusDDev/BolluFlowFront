@@ -1,4 +1,4 @@
-﻿import { RecipeTabs } from '@/features/recipes/details/containers/RecipeTabs'
+import { RecipeTabs } from '@/features/recipes/details/containers/RecipeTabs'
 
 export default function RecipeDetailsPage() {
     return (
