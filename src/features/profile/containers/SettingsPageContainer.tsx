@@ -12,6 +12,7 @@ import {
 } from 'ui/card'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
+import { Switch } from 'ui/switch'
 import { Textarea } from 'ui/textarea'
 import { badgeVariants } from 'ui/badge'
 import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
@@ -35,12 +36,16 @@ export default function SettingsPageContainer() {
     const [indirectCostRate, setIndirectCostRate] = useState<
         string | undefined
     >(undefined)
+    const [skipStockCheckValue, setSkipStockCheckValue] = useState<
+        boolean | undefined
+    >(undefined)
 
     const [profileFeedback, setProfileFeedback] = useState<string | null>(null)
     const [templateFeedback, setTemplateFeedback] = useState<string | null>(
         null
     )
     const [pricingFeedback, setPricingFeedback] = useState<string | null>(null)
+    const [stockFeedback, setStockFeedback] = useState<string | null>(null)
 
     useEffect(() => {
         setTitle('Configurações')
@@ -55,6 +60,7 @@ export default function SettingsPageContainer() {
             : (profile?.whatsappMessageTemplate ?? DEFAULT_WHATSAPP_TEMPLATE)
     const currentIndirectCostRate =
         indirectCostRate ?? (profile?.indirectCostRate ?? 0).toString()
+    const currentSkipStockCheck = skipStockCheckValue ?? profile?.skipStockCheck
 
     const isInvalidIndirectCost = useMemo(() => {
         const numericValue = Number(currentIndirectCostRate)
@@ -94,6 +100,20 @@ export default function SettingsPageContainer() {
         })
         setPricingFeedback('Precificação salva com sucesso!')
         setIndirectCostRate(undefined)
+    }
+
+    const handleToggleSkipStockCheck = async (checked: boolean) => {
+        setStockFeedback(null)
+        setSkipStockCheckValue(checked)
+
+        try {
+            await updateProfile({ skipStockCheck: checked })
+            setStockFeedback('Configuração de estoque salva.')
+            setSkipStockCheckValue(undefined)
+        } catch {
+            setStockFeedback('Não foi possível salvar a configuração.')
+            setSkipStockCheckValue(undefined)
+        }
     }
 
     const handleInsertVariable = (variable: string) => {
@@ -263,6 +283,42 @@ export default function SettingsPageContainer() {
                             {isPending ? 'Salvando...' : 'Salvar'}
                         </Button>
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Estoque</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
+                        <div className="space-y-1">
+                            <Label htmlFor="skip-stock-check">
+                                Verificação de estoque na produção
+                            </Label>
+                            <p className="text-sm font-medium">
+                                Ignorar verificação de estoque
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                Quando ativado, produções de receitas e produtos
+                                não verificarão nem debitarão o estoque dos
+                                ingredientes e componentes. Útil para quem
+                                utiliza o sistema apenas para precificação e
+                                gestão de pedidos, sem controle de estoque.
+                            </p>
+                        </div>
+
+                        <Switch
+                            id="skip-stock-check"
+                            checked={currentSkipStockCheck}
+                            onCheckedChange={handleToggleSkipStockCheck}
+                            disabled={isPending}
+                        />
+                    </div>
+
+                    <p className="text-right text-sm text-emerald-600">
+                        {stockFeedback}
+                    </p>
                 </CardContent>
             </Card>
         </section>
