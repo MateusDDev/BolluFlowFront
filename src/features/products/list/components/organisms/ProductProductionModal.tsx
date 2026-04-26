@@ -21,6 +21,7 @@ import { ProductModel } from '@/features/products/services/product.model'
 import { useGetProductConversions } from '@/features/products/hooks/queries/useGetProductConversions'
 import { useCreateProductProduction } from '@/features/products/hooks/mutations/useCreateProductProduction'
 import { ProductStockErrorModel } from '@/features/products/services/productStock.api'
+import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 type Props = {
     product: ProductModel
@@ -43,6 +44,7 @@ export function ProductProductionModal({ product, open, onOpenChange }: Props) {
         product.id,
         open
     )
+    const { data: profile } = useGetProfile(open)
 
     const { mutateAsync: createProductProduction, isPending } =
         useCreateProductProduction()
@@ -100,7 +102,10 @@ export function ProductProductionModal({ product, open, onOpenChange }: Props) {
         } catch (error) {
             const apiError = error as ProductStockErrorModel
 
-            if (apiError.code === 'INSUFFICIENT_STOCK') {
+            if (
+                apiError.code === 'INSUFFICIENT_STOCK' &&
+                !profile?.skipStockCheck
+            ) {
                 setFormMessage(
                     'Estoque insuficiente para produzir este produto:'
                 )
@@ -120,7 +125,9 @@ export function ProductProductionModal({ product, open, onOpenChange }: Props) {
                 <DialogHeader>
                     <DialogTitle>Registrar produção</DialogTitle>
                     <DialogDescription>
-                        Registre a produção do produto para atualizar o estoque.
+                        {profile?.skipStockCheck
+                            ? 'Registre a produção do produto sem verificar o estoque.'
+                            : 'Registre a produção do produto para atualizar o estoque.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -186,16 +193,18 @@ export function ProductProductionModal({ product, open, onOpenChange }: Props) {
                             })}{' '}
                             {selectedLabel}
                         </strong>{' '}
-                        e os componentes serão debitados automaticamente.
+                        {profile?.skipStockCheck
+                            ? 'e o estoque não será verificado nem debitado.'
+                            : 'e os componentes serão debitados automaticamente.'}
                     </div>
 
                     {!!insufficientComponents?.length && (
                         <div className="rounded border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                            <p className="font-medium mb-2">{formMessage}</p>
-                            <ul className="list-disc pl-5 space-y-1">
+                            <p className="mb-2 font-medium">{formMessage}</p>
+                            <ul className="list-disc space-y-1 pl-5">
                                 {insufficientComponents.map((item, index) => (
                                     <li key={`${item.componentName}-${index}`}>
-                                        {item.componentName} — necessário:{' '}
+                                        {item.componentName} - necessário:{' '}
                                         {item.required.toLocaleString('pt-BR')}{' '}
                                         {item.unit}, disponível:{' '}
                                         {item.available.toLocaleString('pt-BR')}{' '}
