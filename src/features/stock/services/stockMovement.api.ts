@@ -17,5 +17,9 @@ export function createStockPurchase(data: CreateStockMovementDataType) {
 }
 
 export function createStockAdjustment(data: CreateStockAdjustmentDataType) {
-    return apiClient<StockMovementModel>('/stock/movements/adjustment', 'POST', data)
+    return apiClient<StockMovementModel>(
+        '/stock/movements/adjustment',
+        'POST',
+        data
+    )
 }

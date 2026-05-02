@@ -1,16 +1,10 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useGetSupplyConversions } from '@/features/supplies/hooks/queries/useGetSupplyConversions'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
 import { useSupplyReferenceSelection } from '@/features/supplies/components/molecules/useSupplyReferenceSelection'
 
 type Props = {
@@ -28,7 +22,6 @@ export function SupplyReferenceSelectorCell({ supply }: Props) {
             (conversions ?? []).map((item) => ({
                 value: String(item.id),
                 label: item.name,
-                factor: item.quantityInBaseUnit,
             })),
         [conversions]
     )
@@ -51,25 +44,21 @@ export function SupplyReferenceSelectorCell({ supply }: Props) {
     }, [BASE_OPTION_VALUE, isSelectedOptionAvailable, setSelectedConversion])
 
     return (
-        <Select
+        <SearchableSelect
+            options={[
+                {
+                    value: BASE_OPTION_VALUE,
+                    label: `Base ${getMeasurementUnitLabel(supply.baseUnit)}`,
+                },
+                ...options,
+            ]}
             value={resolvedSelectedConversion}
             onValueChange={setSelectedConversion}
             disabled={isLoading}
-        >
-            <SelectTrigger className="h-8 min-w-[180px]">
-                <SelectValue placeholder="Referência" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={BASE_OPTION_VALUE}>
-                    Base {getMeasurementUnitLabel(supply.baseUnit)}
-                </SelectItem>
-
-                {options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+            className="h-8 min-w-[180px]"
+            placeholder="Referência"
+            searchPlaceholder="Buscar referência..."
+            emptyMessage="Nenhuma referência encontrada."
+        />
     )
 }

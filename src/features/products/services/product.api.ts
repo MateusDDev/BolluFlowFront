@@ -36,6 +36,7 @@ export function getProductComponentCatalog(productId: number) {
 
 export type CreateProductDataType = {
     name: string
+    category?: string | null
     salePrice?: number
 }
 
@@ -45,6 +46,7 @@ export function createProduct(data: CreateProductDataType) {
 
 export type UpdateProductDataType = {
     name?: string
+    category?: string | null
     isActive?: boolean
     stockQuantity?: number
     minimumStockQuantity?: number

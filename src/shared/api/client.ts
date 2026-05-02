@@ -21,22 +21,32 @@ export async function apiClient<T>(
         ...(options.headers ?? {}),
     }
 
-    const res = await fetch(`${API_URL}${endpoint}`, {
-        method,
-        headers,
-        credentials: 'include',
-        body: body ? JSON.stringify(body) : undefined,
-        ...options,
-    })
+    let res: Response
+
+    try {
+        res = await fetch(`${API_URL}${endpoint}`, {
+            method,
+            headers,
+            credentials: 'include',
+            body: body ? JSON.stringify(body) : undefined,
+            ...options,
+        })
+    } catch {
+        throw new Error('Servidor indisponível. Tente novamente mais tarde.')
+    }
 
     const contentType = res.headers.get('Content-Type') ?? ''
 
     if (!res.ok) {
         if (contentType.includes('application/json')) {
-            throw (await res.json()) as ApiError
+            const error = (await res.json()) as ApiError
+
+            throw new Error(
+                error.message || 'Ocorreu um erro ao processar a requisição'
+            )
         }
 
-        throw new Error(`API Error (${res.status})`)
+        throw new Error(`Erro (${res.status})`)
     }
 
     return contentType.includes('application/json')

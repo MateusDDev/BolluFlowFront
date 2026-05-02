@@ -2,11 +2,9 @@ import { apiClient } from '@/shared/api/client'
 
 export type StockUnitPreferenceItemType = 'ingredient' | 'supply'
 
-type StockUnitPreferenceResponse =
-    | {
-          conversionId?: number | null
-      }
-    | null
+type StockUnitPreferenceResponse = {
+    conversionId?: number | null
+} | null
 
 export function getStockUnitPreference(
     itemType: StockUnitPreferenceItemType,

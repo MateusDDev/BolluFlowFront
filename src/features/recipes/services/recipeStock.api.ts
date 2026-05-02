@@ -36,5 +36,9 @@ export function createRecipeStockAdjustment(
     recipeId: number,
     data: CreateRecipeStockAdjustmentDataType
 ) {
-    return apiClient<null>(`/recipes/${recipeId}/stock/adjustment`, 'POST', data)
+    return apiClient<null>(
+        `/recipes/${recipeId}/stock/adjustment`,
+        'POST',
+        data
+    )
 }

@@ -17,7 +17,11 @@ export function createIngredientConversion(
     ingredientId: number,
     data: UpsertIngredientConversionDataType
 ) {
-    return apiClient<null>(`/ingredients/${ingredientId}/conversions`, 'POST', data)
+    return apiClient<null>(
+        `/ingredients/${ingredientId}/conversions`,
+        'POST',
+        data
+    )
 }
 
 export function updateIngredientConversion(

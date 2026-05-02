@@ -13,6 +13,7 @@ import { UpdateProductDataType } from '@/features/products/services/product.api'
 
 interface FormState {
     name: string
+    category: string
     minimumStockQuantity: string
     isActive: boolean
 }
@@ -20,6 +21,7 @@ interface FormState {
 const mapProductToForm = (product: ProductModel): FormState => {
     return {
         name: product.name,
+        category: product.category ?? '',
         minimumStockQuantity: product.minimumStockQuantity?.toString() ?? '',
         isActive: product.isActive,
     }
@@ -64,6 +66,7 @@ export function ProductDetails() {
 
         const payload: UpdateProductDataType = {
             name: form.name,
+            category: form.category.trim() || null,
             isActive: form.isActive,
         }
 
@@ -92,6 +95,17 @@ export function ProductDetails() {
                         <Input
                             value={form.name}
                             onChange={(e) => setField('name', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid gap-2 col-span-2">
+                        <Label>Categoria</Label>
+                        <Input
+                            placeholder="Ex: Bolos, Brigadeiros, Kits..."
+                            value={form.category}
+                            onChange={(e) =>
+                                setField('category', e.target.value)
+                            }
                         />
                     </div>
 

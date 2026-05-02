@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
+import { badgeVariants } from 'ui/badge'
 import { Button } from 'ui/button'
 import {
     Card,
@@ -12,15 +14,25 @@ import {
 } from 'ui/card'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
+import { Separator } from 'ui/separator'
 import { Switch } from 'ui/switch'
 import { Textarea } from 'ui/textarea'
-import { badgeVariants } from 'ui/badge'
-import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 import { useUpdateProfile } from '@/features/profile/hooks/mutations/useUpdateProfile'
+import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 import {
     DEFAULT_WHATSAPP_TEMPLATE,
     TEMPLATE_VARIABLES,
 } from '@/features/orders/helpers/whatsappTemplate.constants'
+
+function sanitizeMenuSlug(value: string) {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+}
 
 export default function SettingsPageContainer() {
     const { setTitle } = usePageTitle()
@@ -39,6 +51,10 @@ export default function SettingsPageContainer() {
     const [skipStockCheckValue, setSkipStockCheckValue] = useState<
         boolean | undefined
     >(undefined)
+    const [menuSlug, setMenuSlug] = useState<string | undefined>(undefined)
+    const [appOrigin] = useState(() =>
+        typeof window === 'undefined' ? '' : window.location.origin
+    )
 
     const [profileFeedback, setProfileFeedback] = useState<string | null>(null)
     const [templateFeedback, setTemplateFeedback] = useState<string | null>(
@@ -46,6 +62,7 @@ export default function SettingsPageContainer() {
     )
     const [pricingFeedback, setPricingFeedback] = useState<string | null>(null)
     const [stockFeedback, setStockFeedback] = useState<string | null>(null)
+    const [menuFeedback, setMenuFeedback] = useState<string | null>(null)
 
     useEffect(() => {
         setTitle('Configurações')
@@ -61,6 +78,12 @@ export default function SettingsPageContainer() {
     const currentIndirectCostRate =
         indirectCostRate ?? (profile?.indirectCostRate ?? 0).toString()
     const currentSkipStockCheck = skipStockCheckValue ?? profile?.skipStockCheck
+    const currentMenuSlug = menuSlug ?? profile?.slug ?? ''
+    const normalizedMenuSlug = sanitizeMenuSlug(currentMenuSlug)
+    const publicMenuLink =
+        appOrigin && normalizedMenuSlug
+            ? `${appOrigin}/cardapio/${normalizedMenuSlug}`
+            : ''
 
     const isInvalidIndirectCost = useMemo(() => {
         const numericValue = Number(currentIndirectCostRate)
@@ -114,6 +137,21 @@ export default function SettingsPageContainer() {
             setStockFeedback('Não foi possível salvar a configuração.')
             setSkipStockCheckValue(undefined)
         }
+    }
+
+    const handleSaveMenuSlug = async () => {
+        if (!normalizedMenuSlug) return
+
+        await updateProfile({ slug: normalizedMenuSlug })
+        setMenuSlug(undefined)
+        setMenuFeedback('Link do cardápio salvo com sucesso!')
+    }
+
+    const handleCopyMenuLink = async () => {
+        if (!publicMenuLink) return
+
+        await navigator.clipboard.writeText(publicMenuLink)
+        setMenuFeedback('Link copiado!')
     }
 
     const handleInsertVariable = (variable: string) => {
@@ -180,6 +218,82 @@ export default function SettingsPageContainer() {
                         >
                             {isPending ? 'Salvando...' : 'Salvar'}
                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cardápio público</CardTitle>
+                    <CardDescription>
+                        Compartilhe uma página simples para seus clientes
+                        visualizarem produtos e fazerem pedidos.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="menu-slug">
+                            Slug (identificador na URL)
+                        </Label>
+                        <Input
+                            id="menu-slug"
+                            placeholder="doceria-da-ana"
+                            value={currentMenuSlug}
+                            onChange={(event) => {
+                                setMenuFeedback(null)
+                                setMenuSlug(event.target.value)
+                            }}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                            Use letras minúsculas, números e hífens.
+                        </p>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                        <Label>Link do seu cardápio</Label>
+                        <div className="rounded-lg border bg-muted/40 px-3 py-3 text-sm break-all">
+                            {publicMenuLink ||
+                                'Defina um slug para gerar o link'}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-emerald-600">
+                            {menuFeedback}
+                        </p>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCopyMenuLink}
+                                disabled={!publicMenuLink}
+                            >
+                                Copiar link
+                            </Button>
+
+                            <Button
+                                asChild
+                                variant="outline"
+                                disabled={!publicMenuLink}
+                            >
+                                <Link
+                                    href={publicMenuLink || '#'}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    Abrir cardápio
+                                </Link>
+                            </Button>
+
+                            <Button
+                                onClick={handleSaveMenuSlug}
+                                disabled={isPending || !normalizedMenuSlug}
+                            >
+                                {isPending ? 'Salvando...' : 'Salvar'}
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

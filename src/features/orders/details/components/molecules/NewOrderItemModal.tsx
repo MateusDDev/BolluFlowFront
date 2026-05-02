@@ -13,13 +13,7 @@ import {
 } from 'ui/dialog'
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { useCreateOrderItem } from '@/features/orders/details/hooks/mutations/useCreateOrderItem'
 import { CreateOrderItemDataType } from '@/features/orders/services/order.api'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
@@ -87,32 +81,20 @@ export function NewOrderItemModal() {
                     <div className="grid gap-3">
                         <Label>Produto</Label>
 
-                        <Select
+                        <SearchableSelect
+                            options={
+                                availableProducts?.map((product) => ({
+                                    value: product.id.toString(),
+                                    label: product.name,
+                                })) ?? []
+                            }
                             value={productId}
                             onValueChange={setProductId}
                             disabled={isLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um produto" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {availableProducts?.length ? (
-                                    availableProducts.map((product) => (
-                                        <SelectItem
-                                            key={product.id}
-                                            value={product.id.toString()}
-                                        >
-                                            {product.name}
-                                        </SelectItem>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os produtos ja foram adicionados
-                                    </div>
-                                )}
-                            </SelectContent>
-                        </Select>
+                            placeholder="Selecione um produto"
+                            searchPlaceholder="Buscar produto..."
+                            emptyMessage="Nenhum produto encontrado."
+                        />
                     </div>
 
                     <div className="grid gap-3">

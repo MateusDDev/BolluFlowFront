@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { MessageCircle, Smartphone, Pencil, X } from 'lucide-react'
+import { SearchableSelect } from 'components/SearchableSelect'
 
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
@@ -250,28 +251,22 @@ export function OrderDetails() {
                                 <Label>Cliente</Label>
 
                                 {isEditing ? (
-                                    <Select
+                                    <SearchableSelect
+                                        options={
+                                            customers?.map((customer) => ({
+                                                value: customer.id.toString(),
+                                                label: customer.name,
+                                            })) ?? []
+                                        }
                                         value={form.customerId}
                                         onValueChange={(value) =>
                                             setField('customerId', value)
                                         }
                                         disabled={isLoadingCustomers}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione um cliente" />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            {customers?.map((customer) => (
-                                                <SelectItem
-                                                    key={customer.id}
-                                                    value={customer.id.toString()}
-                                                >
-                                                    {customer.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="Selecione um cliente"
+                                        searchPlaceholder="Buscar cliente..."
+                                        emptyMessage="Nenhum cliente encontrado."
+                                    />
                                 ) : (
                                     <Input
                                         value={order.customer.name}
