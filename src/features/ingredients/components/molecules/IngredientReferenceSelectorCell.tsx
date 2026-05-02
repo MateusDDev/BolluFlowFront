@@ -1,16 +1,10 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
 import { useGetIngredientConversions } from '@/features/ingredients/hooks/queries/useGetIngredientConversions'
 import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
 import { useIngredientReferenceSelection } from '@/features/ingredients/components/molecules/useIngredientReferenceSelection'
 
 type Props = {
@@ -28,7 +22,6 @@ export function IngredientReferenceSelectorCell({ ingredient }: Props) {
             (conversions ?? []).map((item) => ({
                 value: String(item.id),
                 label: item.name,
-                factor: item.quantityInBaseUnit,
             })),
         [conversions]
     )
@@ -51,25 +44,21 @@ export function IngredientReferenceSelectorCell({ ingredient }: Props) {
     }, [BASE_OPTION_VALUE, isSelectedOptionAvailable, setSelectedConversion])
 
     return (
-        <Select
+        <SearchableSelect
+            options={[
+                {
+                    value: BASE_OPTION_VALUE,
+                    label: `Base ${getMeasurementUnitLabel(ingredient.baseUnit)}`,
+                },
+                ...options,
+            ]}
             value={resolvedSelectedConversion}
             onValueChange={setSelectedConversion}
             disabled={isLoading}
-        >
-            <SelectTrigger className="h-8 min-w-[180px]">
-                <SelectValue placeholder="Referência" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={BASE_OPTION_VALUE}>
-                    Base {getMeasurementUnitLabel(ingredient.baseUnit)}
-                </SelectItem>
-
-                {options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+            className="h-8 min-w-[180px]"
+            placeholder="Referência"
+            searchPlaceholder="Buscar referência..."
+            emptyMessage="Nenhuma referência encontrada."
+        />
     )
 }

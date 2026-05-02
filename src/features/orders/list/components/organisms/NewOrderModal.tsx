@@ -11,6 +11,7 @@
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import React, { useState } from 'react'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { CreateOrderDataType } from '@/features/orders/services/order.api'
 import { useCreateOrder } from '@/features/orders/list/hooks/mutations/useCreateOrder'
 import { Textarea } from 'ui/textarea'
@@ -84,32 +85,20 @@ export const NewOrderModal = () => {
                     <div className="grid gap-3">
                         <Label>Cliente*</Label>
 
-                        <Select
+                        <SearchableSelect
+                            options={
+                                customers?.map((customer) => ({
+                                    value: customer.id.toString(),
+                                    label: customer.name,
+                                })) ?? []
+                            }
                             value={customerId}
                             onValueChange={setCustomerId}
                             disabled={isLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um ingrediente" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {customers?.length ? (
-                                    customers.map((customer) => (
-                                        <SelectItem
-                                            key={customer.id}
-                                            value={customer.id.toString()}
-                                        >
-                                            {customer.name}
-                                        </SelectItem>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Nenhum cliente cadastrado.
-                                    </div>
-                                )}
-                            </SelectContent>
-                        </Select>
+                            placeholder="Selecione um cliente"
+                            searchPlaceholder="Buscar cliente..."
+                            emptyMessage="Nenhum cliente encontrado."
+                        />
                     </div>
 
                     <div className="grid gap-3">

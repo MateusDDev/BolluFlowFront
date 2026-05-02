@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
+import { SearchableSelect } from 'components/SearchableSelect'
 import {
     Dialog,
     DialogClose,
@@ -15,13 +16,6 @@ import {
 import { Button } from 'ui/button'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
 import { formatQuantityInput } from '@/shared/helpers/formatHelper'
 import { useGetProductComponentCatalog } from '@/features/products/details/hooks/queries/useGetProductComponentCatalog'
 import { useGetProductComponents } from '@/features/products/details/hooks/queries/useGetProductComponents'
@@ -120,33 +114,20 @@ export function NewProductComponentModal() {
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-3">
                         <Label>Componente</Label>
-                        <Select
+                        <SearchableSelect
+                            options={
+                                availableCatalog?.map((item) => ({
+                                    value: buildCatalogValue(item),
+                                    label: `${item.name} (${sourceTypeLabel[item.sourceType]})`,
+                                })) ?? []
+                            }
                             value={selectedCatalogValue}
                             onValueChange={setSelectedCatalogValue}
                             disabled={isLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um componente" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {availableCatalog?.length ? (
-                                    availableCatalog.map((item) => (
-                                        <SelectItem
-                                            key={buildCatalogValue(item)}
-                                            value={buildCatalogValue(item)}
-                                        >
-                                            {item.name} (
-                                            {sourceTypeLabel[item.sourceType]})
-                                        </SelectItem>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os componentes disponiveis ja
-                                        foram adicionados.
-                                    </div>
-                                )}
-                            </SelectContent>
-                        </Select>
+                            placeholder="Selecione um componente"
+                            searchPlaceholder="Buscar componente..."
+                            emptyMessage="Nenhum componente encontrado."
+                        />
                     </div>
 
                     <div className="grid gap-3">

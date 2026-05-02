@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR" suppressHydrationWarning>
-            <body className={`${inter.className} flex`}>
+            <body className={`${inter.className}`}>
                 <ReactQueryProvider>
                     <ThemeProvider>{children}</ThemeProvider>
                 </ReactQueryProvider>

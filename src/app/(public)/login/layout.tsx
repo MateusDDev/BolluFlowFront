@@ -1,9 +1,9 @@
-﻿import '../globals.css'
+import '../../globals.css'
 
 import ThemeButton from 'components/ThemeButton'
 import { PublicAuthWrapper } from '@/features/login/components/PublicAuthWrapper'
 
-export default function PublicLayout({
+export default function LoginLayout({
     children,
 }: {
     children: React.ReactNode

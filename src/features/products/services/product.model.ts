@@ -3,6 +3,7 @@ export type ProductComponentType = 'Ingredient' | 'Recipe' | 'Supply'
 export interface ProductModel {
     id: number
     name: string
+    category?: string | null
     salePrice: number
     stockQuantity: number
     minimumStockQuantity?: number

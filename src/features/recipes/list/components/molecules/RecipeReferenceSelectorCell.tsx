@@ -1,13 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { RecipeModel } from '@/features/recipes/services/recipe.model'
 import { useGetRecipeConversions } from '@/features/recipes/hooks/queries/useGetRecipeConversions'
 import { useRecipeReferenceSelection } from '@/features/recipes/list/components/molecules/useRecipeReferenceSelection'
@@ -36,24 +30,21 @@ export function RecipeReferenceSelectorCell({ recipe }: Props) {
         useRecipeReferenceSelection(recipe.id)
 
     return (
-        <Select
+        <SearchableSelect
+            options={[
+                {
+                    value: BASE_OPTION_VALUE,
+                    label: `Base ${getMeasurementUnitLabel(recipe.baseUnit)}`,
+                },
+                ...options,
+            ]}
             value={selectedConversion}
             onValueChange={setSelectedConversion}
             disabled={isLoading}
-        >
-            <SelectTrigger className="h-8 min-w-[180px]">
-                <SelectValue placeholder="Referência" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={BASE_OPTION_VALUE}>
-                    Base {getMeasurementUnitLabel(recipe.baseUnit)}
-                </SelectItem>
-                {options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+            className="h-8 min-w-[180px]"
+            placeholder="Referência"
+            searchPlaceholder="Buscar referência..."
+            emptyMessage="Nenhuma referência encontrada."
+        />
     )
 }

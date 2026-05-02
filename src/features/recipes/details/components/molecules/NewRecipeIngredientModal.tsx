@@ -14,15 +14,9 @@ import {
     DialogTrigger,
 } from 'ui/dialog'
 import { Button } from 'ui/button'
+import { SearchableSelect } from 'components/SearchableSelect'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
 
 import { useGetIngredients } from '@/features/recipes/details/hooks/queries/useGetIngredients'
 import { useCreateRecipeIngredient } from '@/features/recipes/details/hooks/mutations/useCreateRecipeIngredient'
@@ -111,33 +105,20 @@ export function NewRecipeIngredientModal() {
                     <div className="grid gap-3">
                         <Label>Ingrediente*</Label>
 
-                        <Select
+                        <SearchableSelect
+                            options={
+                                availableIngredients?.map((ingredient) => ({
+                                    value: ingredient.id.toString(),
+                                    label: ingredient.name,
+                                })) ?? []
+                            }
                             value={ingredientId}
                             onValueChange={setIngredientId}
                             disabled={isLoading}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um ingrediente" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {availableIngredients?.length ? (
-                                    availableIngredients.map((ingredient) => (
-                                        <SelectItem
-                                            key={ingredient.id}
-                                            value={ingredient.id.toString()}
-                                        >
-                                            {ingredient.name}
-                                        </SelectItem>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                                        Todos os ingredientes já foram
-                                        adicionados
-                                    </div>
-                                )}
-                            </SelectContent>
-                        </Select>
+                            placeholder="Selecione um ingrediente"
+                            searchPlaceholder="Buscar ingrediente..."
+                            emptyMessage="Nenhum ingrediente encontrado."
+                        />
                     </div>
 
                     <div className="grid gap-3">

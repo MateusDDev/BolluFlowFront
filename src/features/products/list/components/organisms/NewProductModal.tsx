@@ -19,11 +19,13 @@ import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 export const NewProductModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
+    const [category, setCategory] = useState('')
     const [salePrice, setSalePrice] = useState('')
     const { mutateAsync: createProduct, isPending, error } = useCreateProduct()
 
     const resetForm = () => {
         setName('')
+        setCategory('')
         setSalePrice('')
     }
 
@@ -32,6 +34,10 @@ export const NewProductModal = () => {
 
         const payload: CreateProductDataType = {
             name,
+        }
+
+        if (category.trim()) {
+            payload.category = category.trim()
         }
 
         if (salePrice) {
@@ -81,6 +87,15 @@ export const NewProductModal = () => {
                                 const digits = e.target.value.replace(/\D/g, '')
                                 setSalePrice(digits)
                             }}
+                        />
+                    </div>
+
+                    <div className="grid gap-3">
+                        <Label>Categoria</Label>
+                        <Input
+                            placeholder="Ex: Bolos, Brigadeiros, Kits..."
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
                         />
                     </div>
 
