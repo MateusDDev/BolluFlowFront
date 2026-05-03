@@ -50,10 +50,15 @@ export type UpdateProductDataType = {
     isActive?: boolean
     stockQuantity?: number
     minimumStockQuantity?: number
+    imageUrl?: string | null
 }
 
 export function updateProduct(id: number, data: UpdateProductDataType) {
     return apiClient<ProductModel>(`/products/${id}`, 'PATCH', data)
+}
+
+export function updateProductImage(id: number, imageUrl: string | null) {
+    return apiClient<ProductModel>(`/products/${id}`, 'PATCH', { imageUrl })
 }
 
 export type UpdateProductPricingDataType = {

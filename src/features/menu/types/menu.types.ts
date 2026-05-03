@@ -12,7 +12,7 @@ export interface PublicMenuProductModel {
     finalPrice?: number
     salePrice?: number
     price?: number
-    imageUrl?: string | null
+    imageUrl: string | null
     isAvailable?: boolean
 }
 

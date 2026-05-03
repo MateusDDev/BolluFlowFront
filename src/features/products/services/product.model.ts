@@ -12,6 +12,7 @@ export interface ProductModel {
     finalPrice: number
     discountPercentage: number
     isActive: boolean
+    imageUrl: string | null
 }
 
 export interface ProductComponentModel {

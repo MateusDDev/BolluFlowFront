@@ -219,6 +219,7 @@ export function MenuPageContainer({ slug }: Props) {
                                     id: item.productId,
                                     name: item.productName,
                                     finalPrice: item.unitPrice,
+                                    imageUrl: null,
                                     isAvailable: true,
                                 })
                             }

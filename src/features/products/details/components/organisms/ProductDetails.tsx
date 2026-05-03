@@ -10,6 +10,7 @@ import { useGetProduct } from '@/features/products/list/hooks/queries/useGetProd
 import { useUpdateProduct } from '@/features/products/details/hooks/mutations/useUpdateProduct'
 import { ProductModel } from '@/features/products/services/product.model'
 import { UpdateProductDataType } from '@/features/products/services/product.api'
+import { ProductImageUpload } from '@/features/products/components/ProductImageUpload'
 
 interface FormState {
     name: string
@@ -86,8 +87,13 @@ export function ProductDetails() {
         <form className="my-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
             <section className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                    Informacoes basicas
+                    Informações básicas
                 </h3>
+
+                <ProductImageUpload
+                    productId={productId}
+                    imageUrl={product.imageUrl}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2 col-span-2">
