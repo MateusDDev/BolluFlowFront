@@ -22,7 +22,6 @@ import { useGetRecipeConversions } from '@/features/recipes/hooks/queries/useGet
 import { useCreateRecipeProduction } from '@/features/recipes/hooks/mutations/useCreateRecipeProduction'
 import { RecipeStockErrorModel } from '@/features/recipes/services/recipeStock.api'
 import { normalizeMeasurementUnit } from '@/features/ingredients/services/measurementUnits'
-import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 
 type Props = {
     recipe: RecipeModel
@@ -53,7 +52,6 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
         recipe.id,
         open
     )
-    const { data: profile } = useGetProfile(open)
 
     const { mutateAsync: createRecipeProduction, isPending } =
         useCreateRecipeProduction()
@@ -111,10 +109,7 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
         } catch (error) {
             const apiError = error as RecipeStockErrorModel
 
-            if (
-                apiError.code === 'INSUFFICIENT_STOCK' &&
-                !profile?.skipStockCheck
-            ) {
+            if (apiError.code === 'INSUFFICIENT_STOCK') {
                 setFormMessage(
                     'Estoque insuficiente para produzir esta receita:'
                 )
@@ -134,9 +129,7 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                 <DialogHeader>
                     <DialogTitle>Registrar produção</DialogTitle>
                     <DialogDescription>
-                        {profile?.skipStockCheck
-                            ? 'Registre a produção da receita sem verificar o estoque.'
-                            : 'Registre a produção da receita para atualizar o estoque.'}
+                        Registre a produção da receita para atualizar o estoque.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -202,18 +195,16 @@ export function RecipeProductionModal({ recipe, open, onOpenChange }: Props) {
                             })}{' '}
                             {selectedLabel}
                         </strong>{' '}
-                        {profile?.skipStockCheck
-                            ? 'e o estoque não será verificado nem debitado.'
-                            : 'e os ingredientes serão debitados automaticamente.'}
+                        e os ingredientes serão debitados automaticamente.
                     </div>
 
                     {!!insufficientIngredients?.length && (
                         <div className="rounded border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                            <p className="mb-2 font-medium">{formMessage}</p>
-                            <ul className="list-disc space-y-1 pl-5">
+                            <p className="font-medium mb-2">{formMessage}</p>
+                            <ul className="list-disc pl-5 space-y-1">
                                 {insufficientIngredients.map((item) => (
                                     <li key={item.ingredientId}>
-                                        {item.ingredientName} - necessário:{' '}
+                                        {item.ingredientName} — necessário:{' '}
                                         {item.required.toLocaleString('pt-BR')}{' '}
                                         {item.unit}, disponível:{' '}
                                         {item.available.toLocaleString('pt-BR')}{' '}
