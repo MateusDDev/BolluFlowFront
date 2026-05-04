@@ -31,6 +31,7 @@ export const NewRecipeModal = () => {
     const [name, setName] = useState('')
     const [category, setCategory] = useState('')
     const [baseUnit, setBaseUnit] = useState('')
+    const [recipeYield, setRecipeYield] = useState('')
     const [hours, setHours] = useState('')
     const [minutes, setMinutes] = useState('')
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
@@ -43,6 +44,7 @@ export const NewRecipeModal = () => {
 
     const parsedConversionFactor = parseDecimalInput(conversionQuantityInBase)
     const parsedMinimumStockInput = parseDecimalInput(minimumStockQuantity)
+    const parsedRecipeYield = parseDecimalInput(recipeYield)
 
     const previewMinimumStockInBase = useMemo(() => {
         if (!usePurchaseConversion || minimumStockQuantity === '') return null
@@ -67,6 +69,7 @@ export const NewRecipeModal = () => {
         setName('')
         setCategory('')
         setBaseUnit('')
+        setRecipeYield('')
         setHours('')
         setMinutes('')
         setMinimumStockQuantity('')
@@ -101,6 +104,15 @@ export const NewRecipeModal = () => {
             name,
             category,
             baseUnit,
+        }
+
+        if (recipeYield !== '') {
+            if (isNaN(parsedRecipeYield) || parsedRecipeYield <= 0) {
+                setLocalError('Rendimento da receita inválido.')
+                return
+            }
+
+            payload.yield = parsedRecipeYield
         }
 
         const totalMinutes = Number(hours || 0) * 60 + Number(minutes || 0)
@@ -241,6 +253,25 @@ export const NewRecipeModal = () => {
                                 unidade base.
                             </p>
                         )}
+                    </div>
+
+                    <div className="grid gap-3">
+                        <Label>Rendimento (unidade base)</Label>
+                        <Input
+                            inputMode="decimal"
+                            placeholder="Ex: 1000 (gramas que a receita produz)"
+                            value={recipeYield}
+                            onChange={(e) =>
+                                setRecipeYield(
+                                    e.target.value.replace(/[^\d,.]/g, '')
+                                )
+                            }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Informe quanto esta receita rende em unidade base
+                            para calcular o custo por unidade ao usar em
+                            produtos.
+                        </p>
                     </div>
 
                     <div className="grid gap-3">

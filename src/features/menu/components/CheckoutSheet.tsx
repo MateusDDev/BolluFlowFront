@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent } from 'react'
-import { LoaderCircle } from 'lucide-react'
+import { LoaderCircle, X } from 'lucide-react'
 import {
     Alert,
     AlertDescription,
@@ -10,6 +10,7 @@ import {
 import { Button } from '@/shared/components/ui/button'
 import {
     Sheet,
+    SheetClose,
     SheetContent,
     SheetDescription,
     SheetFooter,
@@ -53,6 +54,10 @@ export function CheckoutSheet({
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-full overflow-y-auto border-l-menu-border bg-menu-background sm:max-w-xl">
+                <SheetClose className="absolute right-4 top-4 z-50 text-menu-text hover:text-menu-primary">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Fechar</span>
+                </SheetClose>
                 <SheetHeader className="border-b border-menu-border bg-menu-card/60 pb-4">
                     <SheetTitle className="text-menu-text">
                         Finalizar pedido

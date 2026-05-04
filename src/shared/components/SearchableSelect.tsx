@@ -71,12 +71,12 @@ export function SearchableSelect({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-[--radix-popover-trigger-width] p-0"
+                className="w-[--radix-popover-trigger-width] overflow-hidden p-0"
                 align="start"
             >
                 <Command>
                     <CommandInput placeholder={searchPlaceholder} />
-                    <CommandList>
+                    <CommandList className="max-h-60 overflow-y-auto">
                         <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => (

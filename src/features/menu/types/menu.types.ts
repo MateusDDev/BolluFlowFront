@@ -8,11 +8,11 @@ export interface PublicMenuProductModel {
     id: number
     name: string
     category?: string | null
-    description?: string | null
+    description: string | null
     finalPrice?: number
     salePrice?: number
     price?: number
-    imageUrl?: string | null
+    imageUrl: string | null
     isAvailable?: boolean
 }
 

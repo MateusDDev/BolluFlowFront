@@ -10,6 +10,17 @@ import {
 import { ProductComponentModel } from '@/features/products/services/product.model'
 import { ProductComponentsActions } from '@/features/products/details/components/atoms/ProductComponentsActions'
 
+const formatCurrencyPerBaseUnit = (value: number) =>
+    new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4,
+    }).format(value)
+
+const getBaseUnitSuffix = (baseUnit: string) =>
+    getMeasurementUnitLabel(baseUnit).replace(/[()]/g, '')
+
 export const productComponentsColumns: ColumnDef<ProductComponentModel>[] = [
     {
         accessorKey: 'name',
@@ -69,6 +80,26 @@ export const productComponentsColumns: ColumnDef<ProductComponentModel>[] = [
         header: 'Custo unitario',
         cell: ({ row }) => {
             const item = row.original
+
+            if (item.componentType === 'Recipe') {
+                if (item.costPerBaseUnit == null) {
+                    return (
+                        <span className="text-xs text-muted-foreground">
+                            Configure o rendimento da receita para calcular o
+                            custo
+                        </span>
+                    )
+                }
+
+                return (
+                    <span>
+                        {`${formatCurrencyPerBaseUnit(
+                            item.costPerBaseUnit
+                        )}/${getBaseUnitSuffix(item.baseUnit)}`}
+                    </span>
+                )
+            }
+
             return <span>{formatCurrency(item.unitPrice)}</span>
         },
     },
@@ -77,6 +108,25 @@ export const productComponentsColumns: ColumnDef<ProductComponentModel>[] = [
         header: 'Custo total',
         cell: ({ row }) => {
             const item = row.original
+
+            if (item.componentType === 'Recipe') {
+                if (item.costPerBaseUnit == null) {
+                    return (
+                        <span className="text-xs text-muted-foreground">
+                            Sem rendimento
+                        </span>
+                    )
+                }
+
+                return (
+                    <span>
+                        {formatCurrency(
+                            item.costPerBaseUnit * item.quantityUsed
+                        )}
+                    </span>
+                )
+            }
+
             return (
                 <span>
                     {formatCurrency(item.quantityUsed * item.unitPrice)}

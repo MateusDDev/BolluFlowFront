@@ -3,6 +3,7 @@ export type ProductComponentType = 'Ingredient' | 'Recipe' | 'Supply'
 export interface ProductModel {
     id: number
     name: string
+    description?: string | null
     category?: string | null
     salePrice: number
     stockQuantity: number
@@ -12,6 +13,7 @@ export interface ProductModel {
     finalPrice: number
     discountPercentage: number
     isActive: boolean
+    imageUrl: string | null
 }
 
 export interface ProductComponentModel {
@@ -24,6 +26,7 @@ export interface ProductComponentModel {
     name: string
     baseUnit: string
     unitPrice: number
+    costPerBaseUnit?: number | null
     stockQuantity: number
     quantityUsed: number
 }

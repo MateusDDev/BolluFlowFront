@@ -1,12 +1,12 @@
 import {
     ChefHatIcon,
     Home,
+    WalletCardsIcon,
     NotepadTextIcon,
     PackageIcon,
     ShoppingBagIcon,
     type LucideIcon,
     UsersIcon,
-    WalletCardsIcon,
     WheatIcon,
 } from 'lucide-react'
 
@@ -30,23 +30,12 @@ export const navItems: NavItem[] = [
         icon: NotepadTextIcon,
         section: 'principal',
     },
+
     {
         title: 'Financeiro',
         url: '/financeiro',
         icon: WalletCardsIcon,
         section: 'principal',
-    },
-    {
-        title: 'Receitas',
-        url: '/recipes',
-        icon: ChefHatIcon,
-        section: 'cardapio',
-    },
-    {
-        title: 'Produtos',
-        url: '/products',
-        icon: PackageIcon,
-        section: 'cardapio',
     },
     {
         title: 'Ingredientes',
@@ -59,6 +48,18 @@ export const navItems: NavItem[] = [
         url: '/supplies',
         icon: ShoppingBagIcon,
         section: 'estoque',
+    },
+    {
+        title: 'Receitas',
+        url: '/recipes',
+        icon: ChefHatIcon,
+        section: 'cardapio',
+    },
+    {
+        title: 'Produtos',
+        url: '/products',
+        icon: PackageIcon,
+        section: 'cardapio',
     },
     {
         title: 'Clientes',
