@@ -56,7 +56,7 @@ export function ProductList({
                         <div className="h-px flex-1 bg-menu-border" />
                     </div>
 
-                    <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {group.products.map((product) => (
                             <ProductCard
                                 key={product.id}
