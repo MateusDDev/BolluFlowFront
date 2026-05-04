@@ -36,11 +36,11 @@ export function ProductCard({
     return (
         <Card
             className={cn(
-                'border-white/70 bg-menu-card/90 shadow-md',
+                'w-full min-w-0 border-white/70 bg-menu-card/90 shadow-md',
                 isUnavailable && 'opacity-65'
             )}
         >
-            <CardContent className="flex items-center justify-between gap-4 py-6">
+            <CardContent className="flex min-w-0 items-center justify-between gap-4 py-6">
                 <div className="flex min-w-0 flex-1 items-center gap-4">
                     <Dialog>
                         {product.imageUrl ? (

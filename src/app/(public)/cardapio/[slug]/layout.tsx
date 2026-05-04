@@ -11,7 +11,7 @@ export default function MenuLayout({
     children: React.ReactNode
 }) {
     return (
-        <main className="min-h-screen bg-menu-background text-menu-text antialiased">
+        <main className="min-h-screen overflow-x-hidden bg-menu-background text-menu-text antialiased">
             {children}
         </main>
     )

@@ -196,7 +196,7 @@ export function MenuPageContainer({ slug }: Props) {
 
     return (
         <>
-            <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+            <div className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
                     <section className="space-y-8">
                         <MenuHeader title={menu?.name ?? 'Cardápio'} />
