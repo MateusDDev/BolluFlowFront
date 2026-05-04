@@ -31,7 +31,11 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
     {
         accessorKey: 'baseUnit',
         header: 'Unidade / referência',
-        cell: ({ row }) => <RecipeReferenceSelectorCell recipe={row.original} />,
+        cell: ({ row }) => (
+            <div onClick={(event) => event.stopPropagation()}>
+                <RecipeReferenceSelectorCell recipe={row.original} />
+            </div>
+        ),
     },
     {
         accessorKey: 'stockQuantity',
@@ -67,6 +71,10 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => <RecipeActions recipe={row.original} />,
+        cell: ({ row }) => (
+            <div onClick={(event) => event.stopPropagation()}>
+                <RecipeActions recipe={row.original} />
+            </div>
+        ),
     },
 ]

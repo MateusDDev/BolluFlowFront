@@ -34,6 +34,7 @@ interface FormState {
     name: string
     category: string
     baseUnit: string
+    recipeYield: string
     hours: string
     minutes: string
     isActive: boolean
@@ -65,6 +66,7 @@ const mapRecipeToForm = (recipe: RecipeModel): FormState => {
         name: recipe.name,
         category: recipe.category,
         baseUnit: normalizeMeasurementUnit(recipe.baseUnit),
+        recipeYield: recipe.yield?.toString().replace('.', ',') ?? '',
         hours,
         minutes,
         isActive: recipe.isActive,
@@ -125,6 +127,10 @@ export function RecipeDetails() {
             name: form.name,
             category: form.category,
             baseUnit: form.baseUnit,
+            yield:
+                form.recipeYield === ''
+                    ? null
+                    : Number(form.recipeYield.replace(',', '.')),
             isActive: form.isActive,
             finalPrice:
                 form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
@@ -236,6 +242,26 @@ export function RecipeDetails() {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div className="grid gap-2 col-span-2">
+                        <Label>Rendimento (unidade base)</Label>
+                        <Input
+                            inputMode="decimal"
+                            placeholder="Ex: 1000 (gramas que a receita produz)"
+                            value={form.recipeYield}
+                            onChange={(e) =>
+                                setField(
+                                    'recipeYield',
+                                    e.target.value.replace(/[^\d,.]/g, '')
+                                )
+                            }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Informe quanto esta receita rende em unidade base
+                            para calcular o custo por unidade ao usar em
+                            produtos.
+                        </p>
                     </div>
                 </div>
             </section>

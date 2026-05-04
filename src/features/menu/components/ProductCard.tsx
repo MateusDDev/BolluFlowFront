@@ -132,7 +132,7 @@ export function ProductCard({
                         </div>
 
                         {product.description ? (
-                            <p className="max-w-xl text-sm leading-6 text-menu-muted">
+                            <p className="line-clamp-2 max-w-xl text-sm text-menu-muted">
                                 {product.description}
                             </p>
                         ) : null}

@@ -21,6 +21,7 @@ export type CreateRecipeDataType = {
     name: string
     category: string
     baseUnit: string
+    yield?: number | null
     preparationTime?: number
     minimumStockQuantity?: number
 }
@@ -49,6 +50,7 @@ export type UpdateRecipeDataType = {
     name?: string
     category?: string
     baseUnit?: string
+    yield?: number | null
     preparationTime?: number
     isActive?: boolean
     finalPrice?: number

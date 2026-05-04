@@ -8,7 +8,7 @@ import {
 } from '@/shared/components/ui/alert'
 import { Card, CardHeader } from '@/shared/components/ui/card'
 import { Skeleton } from '@/shared/components/ui/skeleton'
-import { formatWhatsapp } from '@/shared/helpers/formatHelper'
+import { formatCurrency, formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { CartSummary } from '@/features/menu/components/CartSummary'
 import { MenuHeader } from '@/features/menu/components/MenuHeader'
 import { OrderConfirmation } from '@/features/menu/components/OrderConfirmation'
@@ -218,6 +218,7 @@ export function MenuPageContainer({ slug }: Props) {
                                 addProduct({
                                     id: item.productId,
                                     name: item.productName,
+                                    description: null,
                                     finalPrice: item.unitPrice,
                                     imageUrl: null,
                                     isAvailable: true,
@@ -243,6 +244,32 @@ export function MenuPageContainer({ slug }: Props) {
                 onWhatsappBlur={handleWhatsappBlur}
                 onSubmit={handleSubmit}
             />
+            {cart.length > 0 ? (
+                <>
+                    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-menu-border bg-menu-card/95 p-4 backdrop-blur lg:hidden">
+                        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+                            <div>
+                                <p className="text-sm text-menu-muted">
+                                    {totalItems}{' '}
+                                    {totalItems === 1 ? 'item' : 'itens'}
+                                </p>
+                                <p className="text-lg font-semibold text-menu-text">
+                                    {formatCurrency(total)}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleCheckout}
+                                className="inline-flex h-10 items-center justify-center rounded-full bg-menu-primary px-6 text-sm font-medium text-menu-primary-foreground"
+                            >
+                                Ver carrinho
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="h-24 lg:hidden" />
+                </>
+            ) : null}
         </>
     )
 }

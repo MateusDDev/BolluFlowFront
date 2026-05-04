@@ -14,7 +14,7 @@ export type NavItem = {
     title: string
     url: string
     icon: LucideIcon
-    section: 'principal' | 'estoque' | 'cadastros'
+    section: 'principal' | 'cardapio' | 'estoque' | 'cadastros'
 }
 
 export const navItems: NavItem[] = [
@@ -53,13 +53,13 @@ export const navItems: NavItem[] = [
         title: 'Receitas',
         url: '/recipes',
         icon: ChefHatIcon,
-        section: 'estoque',
+        section: 'cardapio',
     },
     {
         title: 'Produtos',
         url: '/products',
         icon: PackageIcon,
-        section: 'estoque',
+        section: 'cardapio',
     },
     {
         title: 'Clientes',
@@ -74,6 +74,7 @@ export const navSections: Array<{
     title: string
 }> = [
     { key: 'principal', title: 'Principal' },
+    { key: 'cardapio', title: 'Cardápio' },
     { key: 'estoque', title: 'Estoque' },
     { key: 'cadastros', title: 'Cadastros' },
 ]

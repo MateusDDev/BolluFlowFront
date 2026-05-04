@@ -11,6 +11,7 @@ import {
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
+import { Textarea } from 'ui/textarea'
 import React, { useState } from 'react'
 import { useCreateProduct } from '@/features/products/list/hooks/mutations/useCreateProduct'
 import { CreateProductDataType } from '@/features/products/services/product.api'
@@ -19,12 +20,14 @@ import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
 export const NewProductModal = () => {
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
+    const [description, setDescription] = useState('')
     const [category, setCategory] = useState('')
     const [salePrice, setSalePrice] = useState('')
     const { mutateAsync: createProduct, isPending, error } = useCreateProduct()
 
     const resetForm = () => {
         setName('')
+        setDescription('')
         setCategory('')
         setSalePrice('')
     }
@@ -35,6 +38,8 @@ export const NewProductModal = () => {
         const payload: CreateProductDataType = {
             name,
         }
+
+        payload.description = description.trim() || null
 
         if (category.trim()) {
             payload.category = category.trim()
@@ -56,7 +61,7 @@ export const NewProductModal = () => {
                 <Button variant="outline">Novo produto</Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
                     <DialogTitle>Novo produto final</DialogTitle>
                     <DialogDescription>
@@ -87,6 +92,15 @@ export const NewProductModal = () => {
                                 const digits = e.target.value.replace(/\D/g, '')
                                 setSalePrice(digits)
                             }}
+                        />
+                    </div>
+
+                    <div className="grid gap-3">
+                        <Label>Descrição</Label>
+                        <Textarea
+                            placeholder="Ex: Bolo fofinho com cobertura de chocolate..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
 

@@ -6,6 +6,7 @@ import { Button } from 'ui/button'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
 import { Switch } from 'ui/switch'
+import { Textarea } from 'ui/textarea'
 import { useGetProduct } from '@/features/products/list/hooks/queries/useGetProduct'
 import { useUpdateProduct } from '@/features/products/details/hooks/mutations/useUpdateProduct'
 import { ProductModel } from '@/features/products/services/product.model'
@@ -14,6 +15,7 @@ import { ProductImageUpload } from '@/features/products/components/ProductImageU
 
 interface FormState {
     name: string
+    description: string
     category: string
     minimumStockQuantity: string
     isActive: boolean
@@ -22,6 +24,7 @@ interface FormState {
 const mapProductToForm = (product: ProductModel): FormState => {
     return {
         name: product.name,
+        description: product.description ?? '',
         category: product.category ?? '',
         minimumStockQuantity: product.minimumStockQuantity?.toString() ?? '',
         isActive: product.isActive,
@@ -67,6 +70,7 @@ export function ProductDetails() {
 
         const payload: UpdateProductDataType = {
             name: form.name,
+            description: form.description.trim() || null,
             category: form.category.trim() || null,
             isActive: form.isActive,
         }
@@ -111,6 +115,17 @@ export function ProductDetails() {
                             value={form.category}
                             onChange={(e) =>
                                 setField('category', e.target.value)
+                            }
+                        />
+                    </div>
+
+                    <div className="grid gap-2 col-span-2">
+                        <Label>Descrição</Label>
+                        <Textarea
+                            placeholder="Ex: Bolo fofinho com cobertura de chocolate..."
+                            value={form.description}
+                            onChange={(e) =>
+                                setField('description', e.target.value)
                             }
                         />
                     </div>
