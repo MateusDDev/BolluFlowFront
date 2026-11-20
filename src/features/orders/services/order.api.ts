@@ -48,7 +48,7 @@ export function deleteOrderItem(orderId: number, itemId: number) {
 
 export type CreateOrderDataType = {
     customerId: number
-    notes?: string
+    note?: string
     deliveryDate?: Date
     paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null
 }

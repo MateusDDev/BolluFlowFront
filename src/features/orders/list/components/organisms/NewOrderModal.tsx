@@ -53,7 +53,7 @@ export const NewOrderModal = () => {
 
         const payload: CreateOrderDataType = {
             customerId: Number(customerId),
-            notes,
+            note: notes,
             deliveryDate,
             paymentMethod:
                 paymentMethod === PAYMENT_METHOD_UNDEFINED
