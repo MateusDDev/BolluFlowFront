@@ -79,3 +79,55 @@ export function createStockItemPackage(
 ) {
     return apiClient<null>(`${config.apiPath}/${id}/conversions`, 'POST', data)
 }
+
+export function deleteStockItemPackage(
+    config: StockItemConfig,
+    id: number,
+    packageId: number
+) {
+    return apiClient<null>(
+        `${config.apiPath}/${id}/conversions/${packageId}`,
+        'DELETE'
+    )
+}
+
+export function deleteStockItem(config: StockItemConfig, id: number) {
+    return apiClient<null>(`${config.apiPath}/${id}`, 'DELETE')
+}
+
+export function registerStockItemPurchase(
+    config: StockItemConfig,
+    data: {
+        itemId: number
+        quantity: number
+        unitCost: number
+        notes?: string
+        updateItemCost: boolean
+    }
+) {
+    return apiClient('/stock/movements', 'POST', {
+        itemType: config.kind,
+        itemId: data.itemId,
+        movementType: 'purchase',
+        quantity: data.quantity,
+        unitCost: data.unitCost,
+        notes: data.notes,
+        updateItemCost: data.updateItemCost,
+    })
+}
+
+export function adjustStockItem(
+    config: StockItemConfig,
+    data: {
+        itemId: number
+        quantity: number
+        direction: 'add' | 'remove'
+        unitCost: number
+        reason: string
+    }
+) {
+    return apiClient('/stock/movements/adjustment', 'POST', {
+        itemType: config.kind,
+        ...data,
+    })
+}
