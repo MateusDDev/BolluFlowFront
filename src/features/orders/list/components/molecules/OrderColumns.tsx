@@ -15,7 +15,14 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         header: 'Nº do Pedido',
     },
     {
-        accessorKey: 'customer.name',
+        id: 'customer',
+        accessorFn: (order) => order.customer?.name ?? 'Balcão',
+        cell: ({ row }) =>
+            row.original.customer ? (
+                row.original.customer.name
+            ) : (
+                <span className="text-muted-foreground">Balcão</span>
+            ),
         header: ({ column }) => {
             return (
                 <Button
@@ -36,6 +43,10 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         cell: ({ row }) => {
             const order = row.original as OrderModel
 
+            if (order.isQuickSale) {
+                return <Badge variant="outline">Venda rápida</Badge>
+            }
+
             return (
                 <Badge variant={orderStatusVariantMap[order.status]}>
                     {orderStatusLabelMap[order.status]}
@@ -45,14 +56,17 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
     },
     {
         accessorKey: 'deliveryDate',
-        header: 'Data de entrega',
+        header: 'Entrega',
         cell: ({ row }) => {
             const order = row.original as OrderModel
+            const date = order.isQuickSale
+                ? order.deliveredAt
+                : order.deliveryDate
 
-            return order.deliveryDate ? (
-                <span>{new Date(order.deliveryDate).toLocaleDateString()}</span>
+            return date ? (
+                <span>{new Date(date).toLocaleDateString('pt-BR')}</span>
             ) : (
-                <span>Sem data de entrega definida</span>
+                <span className="text-muted-foreground">—</span>
             )
         },
     },

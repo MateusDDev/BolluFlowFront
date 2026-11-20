@@ -80,7 +80,7 @@ export function OrderWhatsappModal({
     }
 
     const handleSend = () => {
-        openWhatsapp(order.customer.whatsapp, displayedMessage)
+        openWhatsapp(order.customer?.whatsapp ?? '', displayedMessage)
         setOpen(false)
     }
 
@@ -91,7 +91,7 @@ export function OrderWhatsappModal({
             <DialogContent className="sm:max-w-[640px]">
                 <DialogHeader>
                     <DialogTitle>
-                        Mensagem para {order.customer.name}
+                        Mensagem para {order.customer?.name ?? 'o cliente'}
                     </DialogTitle>
                     <DialogDescription>
                         Edite a mensagem antes de enviar. Formatação do WhatsApp
@@ -113,7 +113,7 @@ export function OrderWhatsappModal({
 
                     <Button
                         onClick={handleSend}
-                        disabled={!order.customer.whatsapp}
+                        disabled={!order.customer?.whatsapp}
                     >
                         Enviar no WhatsApp
                     </Button>

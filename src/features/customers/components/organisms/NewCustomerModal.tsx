@@ -41,11 +41,9 @@ const NewCustomerModal = () => {
             whatsapp,
             birthday,
             preferences,
-            deliveryAddress: {
-                neighborhood,
-                number: Number(number),
-                street,
-            },
+            deliveryAddress: street.trim()
+                ? { neighborhood, number: Number(number), street }
+                : undefined,
         })
 
         resetForm()
@@ -114,13 +112,17 @@ const NewCustomerModal = () => {
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Endereço de entrega*</Label>
+                        <Label>
+                            Endereço de entrega{' '}
+                            <span className="text-muted-foreground font-normal">
+                                (opcional)
+                            </span>
+                        </Label>
 
                         <Input
                             placeholder="Rua / Avenida"
                             value={street}
                             onChange={(e) => setStreet(e.target.value)}
-                            required
                         />
 
                         <div className="grid grid-cols-3 gap-2">
@@ -134,6 +136,7 @@ const NewCustomerModal = () => {
                                     )
                                     setNumber(onlyNumbers)
                                 }}
+                                required={street.trim() !== ''}
                             />
 
                             <Input
@@ -143,7 +146,7 @@ const NewCustomerModal = () => {
                                     setNeighborhood(e.target.value)
                                 }
                                 className="col-span-2"
-                                required
+                                required={street.trim() !== ''}
                             />
                         </div>
                     </div>

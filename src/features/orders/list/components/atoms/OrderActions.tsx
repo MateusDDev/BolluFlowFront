@@ -70,7 +70,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                     Comanda do cliente
                 </DropdownMenuItem>
 
-                {order.customer.whatsapp && (
+                {order.customer?.whatsapp && (
                     <OrderWhatsappModal
                         order={order}
                         trigger={

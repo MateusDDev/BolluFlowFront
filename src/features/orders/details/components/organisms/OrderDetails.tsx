@@ -58,7 +58,7 @@ interface FormState {
 
 function mapOrderToForm(order: OrderModel): FormState {
     return {
-        customerId: order.customer.id.toString(),
+        customerId: order.customer?.id.toString() ?? '',
         deliveryDate: order.deliveryDate
             ? new Date(order.deliveryDate)
             : undefined,
@@ -129,7 +129,7 @@ export function OrderDetails() {
         const parsedShippingFee = Number(form.shippingFee) / 100
 
         const payload: UpdateOrderDataType = {
-            customerId: Number(form.customerId),
+            customerId: form.customerId ? Number(form.customerId) : undefined,
             note: form.note,
             deliveryDate: form.deliveryDate,
             paymentMethod:
@@ -180,7 +180,7 @@ export function OrderDetails() {
                 </div>
 
                 <div className="flex gap-2">
-                    {order.customer.whatsapp && (
+                    {order.customer?.whatsapp && (
                         <OrderWhatsappModal
                             order={order}
                             orderItems={orderItems}
@@ -232,7 +232,7 @@ export function OrderDetails() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 Cliente
-                                {!isEditing && (
+                                {!isEditing && order.customer?.whatsapp && (
                                     <Link
                                         href={`https://wa.me/${order.customer.whatsapp}`}
                                         target="_blank"
@@ -269,29 +269,36 @@ export function OrderDetails() {
                                     />
                                 ) : (
                                     <Input
-                                        value={order.customer.name}
+                                        value={
+                                            order.customer?.name ??
+                                            'Sem cliente (venda no balcão)'
+                                        }
                                         disabled
                                     />
                                 )}
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label>WhatsApp</Label>
-                                <Input
-                                    value={formatWhatsapp(
-                                        order.customer.whatsapp
-                                    )}
-                                    disabled
-                                />
-                            </div>
+                            {order.customer && (
+                                <div className="grid gap-2">
+                                    <Label>WhatsApp</Label>
+                                    <Input
+                                        value={formatWhatsapp(
+                                            order.customer.whatsapp
+                                        )}
+                                        disabled
+                                    />
+                                </div>
+                            )}
 
-                            <div className="grid gap-2">
-                                <Label>Endereço</Label>
-                                <Input
-                                    value={`Rua ${order.customer.deliveryAddress.street}, Nº ${order.customer.deliveryAddress.number} - Bairro ${order.customer.deliveryAddress.neighborhood}`}
-                                    disabled
-                                />
-                            </div>
+                            {order.customer?.deliveryAddress && (
+                                <div className="grid gap-2">
+                                    <Label>Endereço</Label>
+                                    <Input
+                                        value={`Rua ${order.customer.deliveryAddress.street}, Nº ${order.customer.deliveryAddress.number} - Bairro ${order.customer.deliveryAddress.neighborhood}`}
+                                        disabled
+                                    />
+                                </div>
+                            )}
 
                             <div className="grid gap-2">
                                 <Label>Forma de pagamento</Label>

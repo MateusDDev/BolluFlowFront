@@ -40,13 +40,13 @@ interface CustomerModel {
     whatsapp: string
     preferences: string
     birthday: Date
-    deliveryAddress: CustomerDeliveryAddress
+    deliveryAddress: CustomerDeliveryAddress | null
 }
 
 export interface OrderModel {
     id: number
     number: number
-    customer: CustomerModel
+    customer: CustomerModel | null
     status: OrderStatus
     note: string
     paymentMethod?: PaymentMethod | null
@@ -58,6 +58,8 @@ export interface OrderModel {
     total: number
     createdAt: Date
     deliveryDate?: Date
+    isQuickSale: boolean
+    deliveredAt?: Date | null
 }
 
 interface OrderItemProductModel {

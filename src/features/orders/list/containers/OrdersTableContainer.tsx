@@ -9,7 +9,8 @@ import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
 import { useGetOrders } from '@/features/orders/list/hooks/queries/useGetOrders'
 import { orderColumns } from '@/features/orders/list/components/molecules/OrderColumns'
-import { NewOrderModal } from '@/features/orders/list/components/organisms/NewOrderModal'
+import Link from 'next/link'
+import { Plus, ShoppingBag } from 'lucide-react'
 
 export function OrdersTableContainer() {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
@@ -41,7 +42,20 @@ export function OrdersTableContainer() {
                         <Search className="text-primary" />
                     </Button>
                 </div>
-                <NewOrderModal />
+                <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                        <Link href="/orders/new?mode=order">
+                            <Plus className="h-4 w-4" />
+                            Encomenda
+                        </Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/orders/new?mode=quick">
+                            <ShoppingBag className="h-4 w-4" />
+                            Venda rápida
+                        </Link>
+                    </Button>
+                </div>
             </div>
             <div>
                 <DataTable

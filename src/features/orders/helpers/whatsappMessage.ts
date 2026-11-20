@@ -22,7 +22,7 @@ function formatOrderItems(items: OrderItemModel[]): string {
 }
 
 function formatDeliveryAddress(order: OrderModel): string {
-    const deliveryAddress = order.customer.deliveryAddress
+    const deliveryAddress = order.customer?.deliveryAddress
 
     if (!deliveryAddress) return ''
 
@@ -70,7 +70,7 @@ export function buildOrderWhatsappMessage(
     const lines: string[] = []
 
     const items = order.items ?? []
-    lines.push(`Olá, *${order.customer.name}*!`)
+    lines.push(order.customer ? `Olá, *${order.customer.name}*!` : 'Olá!')
     lines.push('')
     lines.push('Segue o resumo do seu pedido:')
     lines.push('')
@@ -99,7 +99,7 @@ export function buildOrderWhatsappMessage(
         lines.push(`Entrega: ${formatDate(order.deliveryDate)}`)
     }
 
-    if (order.customer.deliveryAddress) {
+    if (order.customer?.deliveryAddress) {
         const { street, number, neighborhood } = order.customer.deliveryAddress
         lines.push(`${street}, ${number} — ${neighborhood}`)
     }
