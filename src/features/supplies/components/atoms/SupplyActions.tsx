@@ -22,7 +22,8 @@ import {
 import { Button } from 'ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
-import { EditSupplyModal } from '@/features/supplies/components/organisms/EditSupplyModal'
+import { StockItemFormDialog } from '@/features/stockItems/components/StockItemFormDialog'
+import { SUPPLY_CONFIG } from '@/features/stockItems/services/stockItem.config'
 import { useDeleteSupply } from '@/features/supplies/hooks/mutations/useDeleteSupply'
 import { SupplyConversionsModal } from '@/features/supplies/components/organisms/SupplyConversionsModal'
 import { SupplyStockEntryModal } from '@/features/supplies/components/organisms/SupplyStockEntryModal'
@@ -63,7 +64,7 @@ export function SupplyActions({ supply }: Props) {
                     <DropdownMenuItem
                         onClick={() => setIsConversionsOpen(true)}
                     >
-                        Gerenciar conversoes
+                        Embalagens
                     </DropdownMenuItem>
                     <ModuleGate module={['stock', 'finance']}>
                         <DropdownMenuItem
@@ -88,8 +89,9 @@ export function SupplyActions({ supply }: Props) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <EditSupplyModal
-                supply={supply}
+            <StockItemFormDialog
+                config={SUPPLY_CONFIG}
+                item={supply}
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
             />

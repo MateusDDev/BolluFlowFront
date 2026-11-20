@@ -22,7 +22,8 @@ import {
 import { Button } from 'ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { useDeleteIngredient } from '@/features/ingredients/hooks/mutations/useDeleteIngredient'
-import { EditIngredientModal } from '@/features/ingredients/components/organisms/EditIngredientModal'
+import { StockItemFormDialog } from '@/features/stockItems/components/StockItemFormDialog'
+import { INGREDIENT_CONFIG } from '@/features/stockItems/services/stockItem.config'
 import { IngredientConversionsModal } from '@/features/ingredients/components/organisms/IngredientConversionsModal'
 import { IngredientStockEntryModal } from '@/features/ingredients/components/organisms/IngredientStockEntryModal'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
@@ -65,7 +66,7 @@ export function IngredientActions({ ingredient }: Props) {
                     <DropdownMenuItem
                         onClick={() => setIsConversionsOpen(true)}
                     >
-                        Gerenciar conversões
+                        Embalagens
                     </DropdownMenuItem>
 
                     <ModuleGate module={['stock', 'finance']}>
@@ -92,8 +93,9 @@ export function IngredientActions({ ingredient }: Props) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <EditIngredientModal
-                ingredient={ingredient}
+            <StockItemFormDialog
+                config={INGREDIENT_CONFIG}
+                item={ingredient}
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
             />
