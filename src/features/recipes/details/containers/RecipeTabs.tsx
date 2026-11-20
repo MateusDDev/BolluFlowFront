@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from 'ui/tabs'
 import { BackButton } from 'components/BackButton'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
@@ -12,16 +12,20 @@ import { RecipeIngredientsTable } from '@/features/recipes/details/components/or
 import { RecipeConversionsSection } from '@/features/recipes/details/components/organisms/RecipeConversionsSection'
 import { Button } from 'ui/button'
 import { RecipeProductionModal } from '@/features/recipes/list/components/organisms/RecipeProductionModal'
+import { useModules } from '@/shared/modules/useModules'
 
 export function RecipeTabs() {
     const { id } = useParams<{ id: string }>()
     const recipeId = Number(id)
+    const searchParams = useSearchParams()
+    const initialTab = searchParams.get('tab') ?? 'details'
 
     const ingredientsQuery = useGetRecipeIngredients(recipeId)
 
     const { data: recipe } = useGetRecipe(recipeId)
     const [isProductionOpen, setIsProductionOpen] = useState(false)
     const { setTitle } = usePageTitle()
+    const { hasModule } = useModules()
 
     useEffect(() => {
         if (recipe?.name) setTitle(recipe.name)
@@ -31,7 +35,7 @@ export function RecipeTabs() {
 
     return (
         <section>
-            <Tabs defaultValue="details">
+            <Tabs defaultValue={initialTab}>
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <BackButton />
@@ -41,12 +45,12 @@ export function RecipeTabs() {
                                 Ingredientes
                             </TabsTrigger>
                             <TabsTrigger value="conversions">
-                                Conversões
+                                Porções
                             </TabsTrigger>
                         </TabsList>
                     </div>
                     <div className="flex items-center gap-2">
-                        {recipe && (
+                        {recipe && hasModule('stock') && (
                             <Button
                                 variant="outline"
                                 onClick={() => setIsProductionOpen(true)}

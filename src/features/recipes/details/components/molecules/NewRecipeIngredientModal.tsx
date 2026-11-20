@@ -1,11 +1,11 @@
 ﻿'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
-
+import { Plus } from 'lucide-react'
+import { Button } from 'ui/button'
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -13,17 +13,24 @@ import {
     DialogTitle,
     DialogTrigger,
 } from 'ui/dialog'
-import { Button } from 'ui/button'
-import { SearchableSelect } from 'components/SearchableSelect'
-import { Label } from 'ui/label'
 import { Input } from 'ui/input'
-
+import { Label } from 'ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
+import { SearchableSelect } from 'components/SearchableSelect'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { useGetIngredients } from '@/features/recipes/details/hooks/queries/useGetIngredients'
 import { useCreateRecipeIngredient } from '@/features/recipes/details/hooks/mutations/useCreateRecipeIngredient'
-import { CreateRecipeIngredientDataType } from '@/features/recipes/services/recipe.api'
 import { useGetRecipeIngredients } from '@/features/recipes/details/hooks/queries/useGetRecipeIngredients'
-import { formatQuantityInput } from '@/shared/helpers/formatHelper'
-import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
+import { INGREDIENT_CONFIG } from '@/features/stockItems/services/stockItem.config'
+import { useStockItemPackages } from '@/features/stockItems/hooks/useStockItemActions'
+import { buildQuantityUnitOptions } from '@/features/stockItems/services/stockItemQuantityUnits'
+import { formatStockQuantity } from '@/features/stockItems/services/stockItemUnits'
 
 export function NewRecipeIngredientModal() {
     const { id } = useParams<{ id: string }>()
@@ -31,47 +38,44 @@ export function NewRecipeIngredientModal() {
 
     const [open, setOpen] = useState(false)
     const [ingredientId, setIngredientId] = useState('')
-    const [quantityUsed, setQuantityUsed] = useState('')
+    const [quantity, setQuantity] = useState('')
+    const [unitValue, setUnitValue] = useState('base')
 
     const { data: ingredients, isLoading } = useGetIngredients()
-    const { data: recipeIngredients } = useGetRecipeIngredients(Number(id))
+    const { data: recipeIngredients } = useGetRecipeIngredients(recipeId)
     const {
         mutateAsync: createRecipeIngredient,
         isPending,
         error,
     } = useCreateRecipeIngredient()
 
-    const resetForm = () => {
-        setIngredientId('')
-        setQuantityUsed('')
-    }
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        if (!ingredientId || !quantityUsed) return
-
-        const normalizedQuantity = Number(quantityUsed.replace(',', '.'))
-
-        if (isNaN(normalizedQuantity) || normalizedQuantity <= 0) return
-
-        const payload: CreateRecipeIngredientDataType = {
-            ingredientId: Number(ingredientId),
-            quantityUsed: normalizedQuantity,
-        }
-
-        await createRecipeIngredient({
-            recipeId,
-            data: payload,
-        })
-
-        resetForm()
-        setOpen(false)
-    }
-
     const selectedIngredient = ingredients?.find(
         (ingredient) => ingredient.id.toString() === ingredientId
     )
+
+    const { data: packages = [] } = useStockItemPackages(
+        INGREDIENT_CONFIG,
+        Number(ingredientId),
+        open && !!selectedIngredient
+    )
+
+    const unitOptions = useMemo(
+        () =>
+            selectedIngredient
+                ? buildQuantityUnitOptions(
+                      selectedIngredient.baseUnit,
+                      packages
+                  )
+                : [],
+        [selectedIngredient, packages]
+    )
+
+    const selectedUnit =
+        unitOptions.find((option) => option.value === unitValue) ??
+        unitOptions.find((option) => option.value === 'base')
+
+    const quantityValue = Number(quantity.replace(',', '.')) || 0
+    const quantityInBase = quantityValue * (selectedUnit?.factor ?? 1)
 
     const usedIngredientIds = recipeIngredients?.map(
         (ingredient) => ingredient.ingredientId
@@ -81,30 +85,50 @@ export function NewRecipeIngredientModal() {
         (ingredient) => !usedIngredientIds?.includes(ingredient.id)
     )
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (!open) resetForm()
-    }, [open])
+    const handleOpenChange = (next: boolean) => {
+        setOpen(next)
+        if (!next) return
+
+        setIngredientId('')
+        setQuantity('')
+        setUnitValue('base')
+    }
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!selectedIngredient || quantityInBase <= 0) return
+
+        await createRecipeIngredient({
+            recipeId,
+            data: {
+                ingredientId: selectedIngredient.id,
+                quantityUsed: quantityInBase,
+            },
+        })
+
+        setOpen(false)
+    }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">Adicionar ingrediente</Button>
+                <Button>
+                    <Plus className="h-4 w-4" />
+                    Adicionar ingrediente
+                </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[440px]">
                 <DialogHeader>
                     <DialogTitle>Adicionar ingrediente</DialogTitle>
                     <DialogDescription>
-                        Selecione o ingrediente e informe a quantidade usada na
-                        receita.
+                        Quanto deste ingrediente vai na receita inteira.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
-                    <div className="grid gap-3">
-                        <Label>Ingrediente*</Label>
-
+                    <div className="grid gap-2">
+                        <Label>Ingrediente</Label>
                         <SearchableSelect
                             options={
                                 availableIngredients?.map((ingredient) => ({
@@ -113,7 +137,10 @@ export function NewRecipeIngredientModal() {
                                 })) ?? []
                             }
                             value={ingredientId}
-                            onValueChange={setIngredientId}
+                            onValueChange={(value) => {
+                                setIngredientId(value)
+                                setUnitValue('base')
+                            }}
                             disabled={isLoading}
                             placeholder="Selecione um ingrediente"
                             searchPlaceholder="Buscar ingrediente..."
@@ -121,60 +148,79 @@ export function NewRecipeIngredientModal() {
                         />
                     </div>
 
-                    <div className="grid gap-3">
-                        <div className="flex justify-between items-center">
-                            <Label>Quantidade usada*</Label>
-
-                            {selectedIngredient?.baseUnit && (
-                                <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(
+                    {selectedIngredient && (
+                        <div className="grid gap-2">
+                            <Label>Quantidade</Label>
+                            <div className="grid grid-cols-[1fr_2fr] gap-2">
+                                <Input
+                                    inputMode="decimal"
+                                    placeholder="Ex.: 200"
+                                    value={quantity}
+                                    onChange={(e) =>
+                                        setQuantity(e.target.value)
+                                    }
+                                    autoFocus
+                                />
+                                <Select
+                                    value={selectedUnit?.value}
+                                    onValueChange={setUnitValue}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {unitOptions.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {quantityInBase > 0 && (
+                                <p className="text-muted-foreground text-xs">
+                                    ={' '}
+                                    {formatStockQuantity(
+                                        quantityInBase,
                                         selectedIngredient.baseUnit
+                                    )}{' '}
+                                    · custo{' '}
+                                    {formatCurrency(
+                                        quantityInBase *
+                                            selectedIngredient.unitCost
                                     )}
-                                </span>
+                                </p>
                             )}
                         </div>
-                        <Input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="Ex: 0,5"
-                            value={quantityUsed}
-                            onChange={(e) =>
-                                setQuantityUsed(
-                                    formatQuantityInput(e.target.value)
-                                )
+                    )}
+
+                    {error && (
+                        <p className="text-destructive text-sm">
+                            {error.message}
+                        </p>
+                    )}
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={
+                                isPending ||
+                                !selectedIngredient ||
+                                quantityInBase <= 0
                             }
-                            className="pr-12"
-                            required
-                        />
-                    </div>
-
-                    <DialogFooter className="flex flex-col gap-2">
-                        <div className="flex justify-end gap-2">
-                            <DialogClose asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={isPending}
-                                >
-                                    Cancelar
-                                </Button>
-                            </DialogClose>
-
-                            <Button
-                                type="submit"
-                                disabled={
-                                    isPending || !ingredientId || !quantityUsed
-                                }
-                            >
-                                {isPending ? 'Salvando...' : 'Adicionar'}
-                            </Button>
-                        </div>
-
-                        {error && (
-                            <p className="text-sm text-red-500">
-                                {error.message}
-                            </p>
-                        )}
+                        >
+                            {isPending ? 'Salvando...' : 'Adicionar'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

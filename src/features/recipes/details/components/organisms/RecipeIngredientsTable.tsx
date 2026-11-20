@@ -9,6 +9,7 @@ import { Button } from 'ui/button'
 import { Search } from 'lucide-react'
 import { NewRecipeIngredientModal } from '@/features/recipes/details/components/molecules/NewRecipeIngredientModal'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
+import { useModuleColumns } from '@/shared/modules/moduleColumns'
 
 type RecipeIngredientsTableProps = {
     recipeIngredients?: RecipeIngredientModel[]
@@ -23,6 +24,7 @@ export function RecipeIngredientsTable({
 }: RecipeIngredientsTableProps) {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
     const [searchValue, setSearchValue] = useState<string>('')
+    const columns = useModuleColumns(recipeIngredientsColumns)
 
     if (isLoading) return <p>Carregando ingredientes...</p>
 
@@ -52,7 +54,7 @@ export function RecipeIngredientsTable({
             </div>
             <div>
                 <DataTable
-                    columns={recipeIngredientsColumns}
+                    columns={columns}
                     data={recipeIngredients ?? []}
                     noDataMessage="Nenhum ingrediente encontrado"
                     columnFilters={filters}
