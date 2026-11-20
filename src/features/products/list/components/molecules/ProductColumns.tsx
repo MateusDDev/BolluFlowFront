@@ -26,6 +26,7 @@ export const productColumns: ColumnDef<ProductModel>[] = [
     },
     {
         accessorKey: 'stockQuantity',
+        meta: { module: 'stock' },
         header: 'Estoque',
         cell: ({ row }) => (
             <TrackedStock trackStock={row.original.trackStock}>

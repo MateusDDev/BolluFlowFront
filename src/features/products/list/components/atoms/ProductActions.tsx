@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useModules } from '@/shared/modules/useModules'
+import { ModuleGate } from '@/shared/modules/ModuleGate'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,7 +22,6 @@ type Props = {
 export function ProductActions({ product }: Props) {
     const [isProductionOpen, setIsProductionOpen] = useState(false)
     const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
-    const { hasModule } = useModules()
 
     return (
         <>
@@ -41,20 +40,18 @@ export function ProductActions({ product }: Props) {
                             Ver detalhes
                         </Link>
                     </DropdownMenuItem>
-                    {hasModule('stock') && (
-                        <>
-                            <DropdownMenuItem
-                                onClick={() => setIsProductionOpen(true)}
-                            >
-                                Registrar produção
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => setIsStockAdjustmentOpen(true)}
-                            >
-                                Corrigir estoque
-                            </DropdownMenuItem>
-                        </>
-                    )}
+                    <ModuleGate module="stock">
+                        <DropdownMenuItem
+                            onClick={() => setIsProductionOpen(true)}
+                        >
+                            Registrar produção
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => setIsStockAdjustmentOpen(true)}
+                        >
+                            Corrigir estoque
+                        </DropdownMenuItem>
+                    </ModuleGate>
                 </DropdownMenuContent>
             </DropdownMenu>
 

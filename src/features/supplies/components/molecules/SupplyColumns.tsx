@@ -32,6 +32,7 @@ export const supplyColumns: ColumnDef<SupplyModel>[] = [
     },
     {
         accessorKey: 'stockQuantity',
+        meta: { module: 'stock' },
         header: 'Estoque disponível',
         cell: ({ row }) => (
             <TrackedStock trackStock={row.original.trackStock}>
@@ -44,6 +45,7 @@ export const supplyColumns: ColumnDef<SupplyModel>[] = [
     },
     {
         accessorKey: 'minimumStockQuantity',
+        meta: { module: 'stock' },
         header: 'Estoque mínimo',
         cell: ({ row }) => (
             <SupplyStockDisplayCell

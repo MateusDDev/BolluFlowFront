@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { ModuleGate } from '@/shared/modules/ModuleGate'
 import {
     Dialog,
     DialogClose,
@@ -15,7 +16,6 @@ import { Label } from 'ui/label'
 import { SupplyModel } from '@/features/supplies/services/supply.model'
 import { useUpdateSupply } from '@/features/supplies/hooks/mutations/useUpdateSupply'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
-import { useModules } from '@/shared/modules/useModules'
 import { TrackStockField } from '@/shared/modules/stock'
 
 interface Props {
@@ -30,7 +30,6 @@ export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
     const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
     const [trackStock, setTrackStock] = useState(false)
 
-    const { hasModule } = useModules()
     const { mutateAsync, isPending, error } = useUpdateSupply()
 
     useEffect(() => {
@@ -104,13 +103,13 @@ export function EditSupplyModal({ supply, open, onOpenChange }: Props) {
                         />
                     </div>
 
-                    {hasModule('stock') && (
+                    <ModuleGate module="stock">
                         <TrackStockField
                             id="supply-track-stock"
                             checked={trackStock}
                             onCheckedChange={setTrackStock}
                         />
-                    )}
+                    </ModuleGate>
 
                     <DialogFooter className="flex flex-col gap-2">
                         <div className="flex justify-end gap-2">

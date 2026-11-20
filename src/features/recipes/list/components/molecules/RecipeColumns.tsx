@@ -40,6 +40,7 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
     },
     {
         accessorKey: 'stockQuantity',
+        meta: { module: 'stock' },
         header: 'Estoque disponível',
         cell: ({ row }) => (
             <TrackedStock trackStock={row.original.trackStock}>
@@ -52,6 +53,7 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
     },
     {
         accessorKey: 'minimumStockQuantity',
+        meta: { module: 'stock' },
         header: 'Estoque mínimo',
         cell: ({ row }) => (
             <RecipeStockDisplayCell

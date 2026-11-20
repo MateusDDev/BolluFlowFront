@@ -1,8 +1,7 @@
 ﻿'use client'
 
 import { useGetIngredients } from '@/features/ingredients/hooks/queries/useGetIngredients'
-import { useModules } from '@/shared/modules/useModules'
-import { withoutStockColumns } from '@/shared/modules/stock'
+import { useModuleColumns } from '@/shared/modules/moduleColumns'
 import { useState } from 'react'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { DataTable } from 'ui/dataTable'
@@ -14,7 +13,7 @@ import { NewIngredientModal } from '@/features/ingredients/components/organisms/
 
 export const IngredientsTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { hasModule } = useModules()
+    const columns = useModuleColumns(ingredientsTableColumns)
     const { data: ingredients, isLoading, error } = useGetIngredients()
     const [searchValue, setSearchValue] = useState<string>('')
 
@@ -46,11 +45,7 @@ export const IngredientsTableContainer = () => {
             </div>
             <div>
                 <DataTable
-                    columns={
-                        hasModule('stock')
-                            ? ingredientsTableColumns
-                            : withoutStockColumns(ingredientsTableColumns)
-                    }
+                    columns={columns}
                     data={ingredients ?? []}
                     noDataMessage="Nenhum ingrediente encontrado"
                     columnFilters={filters}

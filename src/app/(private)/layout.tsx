@@ -6,6 +6,7 @@ import NavBar from 'components/NavBar'
 import { SidebarInset, SidebarProvider } from 'ui/sidebar'
 import AppSidebar from 'components/AppSidebar'
 import { AuthWrapper } from '@/features/login/components/AuthWrapper'
+import { ModuleRouteGuard } from '@/shared/modules/ModuleRouteGuard'
 import { PageTitleProvider } from 'components/providers/PageTitleProvider'
 import React, { useEffect, useState } from 'react'
 
@@ -34,7 +35,9 @@ export default function PrivateLayout({
                 <SidebarInset>
                     <PageTitleProvider>
                         <NavBar />
-                        <main className="w-full px-4">{children}</main>
+                        <main className="w-full px-4">
+                            <ModuleRouteGuard>{children}</ModuleRouteGuard>
+                        </main>
                     </PageTitleProvider>
                 </SidebarInset>
             </SidebarProvider>

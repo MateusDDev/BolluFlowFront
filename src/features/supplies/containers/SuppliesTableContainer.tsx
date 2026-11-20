@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useModules } from '@/shared/modules/useModules'
-import { withoutStockColumns } from '@/shared/modules/stock'
+import { useModuleColumns } from '@/shared/modules/moduleColumns'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { Search } from 'lucide-react'
 import { Input } from 'ui/input'
@@ -14,7 +13,7 @@ import { NewSupplyModal } from '@/features/supplies/components/organisms/NewSupp
 
 export function SuppliesTableContainer() {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { hasModule } = useModules()
+    const columns = useModuleColumns(supplyColumns)
     const [searchValue, setSearchValue] = useState('')
     const { data: supplies, isLoading, error } = useGetSupplies()
 
@@ -44,11 +43,7 @@ export function SuppliesTableContainer() {
                 <NewSupplyModal />
             </div>
             <DataTable
-                columns={
-                    hasModule('stock')
-                        ? supplyColumns
-                        : withoutStockColumns(supplyColumns)
-                }
+                columns={columns}
                 data={supplies ?? []}
                 noDataMessage="Nenhum insumo encontrado"
                 columnFilters={filters}

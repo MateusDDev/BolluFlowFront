@@ -1,20 +1,6 @@
 import { ReactNode } from 'react'
-import { ColumnDef } from '@tanstack/react-table'
 import { Label } from 'ui/label'
 import { Switch } from 'ui/switch'
-
-const STOCK_COLUMN_KEYS = ['stockQuantity', 'minimumStockQuantity']
-
-export function withoutStockColumns<TData, TValue>(
-    columns: ColumnDef<TData, TValue>[]
-) {
-    return columns.filter((column) => {
-        const key =
-            'accessorKey' in column ? String(column.accessorKey) : column.id
-
-        return !key || !STOCK_COLUMN_KEYS.includes(key)
-    })
-}
 
 type TrackedStockProps = {
     trackStock: boolean

@@ -1,8 +1,7 @@
 ﻿'use client'
 
 import { Input } from 'ui/input'
-import { useModules } from '@/shared/modules/useModules'
-import { withoutStockColumns } from '@/shared/modules/stock'
+import { useModuleColumns } from '@/shared/modules/moduleColumns'
 import { Button } from 'ui/button'
 import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
@@ -15,7 +14,7 @@ import { NewRecipeModal } from '@/features/recipes/list/components/organisms/New
 
 export const RecipesTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { hasModule } = useModules()
+    const columns = useModuleColumns(recipeColumns)
     const { data: recipes, isLoading, error } = useGetRecipes()
     const [searchValue, setSearchValue] = useState<string>('')
     const router = useRouter()
@@ -48,11 +47,7 @@ export const RecipesTableContainer = () => {
             </div>
             <div>
                 <DataTable
-                    columns={
-                        hasModule('stock')
-                            ? recipeColumns
-                            : withoutStockColumns(recipeColumns)
-                    }
+                    columns={columns}
                     data={recipes ?? []}
                     noDataMessage="Nenhuma receita encontrada"
                     columnFilters={filters}

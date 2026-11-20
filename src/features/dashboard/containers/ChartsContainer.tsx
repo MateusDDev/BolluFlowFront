@@ -103,10 +103,11 @@ const ChartsContainer = () => {
     const hasStock = hasModule('stock')
     const hasOrders = hasModule('orders')
 
-    const stockAlertsQuery = useGetDashboardStockAlerts()
-    const ordersByStatusQuery = useGetDashboardOrdersByStatus()
-    const inventoryValueByTypeQuery = useGetDashboardInventoryValueByType()
-    const recentOrdersQuery = useGetDashboardRecentOrders()
+    const stockAlertsQuery = useGetDashboardStockAlerts(hasStock)
+    const ordersByStatusQuery = useGetDashboardOrdersByStatus(hasOrders)
+    const inventoryValueByTypeQuery =
+        useGetDashboardInventoryValueByType(hasStock)
+    const recentOrdersQuery = useGetDashboardRecentOrders(hasOrders)
 
     const isLoading =
         stockAlertsQuery.isLoading ||
