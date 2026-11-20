@@ -61,6 +61,7 @@ export function ProductTabs() {
             <Tabs defaultValue="overview" className="gap-6">
                 <header className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
+                        <BackButton href="/products" />
                         {usesRecipes ? (
                             <TabsList>
                                 <TabsTrigger value="overview">
@@ -87,7 +88,6 @@ export function ProductTabs() {
                                 Registrar produção
                             </Button>
                         )}
-                        <BackButton className="[&_svg]:size-6" />
                     </div>
                 </header>
 

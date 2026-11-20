@@ -10,11 +10,15 @@ export function OrderTabs() {
         <section>
             <Tabs defaultValue="details">
                 <div className="flex justify-between items-center">
-                    <TabsList>
-                        <TabsTrigger value="details">Detalhes</TabsTrigger>
-                        <TabsTrigger value="items">Itens do pedido</TabsTrigger>
-                    </TabsList>
-                    <BackButton className="[&_svg]:size-6" />
+                    <div className="flex items-center gap-2">
+                        <BackButton />
+                        <TabsList>
+                            <TabsTrigger value="details">Detalhes</TabsTrigger>
+                            <TabsTrigger value="items">
+                                Itens do pedido
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
                 </div>
                 <TabsContent value="details">
                     <OrderDetails />

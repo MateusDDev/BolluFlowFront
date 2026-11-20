@@ -33,15 +33,18 @@ export function RecipeTabs() {
         <section>
             <Tabs defaultValue="details">
                 <div className="flex justify-between items-center">
-                    <TabsList>
-                        <TabsTrigger value="details">Detalhes</TabsTrigger>
-                        <TabsTrigger value="ingredients">
-                            Ingredientes
-                        </TabsTrigger>
-                        <TabsTrigger value="conversions">
-                            Conversões
-                        </TabsTrigger>
-                    </TabsList>
+                    <div className="flex items-center gap-2">
+                        <BackButton />
+                        <TabsList>
+                            <TabsTrigger value="details">Detalhes</TabsTrigger>
+                            <TabsTrigger value="ingredients">
+                                Ingredientes
+                            </TabsTrigger>
+                            <TabsTrigger value="conversions">
+                                Conversões
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
                     <div className="flex items-center gap-2">
                         {recipe && (
                             <Button
@@ -51,7 +54,6 @@ export function RecipeTabs() {
                                 Registrar produção
                             </Button>
                         )}
-                        <BackButton className="[&_svg]:size-6" />
                     </div>
                 </div>
                 <TabsContent value="details">

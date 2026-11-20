@@ -12,6 +12,7 @@ import { DatePicker } from 'components/DatePicker'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
 import { SearchableSelect } from 'components/SearchableSelect'
 import { ChipGroup, ChipOption } from 'components/ChipGroup'
+import { BackButton } from 'components/BackButton'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { useModules } from '@/shared/modules/useModules'
 import { useGetProducts } from '@/features/products/list/hooks/queries/useGetProducts'
@@ -203,6 +204,7 @@ export function OrderFormContainer({ initialMode }: Props) {
             className="container mx-auto grid gap-6 py-6 lg:grid-cols-5"
         >
             <div className="space-y-4 lg:col-span-3">
+                <BackButton href="/orders" className="-ml-2" />
                 <ChipGroup
                     ariaLabel="Tipo de registro"
                     options={MODE_OPTIONS}
