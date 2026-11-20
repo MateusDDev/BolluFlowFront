@@ -1,16 +1,23 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { InfoIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { Button } from 'ui/button'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from 'ui/card'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
-import { Tooltip, TooltipContent, TooltipTrigger } from 'ui/tooltip'
 import {
     formatCurrency,
     formatCurrencyFromInput,
 } from '@/shared/helpers/formatHelper'
+import { useModules } from '@/shared/modules/useModules'
 import { useGetProduct } from '@/features/products/list/hooks/queries/useGetProduct'
 import { useGetProductComponents } from '@/features/products/details/hooks/queries/useGetProductComponents'
 import { useUpdateProductPricing } from '@/features/products/details/hooks/mutations/useUpdateProductPricing'
@@ -24,20 +31,13 @@ interface PricingFormState {
     finalPrice: string
 }
 
-function calculateSuggestedPrice({
-    baseCost,
-    indirectCostPercentage,
-    markupPercentage,
-    discountPercentage = 0,
-}: {
-    baseCost: number
-    indirectCostPercentage: string | number
-    markupPercentage: string | number
-    discountPercentage?: string | number
-}) {
-    const indirectCostPct = Number(indirectCostPercentage) || 0
-    const markupPct = Number(markupPercentage) || 0
-    const discountPct = Number(discountPercentage) || 0
+function calculateSuggestedPrice(
+    baseCost: number,
+    form: PricingFormState
+): number {
+    const indirectCostPct = Number(form.indirectCost) || 0
+    const markupPct = Number(form.markup) || 0
+    const discountPct = Number(form.discount) || 0
 
     const costWithIndirect = baseCost * (1 + indirectCostPct / 100)
     const priceWithMarkup = costWithIndirect * (1 + markupPct / 100)
@@ -50,27 +50,22 @@ export function ProductPricing() {
     const { id } = useParams<{ id: string }>()
     const productId = Number(id)
 
-    const { data: product, isLoading: isLoadingProduct } =
-        useGetProduct(productId)
-    const { data: components, isLoading: isLoadingComponents } =
-        useGetProductComponents(productId)
+    const { hasModule } = useModules()
+    const usesRecipes = hasModule('recipes')
 
-    const { mutateAsync, isPending } = useUpdateProductPricing()
+    const { data: product } = useGetProduct(productId)
+    const { data: components } = useGetProductComponents(productId)
     const { data: profile } = useGetProfile()
-
-    const isUsingProductSpecificIndirectCost =
-        product?.indirectCostPercentage != null
+    const { mutateAsync, isPending } = useUpdateProductPricing()
 
     const initialForm = useMemo<PricingFormState | null>(() => {
         if (!product) return null
 
-        const indirectCostValue =
-            product.indirectCostPercentage != null
-                ? product.indirectCostPercentage
-                : (profile?.indirectCostRate ?? 0)
+        const indirectCost =
+            product.indirectCostPercentage ?? profile?.indirectCostRate ?? 0
 
         return {
-            indirectCost: indirectCostValue.toString(),
+            indirectCost: indirectCost.toString(),
             markup: product.markupPercentage.toString(),
             discount: product.discountPercentage?.toString() ?? '',
             finalPrice: Math.round(product.finalPrice * 100).toString(),
@@ -86,181 +81,194 @@ export function ProductPricing() {
         setForm(initialForm)
     }, [initialForm])
 
-    const baseCost = useMemo(() => {
-        if (!components) return 0
+    const baseCost = useMemo(
+        () =>
+            (components ?? []).reduce(
+                (total, component) =>
+                    total + component.unitPrice * component.quantityUsed,
+                0
+            ),
+        [components]
+    )
 
-        return components.reduce(
-            (total, component) =>
-                total + component.unitPrice * component.quantityUsed,
-            0
-        )
-    }, [components])
+    const isDirty = useMemo(
+        () =>
+            !!form &&
+            !!initialForm &&
+            JSON.stringify(form) !== JSON.stringify(initialForm),
+        [form, initialForm]
+    )
 
-    const suggestedPrice = useMemo(() => {
-        if (!form) return 0
+    if (!product || !form) return null
 
-        return calculateSuggestedPrice({
-            baseCost,
-            indirectCostPercentage: form.indirectCost,
-            markupPercentage: form.markup,
-            discountPercentage: form.discount,
-        })
-    }, [baseCost, form])
+    const suggestedPrice = calculateSuggestedPrice(baseCost, form)
+    const finalPriceValue =
+        form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100
+    const margin =
+        finalPriceValue > 0 && baseCost > 0
+            ? ((finalPriceValue - baseCost) / finalPriceValue) * 100
+            : null
 
-    const isDirty = useMemo(() => {
-        if (!form || !initialForm) return false
-
-        return JSON.stringify(form) !== JSON.stringify(initialForm)
-    }, [form, initialForm])
-
-    if (isLoadingProduct || isLoadingComponents || !product || !form)
-        return null
-
-    const setField = <K extends keyof PricingFormState>(
-        field: K,
-        value: string
-    ) => {
+    const setField = (field: keyof PricingFormState, value: string) => {
         setForm((prev) => (prev ? { ...prev, [field]: value } : prev))
     }
 
-    const handleSave = async () => {
-        const indirectCostValue =
-            form.indirectCost.trim() === '' ? null : Number(form.indirectCost)
+    const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
 
         const payload: UpdateProductPricingDataType = {
-            indirectCostPercentage: indirectCostValue,
-            markupPercentage: Number(form.markup) || 0,
-            finalPrice:
-                form.finalPrice === '' ? 0 : Number(form.finalPrice) / 100,
+            indirectCostPercentage: usesRecipes
+                ? form.indirectCost.trim() === ''
+                    ? null
+                    : Number(form.indirectCost)
+                : product.indirectCostPercentage,
+            markupPercentage: usesRecipes
+                ? Number(form.markup) || 0
+                : product.markupPercentage,
+            finalPrice: finalPriceValue,
         }
 
-        if (form.discount !== '') {
+        if (usesRecipes && form.discount !== '') {
             payload.discountPercentage = Number(form.discount) || 0
         }
 
-        await mutateAsync({
-            productId,
-            data: payload,
-        })
+        await mutateAsync({ productId, data: payload })
     }
 
     return (
-        <form className="my-6 space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <section className="space-y-4">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                    Precificação
-                </h3>
+        <Card>
+            <form onSubmit={handleSave}>
+                <CardHeader>
+                    <CardTitle>Preço</CardTitle>
+                    {usesRecipes && (
+                        <CardDescription>
+                            {baseCost > 0 ? (
+                                <>
+                                    Custo pela ficha técnica:{' '}
+                                    <strong>{formatCurrency(baseCost)}</strong>
+                                    {margin !== null && (
+                                        <>
+                                            {' '}
+                                            · Margem real: {margin.toFixed(0)}%
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                'Monte a ficha técnica para ver o custo e o preço sugerido.'
+                            )}
+                        </CardDescription>
+                    )}
+                </CardHeader>
 
-                <div className="grid grid-cols-2 gap-4">
+                <CardContent className="grid gap-4 pt-4">
+                    {usesRecipes && (
+                        <>
+                            <div className="grid items-end gap-4 sm:grid-cols-3">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="pricing-indirect">
+                                        Custo indireto (%)
+                                    </Label>
+                                    <Input
+                                        id="pricing-indirect"
+                                        type="number"
+                                        value={form.indirectCost}
+                                        onChange={(e) =>
+                                            setField(
+                                                'indirectCost',
+                                                e.target.value
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="pricing-markup">
+                                        Margem de lucro (%)
+                                    </Label>
+                                    <Input
+                                        id="pricing-markup"
+                                        type="number"
+                                        value={form.markup}
+                                        onChange={(e) =>
+                                            setField('markup', e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="pricing-discount">
+                                        Desconto (%)
+                                    </Label>
+                                    <Input
+                                        id="pricing-discount"
+                                        type="number"
+                                        value={form.discount}
+                                        onChange={(e) =>
+                                            setField('discount', e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-muted/50 flex flex-wrap items-center justify-between gap-2 rounded-lg p-3 text-sm">
+                                <span>
+                                    Preço sugerido:{' '}
+                                    <strong>
+                                        {formatCurrency(suggestedPrice)}
+                                    </strong>
+                                </span>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={suggestedPrice <= 0}
+                                    onClick={() =>
+                                        setField(
+                                            'finalPrice',
+                                            Math.round(
+                                                suggestedPrice * 100
+                                            ).toString()
+                                        )
+                                    }
+                                >
+                                    Usar sugerido
+                                </Button>
+                            </div>
+                        </>
+                    )}
+
                     <div className="grid gap-2">
-                        <Label>Custo indireto (%)</Label>
+                        <Label htmlFor="pricing-final">Preço de venda</Label>
                         <Input
-                            type="number"
-                            value={form.indirectCost}
+                            id="pricing-final"
+                            inputMode="decimal"
+                            className="text-lg font-semibold"
+                            value={formatCurrencyFromInput(form.finalPrice)}
                             onChange={(e) =>
-                                setField('indirectCost', e.target.value)
+                                setField(
+                                    'finalPrice',
+                                    e.target.value.replace(/\D/g, '')
+                                )
                             }
                         />
-                        <p className="text-sm text-muted-foreground">
-                            {product.indirectCostPercentage === null &&
-                            profile?.indirectCostRate != null
-                                ? 'Sugerido pelas configurações — salve para aplicar a este produto'
-                                : isUsingProductSpecificIndirectCost
-                                  ? 'Valor definido para este produto'
-                                  : 'Defina a taxa nas configurações ou diretamente aqui'}
+                        <p className="text-muted-foreground text-xs">
+                            É o valor cobrado nas vendas e mostrado no cardápio.
                         </p>
                     </div>
+                </CardContent>
 
-                    <div className="grid gap-2">
-                        <Label>Margem de lucro (%)</Label>
-                        <Input
-                            type="number"
-                            value={form.markup}
-                            onChange={(e) => setField('markup', e.target.value)}
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Desconto (%)</Label>
-                        <Input
-                            type="number"
-                            value={form.discount}
-                            onChange={(e) =>
-                                setField('discount', e.target.value)
-                            }
-                        />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label className="flex items-center gap-2">
-                            Preco sugerido
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <button type="button">
-                                        <InfoIcon className="w-4 h-4 text-primary-foreground" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>
-                                        Calculado com base no custo dos
-                                        componentes e parametros de
-                                        precificação.
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </Label>
-                        <Input
-                            value={formatCurrency(suggestedPrice)}
-                            disabled
-                        />
-                    </div>
-
-                    <div className="grid gap-2 col-span-2">
-                        <Label className="flex items-center gap-2">
-                            Preco final
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <button type="button">
-                                        <InfoIcon className="w-4 h-4 text-primary-foreground" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>
-                                        Valor final aplicado ao produto no
-                                        momento da venda.
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </Label>
-                        <Input
-                            type="text"
-                            value={formatCurrencyFromInput(form.finalPrice)}
-                            onChange={(e) => {
-                                const digits = e.target.value.replace(/\D/g, '')
-                                setField('finalPrice', digits)
-                            }}
-                        />
-                    </div>
-                </div>
-            </section>
-
-            <div className="flex justify-end gap-2 pt-6">
-                <Button
-                    type="button"
-                    variant="outline"
-                    disabled={!isDirty || isPending}
-                    onClick={() => setForm(initialForm)}
-                >
-                    Descartar
-                </Button>
-                <Button
-                    type="submit"
-                    disabled={!isDirty || isPending}
-                    onClick={handleSave}
-                >
-                    {isPending ? 'Salvando...' : 'Salvar alteracoes'}
-                </Button>
-            </div>
-        </form>
+                <CardFooter className="justify-end gap-2 pt-6">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={!isDirty || isPending}
+                        onClick={() => setForm(initialForm)}
+                    >
+                        Descartar
+                    </Button>
+                    <Button type="submit" disabled={!isDirty || isPending}>
+                        {isPending ? 'Salvando...' : 'Salvar'}
+                    </Button>
+                </CardFooter>
+            </form>
+        </Card>
     )
 }

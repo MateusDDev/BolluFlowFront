@@ -35,7 +35,7 @@ export const productColumns: ColumnDef<ProductModel>[] = [
     },
     {
         accessorKey: 'finalPrice',
-        header: 'Preco de venda',
+        header: 'Preço de venda',
         cell: ({ row }) => {
             const product = row.original as ProductModel
             return <span>{formatCurrency(product.finalPrice)}</span>
