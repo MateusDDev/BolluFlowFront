@@ -1,47 +1,92 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ColumnFiltersState } from '@tanstack/react-table'
+import { Plus, Search, ShoppingBag } from 'lucide-react'
 import { Input } from 'ui/input'
 import { Button } from 'ui/button'
-import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
+import { ChipGroup, ChipOption } from 'components/ChipGroup'
 import { useGetOrders } from '@/features/orders/list/hooks/queries/useGetOrders'
 import { orderColumns } from '@/features/orders/list/components/molecules/OrderColumns'
-import Link from 'next/link'
-import { Plus, ShoppingBag } from 'lucide-react'
+
+type OrderTypeFilter = 'all' | 'orders' | 'quick'
+
+const TYPE_FILTER_STORAGE_KEY = 'orders.typeFilter'
+
+const TYPE_FILTER_OPTIONS: ChipOption<OrderTypeFilter>[] = [
+    { value: 'all', label: 'Todos' },
+    { value: 'orders', label: 'Encomendas' },
+    { value: 'quick', label: 'Vendas rápidas' },
+]
+
+function readStoredTypeFilter(): OrderTypeFilter {
+    try {
+        const value = localStorage.getItem(TYPE_FILTER_STORAGE_KEY)
+        return value === 'orders' || value === 'quick' ? value : 'all'
+    } catch {
+        return 'all'
+    }
+}
 
 export function OrdersTableContainer() {
-    const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { data: orders, isLoading, error } = useGetOrders()
-    const [searchValue, setSearchValue] = useState<string>('')
     const router = useRouter()
+    const { data: orders, isLoading, error } = useGetOrders()
+    const [filters, setFilters] = useState<ColumnFiltersState>([])
+    const [searchValue, setSearchValue] = useState('')
+    const [typeFilter, setTypeFilter] =
+        useState<OrderTypeFilter>(readStoredTypeFilter)
+
+    const visibleOrders = useMemo(() => {
+        const sorted = [...(orders ?? [])].sort(
+            (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+        )
+
+        if (typeFilter === 'orders')
+            return sorted.filter((order) => !order.isQuickSale)
+        if (typeFilter === 'quick')
+            return sorted.filter((order) => order.isQuickSale)
+
+        return sorted
+    }, [orders, typeFilter])
+
+    const handleTypeFilterChange = (value: OrderTypeFilter | null) => {
+        const next = value ?? 'all'
+        setTypeFilter(next)
+
+        try {
+            localStorage.setItem(TYPE_FILTER_STORAGE_KEY, next)
+        } catch {}
+    }
 
     if (isLoading) return <p>Carregando pedidos...</p>
 
-    if (error) return <p>Não foi possível carregar as pedidos</p>
+    if (error) return <p>Não foi possível carregar os pedidos</p>
 
     return (
-        <section className="container mx-auto py-10">
-            <div className="flex w-full items-center gap-2 mb-2 justify-between">
-                <div className="flex gap-2">
+        <section className="container mx-auto space-y-3 py-10">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <form
+                    className="flex gap-2"
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        setFilters([{ id: 'customer', value: searchValue }])
+                    }}
+                >
                     <Input
                         type="search"
-                        placeholder="Pesquisar"
+                        placeholder="Buscar por cliente"
                         value={searchValue}
                         onChange={({ target }) => setSearchValue(target.value)}
                     />
-                    <Button
-                        type="submit"
-                        variant="secondary"
-                        onClick={() =>
-                            setFilters([{ id: 'customer', value: searchValue }])
-                        }
-                    >
+                    <Button type="submit" variant="secondary">
                         <Search className="text-primary" />
                     </Button>
-                </div>
+                </form>
                 <div className="flex gap-2">
                     <Button asChild variant="outline">
                         <Link href="/orders/new?mode=order">
@@ -57,16 +102,26 @@ export function OrdersTableContainer() {
                     </Button>
                 </div>
             </div>
-            <div>
-                <DataTable
-                    columns={orderColumns}
-                    data={orders ?? []}
-                    noDataMessage="Nenhum pedido encontrado"
-                    columnFilters={filters}
-                    onColumnFiltersChange={setFilters}
-                    onRowClick={(order) => router.push(`/orders/${order.id}`)}
-                />
-            </div>
+
+            <ChipGroup
+                ariaLabel="Filtrar por tipo"
+                options={TYPE_FILTER_OPTIONS}
+                value={typeFilter}
+                onChange={handleTypeFilterChange}
+            />
+
+            <DataTable
+                columns={orderColumns}
+                data={visibleOrders}
+                noDataMessage={
+                    typeFilter === 'quick'
+                        ? 'Nenhuma venda rápida ainda'
+                        : 'Nenhum pedido encontrado'
+                }
+                columnFilters={filters}
+                onColumnFiltersChange={setFilters}
+                onRowClick={(order) => router.push(`/orders/${order.id}`)}
+            />
         </section>
     )
 }

@@ -2,6 +2,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Button } from 'ui/button'
 import { ArrowUpDown } from 'lucide-react'
 import { Badge } from 'ui/badge'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 import {
     OrderModel,
     orderStatusLabelMap,
@@ -9,42 +10,55 @@ import {
 } from '@/features/orders/services/order.model'
 import { OrderActions } from '@/features/orders/list/components/atoms/OrderActions'
 
+function formatDay(date: Date | string) {
+    return new Date(date).toLocaleDateString('pt-BR')
+}
+
 export const orderColumns: ColumnDef<OrderModel>[] = [
     {
         accessorKey: 'number',
-        header: 'Nº do Pedido',
+        header: 'Nº',
+        cell: ({ row }) => `#${row.original.number}`,
+    },
+    {
+        id: 'type',
+        header: 'Tipo',
+        cell: ({ row }) =>
+            row.original.isQuickSale ? (
+                <Badge variant="outline">Venda rápida</Badge>
+            ) : (
+                <Badge variant="secondary">Encomenda</Badge>
+            ),
     },
     {
         id: 'customer',
-        accessorFn: (order) => order.customer?.name ?? 'Balcão',
+        accessorFn: (order) => order.customer?.name ?? 'Sem cliente',
         cell: ({ row }) =>
             row.original.customer ? (
                 row.original.customer.name
             ) : (
-                <span className="text-muted-foreground">Balcão</span>
+                <span className="text-muted-foreground">Sem cliente</span>
             ),
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() =>
-                        column.toggleSorting(column.getIsSorted() === 'asc')
-                    }
-                >
-                    Cliente
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
+            >
+                Cliente
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
     },
     {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
-            const order = row.original as OrderModel
+            const order = row.original
 
             if (order.isQuickSale) {
-                return <Badge variant="outline">Venda rápida</Badge>
+                return <span className="text-muted-foreground">—</span>
             }
 
             return (
@@ -55,27 +69,35 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         },
     },
     {
-        accessorKey: 'deliveryDate',
-        header: 'Entrega',
+        id: 'date',
+        header: 'Data',
         cell: ({ row }) => {
-            const order = row.original as OrderModel
-            const date = order.isQuickSale
-                ? order.deliveredAt
-                : order.deliveryDate
+            const order = row.original
 
-            return date ? (
-                <span>{new Date(date).toLocaleDateString('pt-BR')}</span>
+            if (order.isQuickSale) {
+                return order.deliveredAt ? (
+                    <span>Vendido em {formatDay(order.deliveredAt)}</span>
+                ) : null
+            }
+
+            return order.deliveryDate ? (
+                <span>Entrega em {formatDay(order.deliveryDate)}</span>
             ) : (
-                <span className="text-muted-foreground">—</span>
+                <span className="text-muted-foreground">Sem data</span>
             )
         },
     },
     {
+        accessorKey: 'total',
+        header: () => <div className="text-right">Total</div>,
+        cell: ({ row }) => (
+            <div className="text-right tabular-nums">
+                {formatCurrency(row.original.total)}
+            </div>
+        ),
+    },
+    {
         id: 'actions',
-        cell: ({ row }) => {
-            const order = row.original as OrderModel
-
-            return <OrderActions order={order} />
-        },
+        cell: ({ row }) => <OrderActions order={row.original} />,
     },
 ]

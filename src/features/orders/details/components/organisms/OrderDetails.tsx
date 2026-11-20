@@ -171,12 +171,16 @@ export function OrderDetails() {
             <header className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold">
-                        Pedido #{order.number}
+                        {order.isQuickSale ? 'Venda' : 'Pedido'} #{order.number}
                     </h2>
 
-                    <Badge variant={orderStatusVariantMap[order.status]}>
-                        {orderStatusLabelMap[order.status]}
-                    </Badge>
+                    {order.isQuickSale ? (
+                        <Badge variant="outline">Venda rápida</Badge>
+                    ) : (
+                        <Badge variant={orderStatusVariantMap[order.status]}>
+                            {orderStatusLabelMap[order.status]}
+                        </Badge>
+                    )}
                 </div>
 
                 <div className="flex gap-2">
@@ -271,7 +275,7 @@ export function OrderDetails() {
                                     <Input
                                         value={
                                             order.customer?.name ??
-                                            'Sem cliente (venda no balcão)'
+                                            'Sem cliente'
                                         }
                                         disabled
                                     />
