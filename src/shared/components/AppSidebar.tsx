@@ -13,12 +13,15 @@ import {
     useSidebar,
 } from '@/shared/components/ui/sidebar'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { navItems, navSections } from '@/shared/navigation/items'
+import { isNavItemActive } from '@/shared/navigation/useCurrentNavItem'
 import { useMe } from '@/features/login/hooks/useMe'
 import { useModules } from '@/shared/modules/useModules'
 
 const AppSidebar = () => {
     const { state } = useSidebar()
+    const pathname = usePathname()
     const { data: user } = useMe()
     const { hasAnyModule } = useModules()
 
@@ -55,7 +58,13 @@ const AppSidebar = () => {
                                 <SidebarMenu>
                                     {items.map((item) => (
                                         <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild>
+                                            <SidebarMenuButton
+                                                asChild
+                                                isActive={isNavItemActive(
+                                                    item,
+                                                    pathname
+                                                )}
+                                            >
                                                 <Link href={item.url}>
                                                     <item.icon className="text-primary" />
                                                     <span>{item.title}</span>
