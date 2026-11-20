@@ -5,6 +5,7 @@ import { Badge } from 'ui/badge'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import {
     OrderModel,
+    isDirectSale,
     orderStatusLabelMap,
     orderStatusVariantMap,
 } from '@/features/orders/services/order.model'
@@ -24,7 +25,7 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         id: 'type',
         header: 'Tipo',
         cell: ({ row }) =>
-            row.original.isQuickSale ? (
+            isDirectSale(row.original) ? (
                 <Badge variant="outline">Venda rápida</Badge>
             ) : (
                 <Badge variant="secondary">Encomenda</Badge>
@@ -57,7 +58,7 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         cell: ({ row }) => {
             const order = row.original
 
-            if (order.isQuickSale) {
+            if (isDirectSale(order)) {
                 return <span className="text-muted-foreground">—</span>
             }
 
@@ -74,7 +75,7 @@ export const orderColumns: ColumnDef<OrderModel>[] = [
         cell: ({ row }) => {
             const order = row.original
 
-            if (order.isQuickSale) {
+            if (isDirectSale(order)) {
                 return order.deliveredAt ? (
                     <span>Vendido em {formatDay(order.deliveredAt)}</span>
                 ) : null

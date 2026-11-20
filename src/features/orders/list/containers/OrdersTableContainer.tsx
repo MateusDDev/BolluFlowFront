@@ -11,6 +11,7 @@ import { DataTable } from 'ui/dataTable'
 import { ChipGroup, ChipOption } from 'components/ChipGroup'
 import { useGetOrders } from '@/features/orders/list/hooks/queries/useGetOrders'
 import { orderColumns } from '@/features/orders/list/components/molecules/OrderColumns'
+import { isDirectSale } from '@/features/orders/services/order.model'
 
 type OrderTypeFilter = 'all' | 'orders' | 'quick'
 
@@ -47,9 +48,9 @@ export function OrdersTableContainer() {
         )
 
         if (typeFilter === 'orders')
-            return sorted.filter((order) => !order.isQuickSale)
+            return sorted.filter((order) => !isDirectSale(order))
         if (typeFilter === 'quick')
-            return sorted.filter((order) => order.isQuickSale)
+            return sorted.filter((order) => isDirectSale(order))
 
         return sorted
     }, [orders, typeFilter])

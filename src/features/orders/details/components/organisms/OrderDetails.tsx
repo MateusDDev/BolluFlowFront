@@ -1,9 +1,9 @@
 ﻿'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { MessageCircle, Smartphone, Pencil, X } from 'lucide-react'
+import { MessageCircle, Smartphone, Pencil, Trash2, X } from 'lucide-react'
 import { SearchableSelect } from 'components/SearchableSelect'
 
 import { Label } from 'ui/label'
@@ -24,12 +24,14 @@ import {
 import {
     OrderModel,
     PaymentMethod,
+    isDirectSale,
     orderStatusLabelMap,
     orderStatusVariantMap,
 } from '@/features/orders/services/order.model'
 import { useGetOrder } from '@/features/orders/details/hooks/queries/useGetOrder'
 import { useGetOrderItems } from '@/features/orders/details/hooks/queries/useGetOrderItems'
 import { OrderStatusActions } from '@/features/orders/details/components/atoms/OrderStatusActions'
+import { DeleteDirectSaleDialog } from '@/features/orders/components/organisms/DeleteDirectSaleDialog'
 import {
     formatCurrency,
     formatCurrencyFromInput,
@@ -75,6 +77,7 @@ function mapOrderToForm(order: OrderModel): FormState {
 
 export function OrderDetails() {
     const { id } = useParams<{ id: string }>()
+    const router = useRouter()
     const orderId = Number(id)
 
     const { data: order, isLoading } = useGetOrder(orderId)
@@ -171,10 +174,11 @@ export function OrderDetails() {
             <header className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold">
-                        {order.isQuickSale ? 'Venda' : 'Pedido'} #{order.number}
+                        {isDirectSale(order) ? 'Venda' : 'Pedido'} #
+                        {order.number}
                     </h2>
 
-                    {order.isQuickSale ? (
+                    {isDirectSale(order) ? (
                         <Badge variant="outline">Venda rápida</Badge>
                     ) : (
                         <Badge variant={orderStatusVariantMap[order.status]}>
@@ -600,10 +604,27 @@ export function OrderDetails() {
                         <Separator />
 
                         <CardContent>
-                            <OrderStatusActions
-                                orderStatus={order.status}
-                                orderId={orderId}
-                            />
+                            {isDirectSale(order) ? (
+                                <DeleteDirectSaleDialog
+                                    orderId={order.id}
+                                    orderNumber={order.number}
+                                    onDeleted={() => router.push('/orders')}
+                                    trigger={
+                                        <Button
+                                            variant="outline"
+                                            className="text-destructive w-full"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Excluir venda
+                                        </Button>
+                                    }
+                                />
+                            ) : (
+                                <OrderStatusActions
+                                    orderStatus={order.status}
+                                    orderId={orderId}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 </div>

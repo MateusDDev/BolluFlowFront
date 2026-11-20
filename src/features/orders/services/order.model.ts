@@ -7,6 +7,12 @@ export type OrderStatus =
 
 export type PaymentMethod = 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard'
 
+export type OrderType = 'CustomOrder' | 'DirectSale'
+
+export function isDirectSale(order: { type: OrderType }) {
+    return order.type === 'DirectSale'
+}
+
 export const orderStatusLabelMap: Record<OrderStatus, string> = {
     Pending: 'Pendente',
     InProduction: 'Em preparo',
@@ -58,7 +64,7 @@ export interface OrderModel {
     total: number
     createdAt: Date
     deliveryDate?: Date
-    isQuickSale: boolean
+    type: OrderType
     deliveredAt?: Date | null
 }
 
