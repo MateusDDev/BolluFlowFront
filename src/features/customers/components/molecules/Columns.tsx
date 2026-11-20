@@ -63,6 +63,13 @@ export const columns: ColumnDef<CustomerModel>[] = [
 
             const address = customer.deliveryAddress
 
+            if (!address)
+                return (
+                    <div className="text-muted-foreground text-center">
+                        Sem endereço
+                    </div>
+                )
+
             return (
                 <div className="text-center">{`Bairro ${address.neighborhood}, Rua ${address.street} - Nº ${address.number}`}</div>
             )

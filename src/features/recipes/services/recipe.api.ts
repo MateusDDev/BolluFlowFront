@@ -53,7 +53,7 @@ export type UpdateRecipeDataType = {
     yield?: number | null
     preparationTime?: number
     isActive?: boolean
-    finalPrice?: number
+    minimumStockQuantity?: number | null
 }
 
 export function updateRecipe(id: number, data: UpdateRecipeDataType) {

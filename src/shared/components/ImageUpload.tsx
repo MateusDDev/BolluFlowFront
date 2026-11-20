@@ -76,7 +76,7 @@ export function ImageUpload({
                 tabIndex={uploading ? -1 : 0}
                 aria-disabled={uploading}
                 className={cn(
-                    'group relative flex aspect-square w-full max-w-72 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/60 text-muted-foreground transition hover:border-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    'group relative mx-auto flex aspect-square w-full max-w-72 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/60 text-muted-foreground transition hover:border-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     uploading && 'cursor-not-allowed',
                     currentImageUrl && 'border-solid bg-background',
                     isDragging && 'border-primary bg-primary/10'

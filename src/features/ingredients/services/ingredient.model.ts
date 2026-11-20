@@ -4,5 +4,6 @@ export interface IngredientModel {
     baseUnit: string | number
     unitCost: number
     stockQuantity: number
+    trackStock: boolean
     minimumStockQuantity?: number
 }

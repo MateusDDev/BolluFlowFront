@@ -1,8 +1,10 @@
 ﻿'use client'
 
 import { Input } from 'ui/input'
+import { useModuleColumns } from '@/shared/modules/moduleColumns'
 import { Button } from 'ui/button'
-import { Search } from 'lucide-react'
+import { ChefHat, Search } from 'lucide-react'
+import { EmptyState } from 'components/EmptyState'
 import { DataTable } from 'ui/dataTable'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -13,6 +15,7 @@ import { NewRecipeModal } from '@/features/recipes/list/components/organisms/New
 
 export const RecipesTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
+    const columns = useModuleColumns(recipeColumns)
     const { data: recipes, isLoading, error } = useGetRecipes()
     const [searchValue, setSearchValue] = useState<string>('')
     const router = useRouter()
@@ -20,6 +23,19 @@ export const RecipesTableContainer = () => {
     if (isLoading) return <p>Carregando receitas...</p>
 
     if (error) return <p>Não foi possível carregar as receitas</p>
+
+    if (!recipes?.length)
+        return (
+            <section className="container mx-auto py-10">
+                <EmptyState
+                    icon={ChefHat}
+                    title="Cadastre suas receitas base"
+                    description="Cadastre uma receita uma vez e use em vários produtos. Quando o preço de um ingrediente muda, o custo de tudo que usa a receita se atualiza sozinho."
+                    example="Ex.: Brigadeiro de colher, rende 1 kg"
+                    action={<NewRecipeModal />}
+                />
+            </section>
+        )
 
     return (
         <section className="container mx-auto py-10">
@@ -45,7 +61,7 @@ export const RecipesTableContainer = () => {
             </div>
             <div>
                 <DataTable
-                    columns={recipeColumns}
+                    columns={columns}
                     data={recipes ?? []}
                     noDataMessage="Nenhuma receita encontrada"
                     columnFilters={filters}

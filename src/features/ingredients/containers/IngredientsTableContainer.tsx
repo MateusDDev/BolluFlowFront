@@ -1,55 +1,20 @@
-﻿'use client'
+'use client'
 
-import { useGetIngredients } from '@/features/ingredients/hooks/queries/useGetIngredients'
-import { useState } from 'react'
-import { ColumnFiltersState } from '@tanstack/react-table'
-import { DataTable } from 'ui/dataTable'
-import { ingredientsTableColumns } from '@/features/ingredients/components/molecules/Columns'
-import { Input } from 'ui/input'
-import { Button } from 'ui/button'
-import { Search } from 'lucide-react'
-import { NewIngredientModal } from '@/features/ingredients/components/organisms/NewIngredientModal'
+import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
+import { StockItemsTableContainer } from '@/features/stockItems/containers/StockItemsTableContainer'
+import { StockItemActions } from '@/features/stockItems/components/StockItemActions'
+import { buildStockItemColumns } from '@/features/stockItems/components/stockItemColumns'
+import { INGREDIENT_CONFIG } from '@/features/stockItems/services/stockItem.config'
 
-export const IngredientsTableContainer = () => {
-    const [filters, setFilters] = useState<ColumnFiltersState>([])
-    const { data: ingredients, isLoading, error } = useGetIngredients()
-    const [searchValue, setSearchValue] = useState<string>('')
+const columns = buildStockItemColumns<IngredientModel>((ingredient) => (
+    <StockItemActions config={INGREDIENT_CONFIG} item={ingredient} />
+))
 
-    if (isLoading) return <p>Carregando ingredientes...</p>
-
-    if (error) return <p>Não foi possível carregar os ingredientes</p>
-
+export function IngredientsTableContainer() {
     return (
-        <section className="container mx-auto py-10">
-            <div className="flex w-full items-center gap-2 mb-2 justify-between">
-                <div className="flex gap-2">
-                    <Input
-                        type="search"
-                        placeholder="Pesquisar"
-                        value={searchValue}
-                        onChange={({ target }) => setSearchValue(target.value)}
-                    />
-                    <Button
-                        type="submit"
-                        variant="secondary"
-                        onClick={() =>
-                            setFilters([{ id: 'name', value: searchValue }])
-                        }
-                    >
-                        <Search className="text-primary" />
-                    </Button>
-                </div>
-                <NewIngredientModal />
-            </div>
-            <div>
-                <DataTable
-                    columns={ingredientsTableColumns}
-                    data={ingredients ?? []}
-                    noDataMessage="Nenhum ingrediente encontrado"
-                    columnFilters={filters}
-                    onColumnFiltersChange={setFilters}
-                />
-            </div>
-        </section>
+        <StockItemsTableContainer
+            config={INGREDIENT_CONFIG}
+            columns={columns}
+        />
     )
 }

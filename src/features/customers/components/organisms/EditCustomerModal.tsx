@@ -78,11 +78,13 @@ const EditCustomerModal = ({
                 whatsapp: form.whatsapp,
                 birthday: form.birthday,
                 preferences: form.preferences,
-                deliveryAddress: {
-                    street: form.street,
-                    number: Number(form.number),
-                    neighborhood: form.neighborhood,
-                },
+                deliveryAddress: form.street.trim()
+                    ? {
+                          street: form.street,
+                          number: Number(form.number),
+                          neighborhood: form.neighborhood,
+                      }
+                    : undefined,
             },
         })
 

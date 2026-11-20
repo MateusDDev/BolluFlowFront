@@ -1,4 +1,5 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query'
+﻿import { showTipOnce } from '@/shared/onboarding/tips'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     createRecipeIngredient,
     CreateRecipeIngredientDataType,
@@ -18,8 +19,10 @@ export function useCreateRecipeIngredient() {
             return await createRecipeIngredient(recipeId, data)
         },
 
-        onSuccess: async () =>
-            client.invalidateQueries({ queryKey: ['recipeIngredients'] }),
+        onSuccess: async () => {
+            showTipOnce('first-recipe-ingredient')
+            await client.invalidateQueries({ queryKey: ['recipeIngredients'] })
+        },
 
         onError: (error) => console.error(error),
     })

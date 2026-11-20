@@ -47,8 +47,10 @@ export function deleteOrderItem(orderId: number, itemId: number) {
 }
 
 export type CreateOrderDataType = {
-    customerId: number
-    notes?: string
+    customerId?: number | null
+    items?: { productId: number; quantity: number }[]
+    deliverNow?: boolean
+    note?: string
     deliveryDate?: Date
     paymentMethod?: 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard' | null
 }
@@ -69,6 +71,10 @@ export type UpdateOrderDataType = {
 
 export function updateOrder(id: number, data: UpdateOrderDataType) {
     return apiClient(`/orders/${id}`, 'PUT', data)
+}
+
+export function deleteOrder(id: number) {
+    return apiClient(`/orders/${id}`, 'DELETE')
 }
 
 export function cancelOrder(id: number, revertStock?: boolean) {

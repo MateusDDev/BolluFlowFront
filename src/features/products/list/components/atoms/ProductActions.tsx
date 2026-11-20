@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ModuleGate } from '@/shared/modules/ModuleGate'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -39,14 +40,18 @@ export function ProductActions({ product }: Props) {
                             Ver detalhes
                         </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsProductionOpen(true)}>
-                        Registrar produção
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => setIsStockAdjustmentOpen(true)}
-                    >
-                        Corrigir estoque
-                    </DropdownMenuItem>
+                    <ModuleGate module="stock">
+                        <DropdownMenuItem
+                            onClick={() => setIsProductionOpen(true)}
+                        >
+                            Registrar produção
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => setIsStockAdjustmentOpen(true)}
+                        >
+                            Corrigir estoque
+                        </DropdownMenuItem>
+                    </ModuleGate>
                 </DropdownMenuContent>
             </DropdownMenu>
 

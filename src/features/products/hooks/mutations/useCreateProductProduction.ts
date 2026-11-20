@@ -1,3 +1,4 @@
+import { showTipOnce } from '@/shared/onboarding/tips'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     createProductProduction,
@@ -16,6 +17,7 @@ export function useCreateProductProduction() {
             data: CreateProductProductionDataType
         }) => await createProductProduction(productId, data),
         onSuccess: async (_, variables) => {
+            showTipOnce('first-production')
             await client.invalidateQueries({ queryKey: ['products'] })
             await client.invalidateQueries({
                 queryKey: ['products', variables.productId],

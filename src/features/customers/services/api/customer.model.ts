@@ -5,7 +5,7 @@ export interface CustomerModel {
     userId: number
     name: string
     whatsapp: string
-    deliveryAddress: DeliveryAddressType
+    deliveryAddress: DeliveryAddressType | null
     preferences?: string
     birthday?: Date
 }

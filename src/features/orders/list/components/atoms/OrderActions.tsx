@@ -1,7 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { EyeIcon, FileText, MessageCircle, MoreHorizontal } from 'lucide-react'
+import {
+    EyeIcon,
+    FileText,
+    MessageCircle,
+    MoreHorizontal,
+    Trash2,
+} from 'lucide-react'
 
 import { Button } from 'ui/button'
 import {
@@ -13,8 +19,12 @@ import {
     DropdownMenuTrigger,
 } from 'ui/dropdown-menu'
 
-import { OrderModel } from '@/features/orders/services/order.model'
+import {
+    isDirectSale,
+    OrderModel,
+} from '@/features/orders/services/order.model'
 import { OrderWhatsappModal } from '@/features/orders/components/organisms/OrderWhatsappModal'
+import { DeleteDirectSaleDialog } from '@/features/orders/components/organisms/DeleteDirectSaleDialog'
 import {
     openCustomerOrderReport,
     openOrderReport,
@@ -48,16 +58,18 @@ export function OrderActions({ order }: OrderActionsProps) {
                     </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
-                    onSelect={(event) => {
-                        event.preventDefault()
-                        openOrderReport(order.id)
-                    }}
-                    className="flex items-center gap-2"
-                >
-                    <FileText className="h-4 w-4" />
-                    Comanda do entregador
-                </DropdownMenuItem>
+                {!isDirectSale(order) && (
+                    <DropdownMenuItem
+                        onSelect={(event) => {
+                            event.preventDefault()
+                            openOrderReport(order.id)
+                        }}
+                        className="flex items-center gap-2"
+                    >
+                        <FileText className="h-4 w-4" />
+                        Comanda do entregador
+                    </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem
                     onSelect={(event) => {
@@ -70,7 +82,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                     Comanda do cliente
                 </DropdownMenuItem>
 
-                {order.customer.whatsapp && (
+                {order.customer?.whatsapp && (
                     <OrderWhatsappModal
                         order={order}
                         trigger={
@@ -83,6 +95,25 @@ export function OrderActions({ order }: OrderActionsProps) {
                             </DropdownMenuItem>
                         }
                     />
+                )}
+
+                {isDirectSale(order) && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DeleteDirectSaleDialog
+                            orderId={order.id}
+                            orderNumber={order.number}
+                            trigger={
+                                <DropdownMenuItem
+                                    onSelect={(event) => event.preventDefault()}
+                                    className="text-destructive flex items-center gap-2"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Excluir venda
+                                </DropdownMenuItem>
+                            }
+                        />
+                    </>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

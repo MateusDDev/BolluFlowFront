@@ -1,3 +1,4 @@
+import { AppModule } from '@/shared/modules/modules'
 import {
     ChefHatIcon,
     Home,
@@ -15,6 +16,7 @@ export type NavItem = {
     url: string
     icon: LucideIcon
     section: 'principal' | 'cardapio' | 'estoque' | 'cadastros'
+    modules?: AppModule[]
 }
 
 export const navItems: NavItem[] = [
@@ -29,6 +31,7 @@ export const navItems: NavItem[] = [
         url: '/orders',
         icon: NotepadTextIcon,
         section: 'principal',
+        modules: ['orders'],
     },
 
     {
@@ -36,24 +39,28 @@ export const navItems: NavItem[] = [
         url: '/financeiro',
         icon: WalletCardsIcon,
         section: 'principal',
+        modules: ['finance'],
     },
     {
         title: 'Ingredientes',
         url: '/ingredients',
         icon: WheatIcon,
         section: 'estoque',
+        modules: ['recipes', 'stock'],
     },
     {
         title: 'Insumos',
         url: '/supplies',
         icon: ShoppingBagIcon,
         section: 'estoque',
+        modules: ['recipes', 'stock'],
     },
     {
         title: 'Receitas',
         url: '/recipes',
         icon: ChefHatIcon,
         section: 'cardapio',
+        modules: ['recipes'],
     },
     {
         title: 'Produtos',
@@ -66,6 +73,7 @@ export const navItems: NavItem[] = [
         url: '/customers',
         icon: UsersIcon,
         section: 'cadastros',
+        modules: ['orders'],
     },
 ]
 

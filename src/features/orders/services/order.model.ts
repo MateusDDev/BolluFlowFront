@@ -7,6 +7,12 @@ export type OrderStatus =
 
 export type PaymentMethod = 'Cash' | 'Pix' | 'CreditCard' | 'DebitCard'
 
+export type OrderType = 'CustomOrder' | 'DirectSale'
+
+export function isDirectSale(order: { type: OrderType }) {
+    return order.type === 'DirectSale'
+}
+
 export const orderStatusLabelMap: Record<OrderStatus, string> = {
     Pending: 'Pendente',
     InProduction: 'Em preparo',
@@ -40,13 +46,13 @@ interface CustomerModel {
     whatsapp: string
     preferences: string
     birthday: Date
-    deliveryAddress: CustomerDeliveryAddress
+    deliveryAddress: CustomerDeliveryAddress | null
 }
 
 export interface OrderModel {
     id: number
     number: number
-    customer: CustomerModel
+    customer: CustomerModel | null
     status: OrderStatus
     note: string
     paymentMethod?: PaymentMethod | null
@@ -58,6 +64,8 @@ export interface OrderModel {
     total: number
     createdAt: Date
     deliveryDate?: Date
+    type: OrderType
+    deliveredAt?: Date | null
 }
 
 interface OrderItemProductModel {

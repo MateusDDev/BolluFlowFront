@@ -5,6 +5,18 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 export type ApiError = {
     code: string
     message: string
+    details?: Record<string, unknown>
+}
+
+export class ApiRequestError extends Error {
+    readonly code: string
+    readonly details: Record<string, unknown>
+
+    constructor(error: ApiError) {
+        super(error.message || 'Ocorreu um erro ao processar a requisição')
+        this.code = error.code
+        this.details = error.details ?? {}
+    }
 }
 
 export async function apiClient<T>(
@@ -39,11 +51,7 @@ export async function apiClient<T>(
 
     if (!res.ok) {
         if (contentType.includes('application/json')) {
-            const error = (await res.json()) as ApiError
-
-            throw new Error(
-                error.message || 'Ocorreu um erro ao processar a requisição'
-            )
+            throw new ApiRequestError((await res.json()) as ApiError)
         }
 
         throw new Error(`Erro (${res.status})`)

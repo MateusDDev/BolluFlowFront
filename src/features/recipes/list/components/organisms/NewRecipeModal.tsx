@@ -1,6 +1,11 @@
+'use client'
+
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Plus } from 'lucide-react'
+import { Button } from 'ui/button'
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -8,350 +13,228 @@ import {
     DialogTitle,
     DialogTrigger,
 } from 'ui/dialog'
-import { Button } from 'ui/button'
-import { Label } from 'ui/label'
 import { Input } from 'ui/input'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from 'ui/select'
-import React, { useMemo, useState } from 'react'
+import { Label } from 'ui/label'
+import { ChipGroup, ChipOption } from 'components/ChipGroup'
+import { ModuleGate } from '@/shared/modules/ModuleGate'
+import { HelpTip } from 'components/HelpTip'
+import { MeasurementUnitValue } from '@/features/ingredients/services/measurementUnits'
+import { getStockUnit } from '@/features/stockItems/services/stockItemUnits'
 import { useCreateRecipe } from '@/features/recipes/list/hooks/mutations/useCreateRecipe'
-import { CreateRecipeDataType } from '@/features/recipes/services/recipe.api'
-import { MEASUREMENT_UNITS } from '@/features/ingredients/services/measurementUnits'
-import { createRecipeConversion } from '@/features/recipes/services/recipeConversion.api'
 
-const parseDecimalInput = (value: string) => Number(value.replace(',', '.'))
+type YieldUnit = 'g' | 'kg' | 'ml' | 'L' | 'un'
+
+const YIELD_UNITS: Record<
+    YieldUnit,
+    { baseUnit: MeasurementUnitValue; factor: number }
+> = {
+    g: { baseUnit: 'Gram', factor: 1 },
+    kg: { baseUnit: 'Gram', factor: 1000 },
+    ml: { baseUnit: 'Milliliter', factor: 1 },
+    L: { baseUnit: 'Milliliter', factor: 1000 },
+    un: { baseUnit: 'Unit', factor: 1 },
+}
+
+const YIELD_UNIT_OPTIONS: ChipOption<YieldUnit>[] = (
+    Object.keys(YIELD_UNITS) as YieldUnit[]
+).map((value) => ({ value, label: value }))
+
+function parseDecimal(value: string) {
+    if (value.trim() === '') return null
+    const parsed = Number(value.replace(',', '.'))
+    return Number.isFinite(parsed) ? parsed : null
+}
 
 export const NewRecipeModal = () => {
+    const router = useRouter()
+    const { mutateAsync: createRecipe, isPending, error } = useCreateRecipe()
+
     const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [category, setCategory] = useState('')
-    const [baseUnit, setBaseUnit] = useState('')
-    const [recipeYield, setRecipeYield] = useState('')
-    const [hours, setHours] = useState('')
-    const [minutes, setMinutes] = useState('')
-    const [minimumStockQuantity, setMinimumStockQuantity] = useState('')
-    const [usePurchaseConversion, setUsePurchaseConversion] = useState(false)
-    const [conversionName, setConversionName] = useState('')
-    const [conversionQuantityInBase, setConversionQuantityInBase] = useState('')
-    const [localError, setLocalError] = useState('')
+    const [yieldAmount, setYieldAmount] = useState('')
+    const [yieldUnit, setYieldUnit] = useState<YieldUnit>('kg')
+    const [preparationMinutes, setPreparationMinutes] = useState('')
+    const [minimumStock, setMinimumStock] = useState('')
 
-    const { mutateAsync: createRecipe, isPending, error } = useCreateRecipe()
+    const { baseUnit, factor } = YIELD_UNITS[yieldUnit]
+    const unitInfo = getStockUnit(baseUnit)
+    const yieldValue = parseDecimal(yieldAmount)
+    const minimumValue = parseDecimal(minimumStock)
 
-    const parsedConversionFactor = parseDecimalInput(conversionQuantityInBase)
-    const parsedMinimumStockInput = parseDecimalInput(minimumStockQuantity)
-    const parsedRecipeYield = parseDecimalInput(recipeYield)
+    const canSubmit =
+        name.trim().length >= 2 &&
+        yieldValue !== null &&
+        yieldValue > 0 &&
+        !isPending
 
-    const previewMinimumStockInBase = useMemo(() => {
-        if (!usePurchaseConversion || minimumStockQuantity === '') return null
+    const handleOpenChange = (next: boolean) => {
+        setOpen(next)
+        if (!next) return
 
-        if (
-            isNaN(parsedMinimumStockInput) ||
-            isNaN(parsedConversionFactor) ||
-            parsedConversionFactor <= 0
-        ) {
-            return null
-        }
-
-        return parsedMinimumStockInput * parsedConversionFactor
-    }, [
-        usePurchaseConversion,
-        minimumStockQuantity,
-        parsedMinimumStockInput,
-        parsedConversionFactor,
-    ])
-
-    const resetForm = () => {
         setName('')
         setCategory('')
-        setBaseUnit('')
-        setRecipeYield('')
-        setHours('')
-        setMinutes('')
-        setMinimumStockQuantity('')
-        setUsePurchaseConversion(false)
-        setConversionName('')
-        setConversionQuantityInBase('')
-        setLocalError('')
+        setYieldAmount('')
+        setYieldUnit('kg')
+        setPreparationMinutes('')
+        setMinimumStock('')
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setLocalError('')
+        if (yieldValue === null) return
 
-        if (!baseUnit) {
-            setLocalError('Selecione a unidade base de cálculo.')
-            return
-        }
+        const minutes = Number(preparationMinutes) || 0
 
-        if (usePurchaseConversion) {
-            if (!conversionName.trim()) {
-                setLocalError('Informe o nome da conversão de rendimento.')
-                return
-            }
-
-            if (isNaN(parsedConversionFactor) || parsedConversionFactor <= 0) {
-                setLocalError('Quantidade da conversão inválida.')
-                return
-            }
-        }
-
-        const payload: CreateRecipeDataType = {
-            name,
-            category,
+        const created = await createRecipe({
+            name: name.trim(),
+            category: category.trim(),
             baseUnit,
-        }
+            yield: yieldValue * factor,
+            preparationTime: minutes > 0 ? minutes : undefined,
+            minimumStockQuantity:
+                minimumValue === null
+                    ? undefined
+                    : minimumValue * unitInfo.largeFactor,
+        })
 
-        if (recipeYield !== '') {
-            if (isNaN(parsedRecipeYield) || parsedRecipeYield <= 0) {
-                setLocalError('Rendimento da receita inválido.')
-                return
-            }
-
-            payload.yield = parsedRecipeYield
-        }
-
-        const totalMinutes = Number(hours || 0) * 60 + Number(minutes || 0)
-
-        if (totalMinutes > 0) payload.preparationTime = totalMinutes
-
-        if (minimumStockQuantity !== '') {
-            if (isNaN(parsedMinimumStockInput) || parsedMinimumStockInput < 0) {
-                setLocalError('Estoque mínimo inválido.')
-                return
-            }
-
-            payload.minimumStockQuantity = usePurchaseConversion
-                ? parsedMinimumStockInput * parsedConversionFactor
-                : parsedMinimumStockInput
-        }
-
-        const createdRecipe = await createRecipe(payload)
-
-        if (usePurchaseConversion) {
-            await createRecipeConversion(createdRecipe.id, {
-                name: conversionName.trim(),
-                quantityInBaseUnit: parsedConversionFactor,
-            })
-        }
-
-        resetForm()
         setOpen(false)
+        router.push(`/recipes/${created.id}?tab=ingredients`)
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button variant="outline">Nova receita</Button>
+                <Button>
+                    <Plus className="h-4 w-4" />
+                    Nova receita
+                </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[520px]">
+            <DialogContent className="sm:max-w-[460px]">
                 <DialogHeader>
                     <DialogTitle>Nova receita</DialogTitle>
                     <DialogDescription>
-                        Preencha os dados da receita e clique em salvar.
+                        Depois de criar, você adiciona os ingredientes e o custo
+                        aparece sozinho.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
-                    <div className="grid gap-3">
-                        <Label>Nome*</Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-recipe-name">Nome</Label>
                         <Input
-                            placeholder="Nome da receita"
+                            id="new-recipe-name"
+                            placeholder="Ex.: Ganache de chocolate"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            required
+                            autoFocus
                         />
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>Categoria*</Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-recipe-category">
+                            Categoria{' '}
+                            <span className="text-muted-foreground font-normal">
+                                (opcional)
+                            </span>
+                        </Label>
                         <Input
-                            placeholder="Bolos, Trufas, etc."
+                            id="new-recipe-category"
+                            placeholder="Ex.: Recheios"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            required
                         />
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>Unidade base de cálculo*</Label>
-                        <Select value={baseUnit} onValueChange={setBaseUnit}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione a unidade" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {MEASUREMENT_UNITS.map((measurementUnit) => (
-                                    <SelectItem
-                                        key={measurementUnit.value}
-                                        value={measurementUnit.value}
-                                    >
-                                        {measurementUnit.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="rounded-md border p-3 grid gap-3">
-                        <div className="flex items-center justify-between">
-                            <Label>Rendimento</Label>
-                            <Button
-                                type="button"
-                                variant={
-                                    usePurchaseConversion
-                                        ? 'default'
-                                        : 'outline'
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-recipe-yield">
+                            Rende{' '}
+                            <HelpTip>
+                                Quanto a receita inteira produz. Se rende 1 kg e
+                                custa R$ 30, cada 100 g usados num produto
+                                custam R$ 3.
+                            </HelpTip>
+                        </Label>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Input
+                                id="new-recipe-yield"
+                                inputMode="decimal"
+                                placeholder="Ex.: 1,2"
+                                className="w-28"
+                                value={yieldAmount}
+                                onChange={(e) => setYieldAmount(e.target.value)}
+                            />
+                            <ChipGroup
+                                ariaLabel="Unidade do rendimento"
+                                options={YIELD_UNIT_OPTIONS}
+                                value={yieldUnit}
+                                onChange={(value) =>
+                                    value && setYieldUnit(value)
                                 }
-                                size="sm"
-                                onClick={() =>
-                                    setUsePurchaseConversion((prev) => !prev)
-                                }
-                            >
-                                {usePurchaseConversion ? 'Ativado' : 'Ativar'}
-                            </Button>
+                            />
                         </div>
-
-                        {usePurchaseConversion ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <div className="grid gap-2">
-                                    <Label>Nome do rendimento*</Label>
-                                    <Input
-                                        placeholder="Ex: forma"
-                                        value={conversionName}
-                                        onChange={(e) =>
-                                            setConversionName(e.target.value)
-                                        }
-                                        required={usePurchaseConversion}
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label>Qtd em unidade base*</Label>
-                                    <Input
-                                        inputMode="decimal"
-                                        placeholder="Ex: 12"
-                                        value={conversionQuantityInBase}
-                                        onChange={(e) =>
-                                            setConversionQuantityInBase(
-                                                e.target.value.replace(
-                                                    /[^\d,.]/g,
-                                                    ''
-                                                )
-                                            )
-                                        }
-                                        required={usePurchaseConversion}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-xs text-muted-foreground">
-                                Desativado: o estoque mínimo será informado na
-                                unidade base.
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="grid gap-3">
-                        <Label>Rendimento (unidade base)</Label>
-                        <Input
-                            inputMode="decimal"
-                            placeholder="Ex: 1000 (gramas que a receita produz)"
-                            value={recipeYield}
-                            onChange={(e) =>
-                                setRecipeYield(
-                                    e.target.value.replace(/[^\d,.]/g, '')
-                                )
-                            }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Informe quanto esta receita rende em unidade base
-                            para calcular o custo por unidade ao usar em
-                            produtos.
+                        <p className="text-muted-foreground text-xs">
+                            Quanto a receita produz. É o que permite calcular o
+                            custo por {unitInfo.largeName} nos produtos.
                         </p>
                     </div>
 
-                    <div className="grid gap-3">
-                        <Label>
-                            {usePurchaseConversion
-                                ? 'Estoque mínimo (na unidade de rendimento)'
-                                : 'Estoque mínimo'}
-                        </Label>
-                        <Input
-                            type={usePurchaseConversion ? 'text' : 'number'}
-                            inputMode={
-                                usePurchaseConversion ? 'decimal' : undefined
-                            }
-                            min={0}
-                            placeholder="10"
-                            value={minimumStockQuantity}
-                            onChange={(e) =>
-                                setMinimumStockQuantity(
-                                    usePurchaseConversion
-                                        ? e.target.value.replace(/[^\d,.]/g, '')
-                                        : e.target.value
-                                )
-                            }
-                        />
-                        {usePurchaseConversion &&
-                            previewMinimumStockInBase !== null && (
-                                <p className="text-xs text-muted-foreground">
-                                    Equivale a{' '}
-                                    {previewMinimumStockInBase.toLocaleString(
-                                        'pt-BR'
-                                    )}{' '}
-                                    na unidade base.
-                                </p>
-                            )}
-                    </div>
-
-                    <div className="grid gap-3">
-                        <Label>Tempo de preparo</Label>
-
-                        <div className="flex gap-2">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label htmlFor="new-recipe-time">
+                                Tempo de preparo (min)
+                            </Label>
                             <Input
-                                type="number"
-                                min={0}
-                                placeholder="Horas"
-                                value={hours}
-                                onChange={(e) => setHours(e.target.value)}
-                            />
-                            <Input
-                                type="number"
-                                min={0}
-                                max={59}
-                                placeholder="Minutos"
-                                value={minutes}
-                                onChange={(e) => setMinutes(e.target.value)}
+                                id="new-recipe-time"
+                                inputMode="numeric"
+                                placeholder="Opcional"
+                                value={preparationMinutes}
+                                onChange={(e) =>
+                                    setPreparationMinutes(
+                                        e.target.value.replace(/\D/g, '')
+                                    )
+                                }
                             />
                         </div>
+
+                        <ModuleGate module="stock">
+                            <div className="grid gap-2">
+                                <Label htmlFor="new-recipe-minimum">
+                                    Avisar abaixo de ({unitInfo.largeSymbol})
+                                </Label>
+                                <Input
+                                    id="new-recipe-minimum"
+                                    inputMode="decimal"
+                                    placeholder="Opcional"
+                                    value={minimumStock}
+                                    onChange={(e) =>
+                                        setMinimumStock(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </ModuleGate>
                     </div>
 
-                    <DialogFooter className="flex flex-col gap-2">
-                        <div className="flex justify-end gap-2">
-                            <DialogClose asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={isPending}
-                                >
-                                    Cancelar
-                                </Button>
-                            </DialogClose>
+                    {error && (
+                        <p className="text-destructive text-sm">
+                            {error.message}
+                        </p>
+                    )}
 
-                            <Button type="submit" disabled={isPending}>
-                                {isPending ? 'Salvando...' : 'Adicionar'}
-                            </Button>
-                        </div>
-
-                        {(error || localError) && (
-                            <p className="text-sm text-red-500">
-                                {localError || error?.message}
-                            </p>
-                        )}
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={!canSubmit}>
+                            {isPending
+                                ? 'Criando...'
+                                : 'Criar e adicionar ingredientes'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

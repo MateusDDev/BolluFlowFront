@@ -6,7 +6,7 @@ export type CreateCustomerInput = {
     whatsapp: string
     preferences?: string
     birthday?: Date
-    deliveryAddress: {
+    deliveryAddress?: {
         street: string
         number: number
         neighborhood: string

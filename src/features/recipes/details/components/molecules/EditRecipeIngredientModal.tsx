@@ -1,10 +1,10 @@
 ﻿'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
     Dialog,
-    DialogClose,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -12,11 +12,20 @@ import {
 import { Button } from 'ui/button'
 import { Label } from 'ui/label'
 import { Input } from 'ui/input'
-
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
+import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { useUpdateRecipeIngredient } from '@/features/recipes/details/hooks/mutations/useUpdateRecipeIngredient'
-import { formatQuantityInput } from '@/shared/helpers/formatHelper'
-import { getMeasurementUnitLabel } from '@/features/ingredients/services/measurementUnits'
 import { RecipeIngredientModel } from '@/features/recipes/services/recipeIngredient.model'
+import { INGREDIENT_CONFIG } from '@/features/stockItems/services/stockItem.config'
+import { useStockItemPackages } from '@/features/stockItems/hooks/useStockItemActions'
+import { buildQuantityUnitOptions } from '@/features/stockItems/services/stockItemQuantityUnits'
+import { formatStockQuantity } from '@/features/stockItems/services/stockItemUnits'
 
 interface EditRecipeIngredientModalProps {
     recipeId: number
@@ -25,13 +34,27 @@ interface EditRecipeIngredientModalProps {
     onOpenChange: (open: boolean) => void
 }
 
+function formatInputNumber(value: number) {
+    return value.toLocaleString('pt-BR', {
+        maximumFractionDigits: 3,
+        useGrouping: false,
+    })
+}
+
 export function EditRecipeIngredientModal({
     recipeId,
     recipeIngredient,
     open,
     onOpenChange,
 }: EditRecipeIngredientModalProps) {
-    const [quantityUsed, setQuantityUsed] = useState('')
+    const [quantity, setQuantity] = useState('')
+    const [unitValue, setUnitValue] = useState('base')
+
+    const { data: packages = [] } = useStockItemPackages(
+        INGREDIENT_CONFIG,
+        recipeIngredient.ingredientId,
+        open
+    )
 
     const {
         mutateAsync: updateRecipeIngredient,
@@ -40,27 +63,40 @@ export function EditRecipeIngredientModal({
     } = useUpdateRecipeIngredient()
 
     useEffect(() => {
-        if (open) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setQuantityUsed(
-                recipeIngredient.quantityUsed.toString().replace('.', ',')
-            )
-        }
+        if (!open) return
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setQuantity(formatInputNumber(recipeIngredient.quantityUsed))
+        setUnitValue('base')
     }, [open, recipeIngredient])
+
+    const unitOptions = useMemo(
+        () => buildQuantityUnitOptions(recipeIngredient.unit, packages),
+        [recipeIngredient.unit, packages]
+    )
+
+    const selectedUnit =
+        unitOptions.find((option) => option.value === unitValue) ??
+        unitOptions.find((option) => option.value === 'base')
+
+    const quantityValue = Number(quantity.replace(',', '.')) || 0
+    const quantityInBase = quantityValue * (selectedUnit?.factor ?? 1)
+
+    const handleUnitChange = (value: string) => {
+        const nextUnit = unitOptions.find((option) => option.value === value)
+        if (nextUnit && quantityInBase > 0)
+            setQuantity(formatInputNumber(quantityInBase / nextUnit.factor))
+        setUnitValue(value)
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-
-        const normalizedQuantity = Number(quantityUsed.replace(',', '.'))
-
-        if (isNaN(normalizedQuantity) || normalizedQuantity <= 0) return
+        if (quantityInBase <= 0) return
 
         await updateRecipeIngredient({
             recipeId,
             ingredientId: recipeIngredient.ingredientId,
-            data: {
-                quantityUsed: normalizedQuantity,
-            },
+            data: { quantityUsed: quantityInBase },
         })
 
         onOpenChange(false)
@@ -68,69 +104,78 @@ export function EditRecipeIngredientModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[440px]">
                 <DialogHeader>
-                    <DialogTitle>Editar quantidade</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
-                        Atualize a quantidade usada do ingrediente selecionado.
-                    </p>
+                    <DialogTitle>{recipeIngredient.name}</DialogTitle>
+                    <DialogDescription>
+                        Quanto deste ingrediente vai na receita inteira.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
-                    <div className="grid gap-3">
-                        <div className="flex justify-between items-center">
-                            <Label>Quantidade usada*</Label>
-
-                            {recipeIngredient.baseUnit && (
-                                <span className="text-sm text-muted-foreground">
-                                    {getMeasurementUnitLabel(
-                                        recipeIngredient.baseUnit
-                                    )}
-                                </span>
-                            )}
-                        </div>
-
-                        <Input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="Ex: 0,5"
-                            value={quantityUsed}
-                            onChange={(e) =>
-                                setQuantityUsed(
-                                    formatQuantityInput(e.target.value)
-                                )
-                            }
-                            required
-                        />
-                    </div>
-
-                    <DialogFooter className="flex flex-col gap-2">
-                        <div className="flex justify-end gap-2">
-                            <DialogClose asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={isPending}
-                                >
-                                    Cancelar
-                                </Button>
-                            </DialogClose>
-
-                            <Button
-                                type="submit"
-                                disabled={isPending || !quantityUsed}
+                    <div className="grid gap-2">
+                        <Label>Quantidade</Label>
+                        <div className="grid grid-cols-[1fr_2fr] gap-2">
+                            <Input
+                                inputMode="decimal"
+                                value={quantity}
+                                onChange={(e) => setQuantity(e.target.value)}
+                                autoFocus
+                            />
+                            <Select
+                                value={selectedUnit?.value}
+                                onValueChange={handleUnitChange}
                             >
-                                {isPending
-                                    ? 'Salvando...'
-                                    : 'Salvar alterações'}
-                            </Button>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {unitOptions.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-
-                        {error && (
-                            <p className="text-sm text-red-500">
-                                {error.message}
+                        {quantityInBase > 0 && (
+                            <p className="text-muted-foreground text-xs">
+                                ={' '}
+                                {formatStockQuantity(
+                                    quantityInBase,
+                                    recipeIngredient.unit
+                                )}{' '}
+                                · custo{' '}
+                                {formatCurrency(
+                                    quantityInBase * recipeIngredient.unitPrice
+                                )}
                             </p>
                         )}
+                    </div>
+
+                    {error && (
+                        <p className="text-destructive text-sm">
+                            {error.message}
+                        </p>
+                    )}
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={isPending || quantityInBase <= 0}
+                        >
+                            {isPending ? 'Salvando...' : 'Salvar'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

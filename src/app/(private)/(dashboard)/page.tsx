@@ -1,7 +1,5 @@
-import ChartsContainer from '@/features/dashboard/containers/ChartsContainer'
+import DashboardContainer from '@/features/dashboard/containers/DashboardContainer'
 
-const DashboardPage = () => {
-    return <ChartsContainer />
+export default function DashboardPage() {
+    return <DashboardContainer />
 }
-
-export default DashboardPage

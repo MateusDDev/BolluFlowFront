@@ -63,7 +63,7 @@ export const NewProductModal = () => {
 
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Novo produto final</DialogTitle>
+                    <DialogTitle>Novo produto</DialogTitle>
                     <DialogDescription>
                         Um produto final é composto por receitas, insumos e
                         ingredientes.
@@ -82,7 +82,7 @@ export const NewProductModal = () => {
                     </div>
 
                     <div className="grid gap-3">
-                        <Label>Preco de venda</Label>
+                        <Label>Preço de venda</Label>
                         <Input
                             type="text"
                             inputMode="decimal"

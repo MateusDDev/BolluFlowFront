@@ -22,6 +22,10 @@ import { Label } from 'ui/label'
 import { OrderStatus } from '@/features/orders/services/order.model'
 import { useOrderAction } from '@/features/orders/details/hooks/mutations/useOrderAction'
 import {
+    getInsufficientProducts,
+    InsufficientProductStockItem,
+} from '@/features/orders/services/insufficientStock'
+import {
     cancelOrder,
     deliverOrder,
     finishProductionOrder,
@@ -45,19 +49,6 @@ type OrderButton =
 interface OrderStatusTransition {
     primary?: OrderButton
     secondary?: OrderButton[]
-}
-
-type InsufficientProductStockItem = {
-    productId?: number
-    productName: string
-    required: number
-    available: number
-}
-
-type OrderStockErrorModel = {
-    code: string
-    message: string
-    insufficientProducts?: InsufficientProductStockItem[]
 }
 
 export const orderStatusTransitions: Record<
@@ -135,9 +126,8 @@ export function OrderStatusActions({
 
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-    const [cancelDialogStatus, setCancelDialogStatus] = useState<OrderStatus | null>(
-        null
-    )
+    const [cancelDialogStatus, setCancelDialogStatus] =
+        useState<OrderStatus | null>(null)
     const [revertStock, setRevertStock] = useState(false)
     const [stockErrorOpen, setStockErrorOpen] = useState(false)
     const [stockErrorItems, setStockErrorItems] = useState<
@@ -180,19 +170,18 @@ export function OrderStatusActions({
                 }
             },
             onError: (error: unknown) => {
-                const apiError = error as OrderStockErrorModel
+                const insufficientProducts = getInsufficientProducts(error)
 
-                if (
-                    action === 'startProduction' &&
-                    apiError.code === 'INSUFFICIENT_STOCK'
-                ) {
-                    setStockErrorItems(apiError.insufficientProducts ?? [])
+                if (action === 'startProduction' && insufficientProducts) {
+                    setStockErrorItems(insufficientProducts)
                     setStockErrorOpen(true)
                     return
                 }
 
                 setErrorMessage(
-                    apiError?.message ?? 'Não foi possível atualizar o pedido.'
+                    error instanceof Error
+                        ? error.message
+                        : 'Não foi possível atualizar o pedido.'
                 )
             },
         })
@@ -202,7 +191,8 @@ export function OrderStatusActions({
         if (!cancelDialogStatus) return
 
         const canRevertStock =
-            cancelDialogStatus === 'InProduction' || cancelDialogStatus === 'Ready'
+            cancelDialogStatus === 'InProduction' ||
+            cancelDialogStatus === 'Ready'
 
         const shouldSendRevert =
             canRevertStock && revertStock ? true : undefined

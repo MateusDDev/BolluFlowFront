@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/shared/components/providers/ThemeProvider'
 import { ReactQueryProvider } from '@/shared/api/provider'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,7 +20,14 @@ export default function RootLayout({
         <html lang="pt-BR" suppressHydrationWarning>
             <body className={`${inter.className}`}>
                 <ReactQueryProvider>
-                    <ThemeProvider>{children}</ThemeProvider>
+                    <ThemeProvider>
+                        {children}
+                        <Toaster
+                            richColors
+                            closeButton
+                            position="bottom-right"
+                        />
+                    </ThemeProvider>
                 </ReactQueryProvider>
             </body>
         </html>
