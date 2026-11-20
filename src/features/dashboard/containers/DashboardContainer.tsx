@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from 'ui/button'
 import { Card, CardContent } from 'ui/card'
 import { GettingStartedChecklist } from '@/features/onboarding/components/GettingStartedChecklist'
+import { FirstProductCard } from '@/features/onboarding/components/FirstProductCard'
 import { useModules } from '@/shared/modules/useModules'
 import { ModuleGate } from '@/shared/modules/ModuleGate'
 import { TodaySection } from '@/features/dashboard/components/TodaySection'
@@ -16,6 +17,7 @@ export default function DashboardContainer() {
 
     return (
         <section className="space-y-6 py-6">
+            <FirstProductCard />
             <GettingStartedChecklist />
 
             <ModuleGate module="orders">

@@ -5,7 +5,8 @@ import { DataTable } from 'ui/dataTable'
 import { columns } from '@/features/customers/components/molecules/Columns'
 import { Button } from 'ui/button'
 import { Input } from 'ui/input'
-import { Search } from 'lucide-react'
+import { Search, Users } from 'lucide-react'
+import { EmptyState } from 'components/EmptyState'
 import { useState } from 'react'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import NewCustomerModal from '@/features/customers/components/organisms/NewCustomerModal'
@@ -18,6 +19,18 @@ const CustomersTableContainer = () => {
     if (isLoading) return <p>Carregando clientes...</p>
 
     if (error) return <p>Não foi possível carregar os clientes</p>
+
+    if (!customers?.length)
+        return (
+            <section className="container mx-auto py-10">
+                <EmptyState
+                    icon={Users}
+                    title="Seus clientes aparecem aqui"
+                    description="Cadastre aqui ou direto ao criar um pedido, só com nome e WhatsApp. Quem pede pelo cardápio online entra sozinho."
+                    action={<NewCustomerModal />}
+                />
+            </section>
+        )
 
     return (
         <section className="container mx-auto py-10">

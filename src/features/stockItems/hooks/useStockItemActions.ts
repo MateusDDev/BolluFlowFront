@@ -8,6 +8,7 @@ import {
     registerStockItemPurchase,
 } from '@/features/stockItems/services/stockItem.api'
 import { StockItemConfig } from '@/features/stockItems/services/stockItem.config'
+import { showTipOnce } from '@/shared/onboarding/tips'
 
 function useInvalidateStockItem(config: StockItemConfig) {
     const queryClient = useQueryClient()
@@ -44,7 +45,10 @@ export function usePurchaseStockItem(config: StockItemConfig) {
     return useMutation({
         mutationFn: (data: Parameters<typeof registerStockItemPurchase>[1]) =>
             registerStockItemPurchase(config, data),
-        onSuccess: invalidate,
+        onSuccess: () => {
+            showTipOnce('first-purchase')
+            return invalidate()
+        },
     })
 }
 
@@ -54,7 +58,10 @@ export function useAdjustStockItem(config: StockItemConfig) {
     return useMutation({
         mutationFn: (data: Parameters<typeof adjustStockItem>[1]) =>
             adjustStockItem(config, data),
-        onSuccess: invalidate,
+        onSuccess: () => {
+            showTipOnce('first-count')
+            return invalidate()
+        },
     })
 }
 

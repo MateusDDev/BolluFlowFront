@@ -9,6 +9,7 @@ import { Input } from 'ui/input'
 import { Button } from 'ui/button'
 import { DataTable } from 'ui/dataTable'
 import { ChipGroup, ChipOption } from 'components/ChipGroup'
+import { EmptyState } from 'components/EmptyState'
 import { useGetOrders } from '@/features/orders/list/hooks/queries/useGetOrders'
 import { orderColumns } from '@/features/orders/list/components/molecules/OrderColumns'
 import { isDirectSale } from '@/features/orders/services/order.model'
@@ -67,6 +68,33 @@ export function OrdersTableContainer() {
     if (isLoading) return <p>Carregando pedidos...</p>
 
     if (error) return <p>Não foi possível carregar os pedidos</p>
+
+    if (!orders?.length)
+        return (
+            <section className="container mx-auto py-10">
+                <EmptyState
+                    icon={ShoppingBag}
+                    title="Registre sua primeira venda"
+                    description="Venda rápida é para o que sai na hora: já conta como entregue e entra no Financeiro. Encomenda é para entregar depois e tem status (pendente, em produção, pronta, entregue)."
+                    action={
+                        <>
+                            <Button asChild>
+                                <Link href="/orders/new?mode=quick">
+                                    <ShoppingBag className="h-4 w-4" />
+                                    Venda rápida
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline">
+                                <Link href="/orders/new?mode=order">
+                                    <Plus className="h-4 w-4" />
+                                    Encomenda
+                                </Link>
+                            </Button>
+                        </>
+                    }
+                />
+            </section>
+        )
 
     return (
         <section className="container mx-auto space-y-3 py-10">

@@ -17,6 +17,7 @@ import { Input } from 'ui/input'
 import { Label } from 'ui/label'
 import { ChipGroup, ChipOption } from 'components/ChipGroup'
 import { ModuleGate } from '@/shared/modules/ModuleGate'
+import { HelpTip } from 'components/HelpTip'
 import { MeasurementUnitValue } from '@/features/ingredients/services/measurementUnits'
 import { getStockUnit } from '@/features/stockItems/services/stockItemUnits'
 import { useCreateRecipe } from '@/features/recipes/list/hooks/mutations/useCreateRecipe'
@@ -147,7 +148,14 @@ export const NewRecipeModal = () => {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="new-recipe-yield">Rende</Label>
+                        <Label htmlFor="new-recipe-yield">
+                            Rende{' '}
+                            <HelpTip>
+                                Quanto a receita inteira produz. Se rende 1 kg e
+                                custa R$ 30, cada 100 g usados num produto
+                                custam R$ 3.
+                            </HelpTip>
+                        </Label>
                         <div className="flex flex-wrap items-center gap-2">
                             <Input
                                 id="new-recipe-yield"

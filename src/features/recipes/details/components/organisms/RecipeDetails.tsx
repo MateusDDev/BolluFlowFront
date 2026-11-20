@@ -16,6 +16,7 @@ import { Label } from 'ui/label'
 import { Switch } from 'ui/switch'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { ModuleGate } from '@/shared/modules/ModuleGate'
+import { HelpTip } from 'components/HelpTip'
 import { useGetRecipe } from '@/features/recipes/list/hooks/queries/useGetRecipe'
 import { useUpdateRecipe } from '@/features/recipes/list/hooks/mutations/useUpdateRecipe'
 import { UpdateRecipeDataType } from '@/features/recipes/services/recipe.api'
@@ -193,7 +194,11 @@ export function RecipeDetails() {
 
                         <div className="grid gap-2">
                             <Label htmlFor="recipe-yield">
-                                Rende ({unitInfo.baseSymbol})
+                                <HelpTip>
+                                    Quanto a receita inteira produz. É o que
+                                    divide o custo: rende mais, cada grama sai
+                                    mais barato nos produtos.
+                                </HelpTip>
                             </Label>
                             <Input
                                 id="recipe-yield"
@@ -214,7 +219,11 @@ export function RecipeDetails() {
                         <ModuleGate module="stock">
                             <div className="grid gap-2">
                                 <Label htmlFor="recipe-minimum">
-                                    Avisar abaixo de ({unitInfo.largeSymbol})
+                                    <HelpTip>
+                                        Quando o estoque desta receita ficar
+                                        abaixo desse valor, ela aparece nos
+                                        alertas do Dashboard.
+                                    </HelpTip>
                                 </Label>
                                 <Input
                                     id="recipe-minimum"

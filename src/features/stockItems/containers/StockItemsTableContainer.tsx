@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'
-import { Plus, Search } from 'lucide-react'
+import { Package, Plus, Search } from 'lucide-react'
+import { EmptyState } from 'components/EmptyState'
 import { Button } from 'ui/button'
 import { DataTable } from 'ui/dataTable'
 import { Input } from 'ui/input'
@@ -35,6 +36,33 @@ export function StockItemsTableContainer<TItem extends StockItemModel>({
         )
     }
 
+    const createDialog = (
+        <StockItemFormDialog
+            config={config}
+            open={isCreateOpen}
+            onOpenChange={setIsCreateOpen}
+        />
+    )
+
+    if (!data?.length)
+        return (
+            <section className="container mx-auto py-10">
+                <EmptyState
+                    icon={Package}
+                    title={`Cadastre seus ${config.plural}`}
+                    description={config.emptyDescription}
+                    example={config.emptyExample}
+                    action={
+                        <Button onClick={() => setIsCreateOpen(true)}>
+                            <Plus className="h-4 w-4" />
+                            {config.newLabel}
+                        </Button>
+                    }
+                />
+                {createDialog}
+            </section>
+        )
+
     return (
         <section className="container mx-auto space-y-3 py-10">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -63,11 +91,7 @@ export function StockItemsTableContainer<TItem extends StockItemModel>({
                 onColumnFiltersChange={setFilters}
             />
 
-            <StockItemFormDialog
-                config={config}
-                open={isCreateOpen}
-                onOpenChange={setIsCreateOpen}
-            />
+            {createDialog}
         </section>
     )
 }

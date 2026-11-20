@@ -3,7 +3,8 @@
 import { Input } from 'ui/input'
 import { useModuleColumns } from '@/shared/modules/moduleColumns'
 import { Button } from 'ui/button'
-import { Search } from 'lucide-react'
+import { Package, Search } from 'lucide-react'
+import { EmptyState } from 'components/EmptyState'
 import { DataTable } from 'ui/dataTable'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -22,6 +23,19 @@ export const ProductsTableContainer = () => {
     if (isLoading) return <p>Carregando produtos...</p>
 
     if (error) return <p>Não foi possivel carregar os produtos</p>
+
+    if (!products?.length)
+        return (
+            <section className="container mx-auto py-10">
+                <EmptyState
+                    icon={Package}
+                    title="Cadastre o que você vende"
+                    description="Com nome e preço o produto já aparece nos pedidos e no cardápio online. Custo e margem vêm depois, se você quiser."
+                    example="Ex.: Brigadeiro gourmet, R$ 3,50"
+                    action={<NewProductModal />}
+                />
+            </section>
+        )
 
     return (
         <section className="container mx-auto py-10">
