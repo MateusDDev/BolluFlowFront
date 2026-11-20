@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useModules } from '@/shared/modules/useModules'
 import {
     Dialog,
     DialogContent,
@@ -41,6 +42,8 @@ export function IngredientStockEntryModal({
     const [unitCostInput, setUnitCostInput] = useState('')
     const [notes, setNotes] = useState('')
     const [formMessage, setFormMessage] = useState<string | null>(null)
+    const { hasModule } = useModules()
+    const hasStock = hasModule('stock')
 
     const { data: customConversions, isLoading } = useGetIngredientConversions(
         ingredient.id,
@@ -121,7 +124,9 @@ export function IngredientStockEntryModal({
                 <DialogHeader>
                     <DialogTitle>Compra de ingrediente</DialogTitle>
                     <DialogDescription>
-                        Registre uma compra para atualizar o estoque.
+                        {hasStock
+                            ? 'Registre uma compra para atualizar o estoque.'
+                            : 'Registre uma compra. O valor entra como despesa no financeiro.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -199,13 +204,17 @@ export function IngredientStockEntryModal({
                     </div>
 
                     <div className="rounded border p-3 text-sm text-muted-foreground">
-                        <p>
-                            Será adicionado ao estoque:{' '}
-                            <strong>
-                                {quantityInBaseUnit.toLocaleString('pt-BR')}{' '}
-                                {getMeasurementUnitLabel(ingredient.baseUnit)}
-                            </strong>
-                        </p>
+                        {hasStock && (
+                            <p>
+                                Será adicionado ao estoque:{' '}
+                                <strong>
+                                    {quantityInBaseUnit.toLocaleString('pt-BR')}{' '}
+                                    {getMeasurementUnitLabel(
+                                        ingredient.baseUnit
+                                    )}
+                                </strong>
+                            </p>
+                        )}
                         <p>
                             Custo total da compra:{' '}
                             <strong>

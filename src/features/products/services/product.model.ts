@@ -7,6 +7,7 @@ export interface ProductModel {
     category?: string | null
     salePrice: number
     stockQuantity: number
+    trackStock: boolean
     minimumStockQuantity?: number
     indirectCostPercentage: number | null
     markupPercentage: number

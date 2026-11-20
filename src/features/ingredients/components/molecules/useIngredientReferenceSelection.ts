@@ -10,11 +10,13 @@ export const getReferenceKey = (ingredientId: number) =>
     `ingredient-reference-selection:${ingredientId}`
 
 export function useIngredientReferenceSelection(ingredientId: number) {
-    const { data: preference } = useGetStockUnitPreference('ingredient', ingredientId)
-    const setStockUnitPreference = useSetStockUnitPreference()
-    const [selectedConversion, setSelectedConversionState] = useState(
-        BASE_OPTION_VALUE
+    const { data: preference } = useGetStockUnitPreference(
+        'ingredient',
+        ingredientId
     )
+    const setStockUnitPreference = useSetStockUnitPreference()
+    const [selectedConversion, setSelectedConversionState] =
+        useState(BASE_OPTION_VALUE)
 
     useEffect(() => {
         const key = getReferenceKey(ingredientId)
@@ -25,7 +27,10 @@ export function useIngredientReferenceSelection(ingredientId: number) {
         }
 
         const listener = (event: Event) => {
-            const customEvent = event as CustomEvent<{ key: string; value: string }>
+            const customEvent = event as CustomEvent<{
+                key: string
+                value: string
+            }>
             if (customEvent.detail?.key === key) {
                 setSelectedConversionState(customEvent.detail.value)
             }

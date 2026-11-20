@@ -33,16 +33,23 @@ export function SupplyConversionsModal({
 }: SupplyConversionsModalProps) {
     const [newConversionName, setNewConversionName] = useState('')
     const [newConversionQuantity, setNewConversionQuantity] = useState('')
-    const [editingConversionId, setEditingConversionId] = useState<number | null>(
-        null
-    )
+    const [editingConversionId, setEditingConversionId] = useState<
+        number | null
+    >(null)
     const [editingConversionName, setEditingConversionName] = useState('')
-    const [editingConversionQuantity, setEditingConversionQuantity] = useState('')
+    const [editingConversionQuantity, setEditingConversionQuantity] =
+        useState('')
 
-    const { data: conversions, isLoading } = useGetSupplyConversions(supply.id, open)
+    const { data: conversions, isLoading } = useGetSupplyConversions(
+        supply.id,
+        open
+    )
 
-    const { mutateAsync: createConversion, isPending: isCreating, error } =
-        useCreateSupplyConversion()
+    const {
+        mutateAsync: createConversion,
+        isPending: isCreating,
+        error,
+    } = useCreateSupplyConversion()
     const {
         mutateAsync: updateConversion,
         isPending: isUpdating,
@@ -106,7 +113,9 @@ export function SupplyConversionsModal({
     const handleUpdate = async () => {
         if (editingConversionId === null) return
 
-        const parsedQuantity = Number(editingConversionQuantity.replace(',', '.'))
+        const parsedQuantity = Number(
+            editingConversionQuantity.replace(',', '.')
+        )
 
         if (
             !editingConversionName.trim() ||
@@ -135,7 +144,10 @@ export function SupplyConversionsModal({
                     <DialogDescription>
                         Defina como você compra esse insumo (ex: cartela, pote,
                         vasilha). O sistema converte para a unidade base{' '}
-                        <strong>{getMeasurementUnitLabel(supply.baseUnit)}</strong>.
+                        <strong>
+                            {getMeasurementUnitLabel(supply.baseUnit)}
+                        </strong>
+                        .
                     </DialogDescription>
                 </DialogHeader>
 
@@ -179,28 +191,33 @@ export function SupplyConversionsModal({
                                     Nenhuma conversão personalizada cadastrada.
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Você pode usar as padrão abaixo para começar.
+                                    Você pode usar as padrão abaixo para
+                                    começar.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                    {defaultConversions.map((defaultConversion) => (
-                                        <Button
-                                            key={defaultConversion.name}
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleCreate(
-                                                    defaultConversion.name,
-                                                    String(
-                                                        defaultConversion.quantityInBaseUnit
+                                    {defaultConversions.map(
+                                        (defaultConversion) => (
+                                            <Button
+                                                key={defaultConversion.name}
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    handleCreate(
+                                                        defaultConversion.name,
+                                                        String(
+                                                            defaultConversion.quantityInBaseUnit
+                                                        )
                                                     )
-                                                )
-                                            }
-                                            disabled={isBusy}
-                                        >
-                                            {defaultConversion.name} ={' '}
-                                            {defaultConversion.quantityInBaseUnit}
-                                        </Button>
-                                    ))}
+                                                }
+                                                disabled={isBusy}
+                                            >
+                                                {defaultConversion.name} ={' '}
+                                                {
+                                                    defaultConversion.quantityInBaseUnit
+                                                }
+                                            </Button>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -256,7 +273,9 @@ export function SupplyConversionsModal({
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => startEdit(conversion)}
+                                            onClick={() =>
+                                                startEdit(conversion)
+                                            }
                                             disabled={isBusy}
                                         >
                                             <Pencil className="h-4 w-4" />

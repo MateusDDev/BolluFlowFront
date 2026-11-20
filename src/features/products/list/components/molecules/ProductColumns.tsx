@@ -5,6 +5,7 @@ import { Badge } from 'ui/badge'
 import { formatCurrency } from '@/shared/helpers/formatHelper'
 import { ProductModel } from '@/features/products/services/product.model'
 import { ProductActions } from '@/features/products/list/components/atoms/ProductActions'
+import { TrackedStock } from '@/shared/modules/stock'
 
 export const productColumns: ColumnDef<ProductModel>[] = [
     {
@@ -26,6 +27,11 @@ export const productColumns: ColumnDef<ProductModel>[] = [
     {
         accessorKey: 'stockQuantity',
         header: 'Estoque',
+        cell: ({ row }) => (
+            <TrackedStock trackStock={row.original.trackStock}>
+                {row.original.stockQuantity.toLocaleString('pt-BR')}
+            </TrackedStock>
+        ),
     },
     {
         accessorKey: 'finalPrice',

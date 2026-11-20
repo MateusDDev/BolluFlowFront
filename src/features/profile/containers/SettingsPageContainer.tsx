@@ -23,16 +23,8 @@ import {
     DEFAULT_WHATSAPP_TEMPLATE,
     TEMPLATE_VARIABLES,
 } from '@/features/orders/helpers/whatsappTemplate.constants'
-
-function sanitizeMenuSlug(value: string) {
-    return value
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-}
+import { sanitizeSlug as sanitizeMenuSlug } from '@/shared/helpers/slugHelper'
+import { APP_MODULES, AppModule } from '@/shared/modules/modules'
 
 export default function SettingsPageContainer() {
     const { setTitle } = usePageTitle()
@@ -58,7 +50,6 @@ export default function SettingsPageContainer() {
         null
     )
     const [pricingFeedback, setPricingFeedback] = useState<string | null>(null)
-    const [stockFeedback, setStockFeedback] = useState<string | null>(null)
     const [menuFeedback, setMenuFeedback] = useState<string | null>(null)
 
     useEffect(() => {
@@ -98,7 +89,7 @@ export default function SettingsPageContainer() {
     const handleSaveTemplate = async () => {
         await updateProfile({
             whatsappMessageTemplate:
-                currentTemplate.trim() === '' ? null : currentTemplate,
+                currentTemplate.trim() === '' ? '' : currentTemplate,
         })
 
         setTemplateFeedback('Mensagem padrão salva com sucesso!')
@@ -106,7 +97,7 @@ export default function SettingsPageContainer() {
     }
 
     const handleRestoreTemplate = async () => {
-        await updateProfile({ whatsappMessageTemplate: null })
+        await updateProfile({ whatsappMessageTemplate: '' })
         setWhatsappTemplate(undefined)
         setTemplateFeedback('Template restaurado para o padrão com sucesso!')
     }
@@ -127,6 +118,19 @@ export default function SettingsPageContainer() {
         await updateProfile({ slug: normalizedMenuSlug })
         setMenuSlug(undefined)
         setMenuFeedback('Link do cardápio salvo com sucesso!')
+    }
+
+    const handleToggleModule = async (module: AppModule, enabled: boolean) => {
+        const current = profile?.enabledModules ?? []
+        const enabledModules = enabled
+            ? [...current, module]
+            : current.filter((m) => m !== module)
+
+        await updateProfile({ enabledModules })
+    }
+
+    const handleToggleBlockWithoutStock = async (block: boolean) => {
+        await updateProfile({ allowNegativeStock: !block })
     }
 
     const handleCopyMenuLink = async () => {
@@ -201,6 +205,69 @@ export default function SettingsPageContainer() {
                             {isPending ? 'Salvando...' : 'Salvar'}
                         </Button>
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Áreas do sistema</CardTitle>
+                    <CardDescription>
+                        Ligue só o que você usa. Desligar uma área esconde o
+                        menu, mas não apaga nenhum dado.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {APP_MODULES.map((module) => (
+                        <div
+                            key={module.key}
+                            className="flex items-center justify-between gap-4"
+                        >
+                            <div>
+                                <Label htmlFor={`module-${module.key}`}>
+                                    {module.title}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {module.description}
+                                </p>
+                            </div>
+                            <Switch
+                                id={`module-${module.key}`}
+                                checked={profile.enabledModules.includes(
+                                    module.key
+                                )}
+                                disabled={isPending}
+                                onCheckedChange={(checked) =>
+                                    handleToggleModule(module.key, checked)
+                                }
+                            />
+                        </div>
+                    ))}
+
+                    {profile.enabledModules.includes('stock') && (
+                        <>
+                            <Separator />
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <Label htmlFor="block-without-stock">
+                                        Bloquear quando faltar estoque
+                                    </Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Desligado, pedidos e produções seguem e
+                                        o saldo pode ficar negativo. Só vale
+                                        para itens com controle de estoque.
+                                    </p>
+                                </div>
+                                <Switch
+                                    id="block-without-stock"
+                                    checked={!profile.allowNegativeStock}
+                                    disabled={isPending}
+                                    onCheckedChange={
+                                        handleToggleBlockWithoutStock
+                                    }
+                                />
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
 

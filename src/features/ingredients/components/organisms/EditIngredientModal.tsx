@@ -18,6 +18,8 @@ import {
 } from 'ui/select'
 import React, { useEffect, useState } from 'react'
 import { formatCurrencyFromInput } from '@/shared/helpers/formatHelper'
+import { useModules } from '@/shared/modules/useModules'
+import { TrackStockField } from '@/shared/modules/stock'
 import { useUpdateIngredient } from '@/features/ingredients/hooks/mutations/useUpdateIngredient'
 import { UpdateIngredientDataType } from '@/features/ingredients/services/ingredient.api'
 import { IngredientModel } from '@/features/ingredients/services/ingredient.model'
@@ -38,6 +40,7 @@ interface FormState {
     baseUnit: string
     unitCost: string
     minimumStockQuantity: string
+    trackStock: boolean
 }
 
 const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
@@ -45,6 +48,7 @@ const mapIngredientToForm = (ingredient: IngredientModel): FormState => ({
     baseUnit: normalizeMeasurementUnit(ingredient.baseUnit),
     unitCost: String(Math.round(ingredient.unitCost * 100)),
     minimumStockQuantity: ingredient.minimumStockQuantity?.toString() ?? '',
+    trackStock: ingredient.trackStock,
 })
 
 export const EditIngredientModal = ({
@@ -56,6 +60,7 @@ export const EditIngredientModal = ({
         mapIngredientToForm(ingredient)
     )
 
+    const { hasModule } = useModules()
     const {
         mutateAsync: updateIngredient,
         isPending,
@@ -80,6 +85,7 @@ export const EditIngredientModal = ({
             name: form.name,
             baseUnit: form.baseUnit,
             unitCost: form.unitCost === '' ? 0 : Number(form.unitCost) / 100,
+            trackStock: form.trackStock,
         }
 
         if (form.minimumStockQuantity !== '')
@@ -169,6 +175,16 @@ export const EditIngredientModal = ({
                             }
                         />
                     </div>
+
+                    {hasModule('stock') && (
+                        <TrackStockField
+                            id="ingredient-track-stock"
+                            checked={form.trackStock}
+                            onCheckedChange={(checked) =>
+                                setField('trackStock', checked)
+                            }
+                        />
+                    )}
 
                     <DialogFooter className="flex flex-col gap-2">
                         <div className="flex justify-end gap-2">

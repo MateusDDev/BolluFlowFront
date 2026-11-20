@@ -21,6 +21,8 @@ import { useGetDashboardStockAlerts } from '@/features/dashboard/hooks/queries/u
 import { useGetDashboardOrdersByStatus } from '@/features/dashboard/hooks/queries/useGetDashboardOrdersByStatus'
 import { useGetDashboardInventoryValueByType } from '@/features/dashboard/hooks/queries/useGetDashboardInventoryValueByType'
 import { useGetDashboardRecentOrders } from '@/features/dashboard/hooks/queries/useGetDashboardRecentOrders'
+import { GettingStartedChecklist } from '@/features/onboarding/components/GettingStartedChecklist'
+import { useModules } from '@/shared/modules/useModules'
 import {
     orderStatusLabelMap,
     orderStatusVariantMap,
@@ -97,6 +99,10 @@ const getUnitDisplayLabel = (baseUnit: string | undefined) => {
 }
 
 const ChartsContainer = () => {
+    const { hasModule } = useModules()
+    const hasStock = hasModule('stock')
+    const hasOrders = hasModule('orders')
+
     const stockAlertsQuery = useGetDashboardStockAlerts()
     const ordersByStatusQuery = useGetDashboardOrdersByStatus()
     const inventoryValueByTypeQuery = useGetDashboardInventoryValueByType()
@@ -174,309 +180,340 @@ const ChartsContainer = () => {
 
     return (
         <section className="space-y-4 py-4">
+            <GettingStartedChecklist />
+
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>Alertas de estoque</CardDescription>
-                        <CardTitle className="text-3xl">
-                            {stockAlerts.length}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <PackageSearch className="h-4 w-4" />
-                        Itens próximos/abaixo do mínimo
-                    </CardContent>
-                </Card>
+                {hasStock && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardDescription>
+                                Alertas de estoque
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {stockAlerts.length}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <PackageSearch className="h-4 w-4" />
+                            Itens próximos/abaixo do mínimo
+                        </CardContent>
+                    </Card>
+                )}
 
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>
-                            Pedidos operacionais (em andamento)
-                        </CardDescription>
-                        <CardTitle className="text-3xl">
-                            {inProgressOrders}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <ClipboardList className="h-4 w-4" />
-                        Pendentes: {pendingOrders} · Em preparo:{' '}
-                        {inProductionOrders} · Prontos: {readyOrders}
-                    </CardContent>
-                </Card>
+                {hasOrders && (
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardDescription>
+                                Pedidos operacionais (em andamento)
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {inProgressOrders}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <ClipboardList className="h-4 w-4" />
+                            Pendentes: {pendingOrders} · Em preparo:{' '}
+                            {inProductionOrders} · Prontos: {readyOrders}
+                        </CardContent>
+                    </Card>
+                )}
 
-                <Card className="md:col-span-2">
-                    <CardHeader className="pb-2">
-                        <CardDescription>
-                            Valor total em estoque
-                        </CardDescription>
-                        <CardTitle className="text-3xl">
-                            {formatCurrency(totalInventoryValue)}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <TrendingUp className="h-4 w-4" />
-                        Consolidado por tipo de estoque
-                    </CardContent>
-                </Card>
+                {hasStock && (
+                    <Card className="md:col-span-2">
+                        <CardHeader className="pb-2">
+                            <CardDescription>
+                                Valor total em estoque
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {formatCurrency(totalInventoryValue)}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <TrendingUp className="h-4 w-4" />
+                            Consolidado por tipo de estoque
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             <div className="grid gap-4 lg:grid-cols-5">
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Pedidos por status</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-[280px]">
-                        <ChartContainer
-                            config={statusChartConfig}
-                            className="h-full w-full"
-                        >
-                            <PieChart>
-                                <Pie
-                                    data={statusChartData}
-                                    dataKey="value"
-                                    nameKey="label"
-                                    innerRadius={55}
-                                    outerRadius={95}
-                                    paddingAngle={3}
-                                >
-                                    {statusChartData.map((entry) => (
-                                        <Cell
-                                            key={entry.status}
-                                            fill={entry.fill}
-                                        />
-                                    ))}
-                                </Pie>
-                                <ChartTooltip
-                                    content={
-                                        <ChartTooltipContent
-                                            hideIndicator
-                                            formatter={(value, name, item) => (
-                                                <div className="flex w-full items-center justify-between gap-3">
-                                                    <span className="text-muted-foreground">
-                                                        {name}
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        {String(
-                                                            item.payload.value
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        />
-                                    }
-                                />
-                            </PieChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-3">
-                    <CardHeader>
-                        <CardTitle>Valor em estoque por tipo</CardTitle>
-                        <CardDescription>
-                            Comparativo visual em gráfico de barras
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[280px]">
-                        <ChartContainer
-                            config={inventoryChartConfig}
-                            className="h-full w-full"
-                        >
-                            <BarChart
-                                data={inventoryChartData}
-                                layout="vertical"
-                                margin={{ left: 16, right: 16 }}
+                {hasOrders && (
+                    <Card className="lg:col-span-2">
+                        <CardHeader>
+                            <CardTitle>Pedidos por status</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-[280px]">
+                            <ChartContainer
+                                config={statusChartConfig}
+                                className="h-full w-full"
                             >
-                                <CartesianGrid horizontal={false} />
-                                <YAxis
-                                    dataKey="label"
-                                    type="category"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    width={95}
-                                />
-                                <XAxis
-                                    dataKey="totalValue"
-                                    type="number"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tickFormatter={(value) =>
-                                        formatCurrency(Number(value))
-                                    }
-                                />
-                                <ChartTooltip
-                                    content={
-                                        <ChartTooltipContent
-                                            nameKey="label"
-                                            formatter={(
-                                                _value,
-                                                _name,
-                                                item
-                                            ) => (
-                                                <div className="flex w-full items-center justify-between gap-3">
-                                                    <span className="text-muted-foreground">
-                                                        {String(
-                                                            item.payload.label
-                                                        )}
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        {formatCurrency(
-                                                            item.payload
-                                                                .totalValue
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        />
-                                    }
-                                />
-                                <Bar dataKey="totalValue" radius={6}>
-                                    {inventoryChartData.map((entry) => (
-                                        <Cell
-                                            key={entry.type}
-                                            fill={entry.fill}
-                                        />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
+                                <PieChart>
+                                    <Pie
+                                        data={statusChartData}
+                                        dataKey="value"
+                                        nameKey="label"
+                                        innerRadius={55}
+                                        outerRadius={95}
+                                        paddingAngle={3}
+                                    >
+                                        {statusChartData.map((entry) => (
+                                            <Cell
+                                                key={entry.status}
+                                                fill={entry.fill}
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <ChartTooltip
+                                        content={
+                                            <ChartTooltipContent
+                                                hideIndicator
+                                                formatter={(
+                                                    value,
+                                                    name,
+                                                    item
+                                                ) => (
+                                                    <div className="flex w-full items-center justify-between gap-3">
+                                                        <span className="text-muted-foreground">
+                                                            {name}
+                                                        </span>
+                                                        <span className="font-semibold">
+                                                            {String(
+                                                                item.payload
+                                                                    .value
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            />
+                                        }
+                                    />
+                                </PieChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {hasStock && (
+                    <Card className="lg:col-span-3">
+                        <CardHeader>
+                            <CardTitle>Valor em estoque por tipo</CardTitle>
+                            <CardDescription>
+                                Comparativo visual em gráfico de barras
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[280px]">
+                            <ChartContainer
+                                config={inventoryChartConfig}
+                                className="h-full w-full"
+                            >
+                                <BarChart
+                                    data={inventoryChartData}
+                                    layout="vertical"
+                                    margin={{ left: 16, right: 16 }}
+                                >
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis
+                                        dataKey="label"
+                                        type="category"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        width={95}
+                                    />
+                                    <XAxis
+                                        dataKey="totalValue"
+                                        type="number"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(value) =>
+                                            formatCurrency(Number(value))
+                                        }
+                                    />
+                                    <ChartTooltip
+                                        content={
+                                            <ChartTooltipContent
+                                                nameKey="label"
+                                                formatter={(
+                                                    _value,
+                                                    _name,
+                                                    item
+                                                ) => (
+                                                    <div className="flex w-full items-center justify-between gap-3">
+                                                        <span className="text-muted-foreground">
+                                                            {String(
+                                                                item.payload
+                                                                    .label
+                                                            )}
+                                                        </span>
+                                                        <span className="font-semibold">
+                                                            {formatCurrency(
+                                                                item.payload
+                                                                    .totalValue
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            />
+                                        }
+                                    />
+                                    <Bar dataKey="totalValue" radius={6}>
+                                        {inventoryChartData.map((entry) => (
+                                            <Cell
+                                                key={entry.type}
+                                                fill={entry.fill}
+                                            />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Estoque crítico e atenção</CardTitle>
-                        <CardDescription>
-                            Barras de cobertura de estoque por item
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        {stockAlerts.length === 0 && (
-                            <p className="text-muted-foreground text-sm">
-                                Nenhum item precisa de atenção no momento.
-                            </p>
-                        )}
-                        {stockAlerts.map((item) => {
-                            const fillPercent = Math.max(
-                                0,
-                                Math.min(item.stockCoveragePercent, 100)
-                            )
+                {hasStock && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Estoque crítico e atenção</CardTitle>
+                            <CardDescription>
+                                Barras de cobertura de estoque por item
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {stockAlerts.length === 0 && (
+                                <p className="text-muted-foreground text-sm">
+                                    Nenhum item precisa de atenção no momento.
+                                </p>
+                            )}
+                            {stockAlerts.map((item) => {
+                                const fillPercent = Math.max(
+                                    0,
+                                    Math.min(item.stockCoveragePercent, 100)
+                                )
 
-                            return (
-                                <div
-                                    key={`${item.category}-${item.id}`}
-                                    className="bg-muted/40 rounded-lg p-3"
+                                return (
+                                    <div
+                                        key={`${item.category}-${item.id}`}
+                                        className="bg-muted/40 rounded-lg p-3"
+                                    >
+                                        <div className="mb-2 flex items-center justify-between gap-2">
+                                            <div>
+                                                <p className="text-sm font-medium">
+                                                    {item.name}
+                                                </p>
+                                                <p className="text-muted-foreground text-xs">
+                                                    {categoryLabelMap[
+                                                        item.category
+                                                    ] ?? item.category}{' '}
+                                                    · Atual:{' '}
+                                                    {item.stockQuantity.toLocaleString(
+                                                        'pt-BR'
+                                                    )}{' '}
+                                                    {getUnitDisplayLabel(
+                                                        item.baseUnit
+                                                    )}{' '}
+                                                    · Mínimo:{' '}
+                                                    {item.minimumStockQuantity.toLocaleString(
+                                                        'pt-BR'
+                                                    )}{' '}
+                                                    {getUnitDisplayLabel(
+                                                        item.baseUnit
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                variant={
+                                                    item.severity === 'Critical'
+                                                        ? 'destructive'
+                                                        : 'secondary'
+                                                }
+                                            >
+                                                {item.severity === 'Critical'
+                                                    ? 'Crítico'
+                                                    : 'Atenção'}
+                                            </Badge>
+                                        </div>
+                                        <div className="bg-background h-2.5 w-full overflow-hidden rounded-full border">
+                                            <div
+                                                className={`h-full rounded-full ${
+                                                    item.severity === 'Critical'
+                                                        ? 'bg-destructive'
+                                                        : 'bg-yellow-500'
+                                                }`}
+                                                style={{
+                                                    width: `${fillPercent}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <p className="text-muted-foreground mt-1 text-xs">
+                                            Cobertura:{' '}
+                                            {item.stockCoveragePercent}% do
+                                            mínimo
+                                        </p>
+                                    </div>
+                                )
+                            })}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {hasOrders && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Últimos pedidos</CardTitle>
+                            <CardDescription>
+                                Clique em um pedido para abrir os detalhes
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {recentOrders.length === 0 && (
+                                <p className="text-muted-foreground text-sm">
+                                    Ainda não existem pedidos cadastrados.
+                                </p>
+                            )}
+                            {recentOrders.map((order) => (
+                                <Link
+                                    key={order.id}
+                                    href={`/orders/${order.id}`}
+                                    className="hover:border-primary block rounded-lg border p-3 transition-colors"
                                 >
-                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                         <div>
-                                            <p className="text-sm font-medium">
-                                                {item.name}
+                                            <p className="font-medium">
+                                                Pedido #{order.number}
                                             </p>
-                                            <p className="text-muted-foreground text-xs">
-                                                {categoryLabelMap[
-                                                    item.category
-                                                ] ?? item.category}{' '}
-                                                · Atual:{' '}
-                                                {item.stockQuantity.toLocaleString(
-                                                    'pt-BR'
-                                                )}{' '}
-                                                {getUnitDisplayLabel(
-                                                    item.baseUnit
-                                                )}{' '}
-                                                · Mínimo:{' '}
-                                                {item.minimumStockQuantity.toLocaleString(
-                                                    'pt-BR'
-                                                )}{' '}
-                                                {getUnitDisplayLabel(
-                                                    item.baseUnit
-                                                )}
+                                            <p className="text-muted-foreground text-sm">
+                                                {order.customerName} · Criado em{' '}
+                                                {formatDate(order.createdAt)} ·
+                                                Itens: {order.totalItems}
                                             </p>
                                         </div>
-                                        <Badge
-                                            variant={
-                                                item.severity === 'Critical'
-                                                    ? 'destructive'
-                                                    : 'secondary'
-                                            }
-                                        >
-                                            {item.severity === 'Critical'
-                                                ? 'Crítico'
-                                                : 'Atenção'}
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-semibold">
+                                                {formatCurrency(
+                                                    order.totalValue
+                                                )}
+                                            </p>
+                                            <Badge
+                                                variant={
+                                                    orderStatusVariantMap[
+                                                        order.status
+                                                    ]
+                                                }
+                                            >
+                                                {
+                                                    orderStatusLabelMap[
+                                                        order.status
+                                                    ]
+                                                }
+                                            </Badge>
+                                        </div>
                                     </div>
-                                    <div className="bg-background h-2.5 w-full overflow-hidden rounded-full border">
-                                        <div
-                                            className={`h-full rounded-full ${
-                                                item.severity === 'Critical'
-                                                    ? 'bg-destructive'
-                                                    : 'bg-yellow-500'
-                                            }`}
-                                            style={{
-                                                width: `${fillPercent}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <p className="text-muted-foreground mt-1 text-xs">
-                                        Cobertura: {item.stockCoveragePercent}%
-                                        do mínimo
-                                    </p>
-                                </div>
-                            )
-                        })}
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Últimos pedidos</CardTitle>
-                        <CardDescription>
-                            Clique em um pedido para abrir os detalhes
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        {recentOrders.length === 0 && (
-                            <p className="text-muted-foreground text-sm">
-                                Ainda não existem pedidos cadastrados.
-                            </p>
-                        )}
-                        {recentOrders.map((order) => (
-                            <Link
-                                key={order.id}
-                                href={`/orders/${order.id}`}
-                                className="hover:border-primary block rounded-lg border p-3 transition-colors"
-                            >
-                                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                    <div>
-                                        <p className="font-medium">
-                                            Pedido #{order.number}
-                                        </p>
-                                        <p className="text-muted-foreground text-sm">
-                                            {order.customerName} · Criado em{' '}
-                                            {formatDate(order.createdAt)} ·
-                                            Itens: {order.totalItems}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-semibold">
-                                            {formatCurrency(order.totalValue)}
-                                        </p>
-                                        <Badge
-                                            variant={
-                                                orderStatusVariantMap[
-                                                    order.status
-                                                ]
-                                            }
-                                        >
-                                            {orderStatusLabelMap[order.status]}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </CardContent>
-                </Card>
+                                </Link>
+                            ))}
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </section>
     )

@@ -1,6 +1,8 @@
 'use client'
 
 import { Input } from 'ui/input'
+import { useModules } from '@/shared/modules/useModules'
+import { withoutStockColumns } from '@/shared/modules/stock'
 import { Button } from 'ui/button'
 import { Search } from 'lucide-react'
 import { DataTable } from 'ui/dataTable'
@@ -13,6 +15,7 @@ import { NewProductModal } from '@/features/products/list/components/organisms/N
 
 export const ProductsTableContainer = () => {
     const [filters, setFilters] = useState<ColumnFiltersState>([])
+    const { hasModule } = useModules()
     const { data: products, isLoading, error } = useGetProducts()
     const [searchValue, setSearchValue] = useState<string>('')
     const router = useRouter()
@@ -45,7 +48,11 @@ export const ProductsTableContainer = () => {
             </div>
             <div>
                 <DataTable
-                    columns={productColumns}
+                    columns={
+                        hasModule('stock')
+                            ? productColumns
+                            : withoutStockColumns(productColumns)
+                    }
                     data={products ?? []}
                     noDataMessage="Nenhum produto encontrado"
                     columnFilters={filters}

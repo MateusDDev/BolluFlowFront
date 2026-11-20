@@ -12,6 +12,8 @@ import { useUpdateProduct } from '@/features/products/details/hooks/mutations/us
 import { ProductModel } from '@/features/products/services/product.model'
 import { UpdateProductDataType } from '@/features/products/services/product.api'
 import { ProductImageUpload } from '@/features/products/components/ProductImageUpload'
+import { useModules } from '@/shared/modules/useModules'
+import { TrackStockField } from '@/shared/modules/stock'
 
 interface FormState {
     name: string
@@ -19,6 +21,7 @@ interface FormState {
     category: string
     minimumStockQuantity: string
     isActive: boolean
+    trackStock: boolean
 }
 
 const mapProductToForm = (product: ProductModel): FormState => {
@@ -28,6 +31,7 @@ const mapProductToForm = (product: ProductModel): FormState => {
         category: product.category ?? '',
         minimumStockQuantity: product.minimumStockQuantity?.toString() ?? '',
         isActive: product.isActive,
+        trackStock: product.trackStock,
     }
 }
 
@@ -37,6 +41,8 @@ export function ProductDetails() {
 
     const { data: product, isLoading } = useGetProduct(productId)
     const { mutateAsync: updateProduct, isPending } = useUpdateProduct()
+    const { hasModule } = useModules()
+    const hasStock = hasModule('stock')
 
     const [form, setForm] = useState<FormState | null>(null)
     const [initialForm, setInitialForm] = useState<FormState | null>(null)
@@ -73,6 +79,7 @@ export function ProductDetails() {
             description: form.description.trim() || null,
             category: form.category.trim() || null,
             isActive: form.isActive,
+            trackStock: form.trackStock,
         }
 
         if (form.minimumStockQuantity !== '') {
@@ -130,17 +137,34 @@ export function ProductDetails() {
                         />
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label>Estoque minimo</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            value={form.minimumStockQuantity}
-                            onChange={(e) =>
-                                setField('minimumStockQuantity', e.target.value)
-                            }
-                        />
-                    </div>
+                    {hasStock && (
+                        <div className="grid gap-2">
+                            <Label>Estoque minimo</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                value={form.minimumStockQuantity}
+                                onChange={(e) =>
+                                    setField(
+                                        'minimumStockQuantity',
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        </div>
+                    )}
+
+                    {hasStock && (
+                        <div className="col-span-2">
+                            <TrackStockField
+                                id="product-track-stock"
+                                checked={form.trackStock}
+                                onCheckedChange={(checked) =>
+                                    setField('trackStock', checked)
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
             </section>
 

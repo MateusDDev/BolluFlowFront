@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useModules } from '@/shared/modules/useModules'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,6 +39,7 @@ export function IngredientActions({ ingredient }: Props) {
     const [isConversionsOpen, setIsConversionsOpen] = useState(false)
     const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
     const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
+    const { hasModule, hasAnyModule } = useModules()
 
     async function handleConfirmDelete() {
         await deleteIngredient(ingredient.id)
@@ -61,19 +63,29 @@ export function IngredientActions({ ingredient }: Props) {
                         Editar ingrediente
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => setIsConversionsOpen(true)}>
+                    <DropdownMenuItem
+                        onClick={() => setIsConversionsOpen(true)}
+                    >
                         Gerenciar conversões
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
-                        Registrar compra
-                    </DropdownMenuItem>
+                    {hasAnyModule(['stock', 'finance']) && (
+                        <DropdownMenuItem
+                            onClick={() => setIsStockEntryOpen(true)}
+                        >
+                            Registrar compra
+                        </DropdownMenuItem>
+                    )}
 
-                    <DropdownMenuItem
-                        onClick={() => setIsStockAdjustmentOpen(true)}
-                    >
-                        Corrigir estoque
-                    </DropdownMenuItem>
+                    {hasModule('stock') && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={() => setIsStockAdjustmentOpen(true)}
+                            >
+                                Corrigir estoque
+                            </DropdownMenuItem>
+                        </>
+                    )}
 
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">

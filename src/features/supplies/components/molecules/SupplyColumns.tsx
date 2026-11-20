@@ -6,6 +6,7 @@ import { SupplyActions } from '@/features/supplies/components/atoms/SupplyAction
 import { SupplyReferenceSelectorCell } from '@/features/supplies/components/molecules/SupplyReferenceSelectorCell'
 import { SupplyStockDisplayCell } from '@/features/supplies/components/molecules/SupplyStockDisplayCell'
 import { SupplyCostDisplayCell } from '@/features/supplies/components/molecules/SupplyCostDisplayCell'
+import { TrackedStock } from '@/shared/modules/stock'
 
 export const supplyColumns: ColumnDef<SupplyModel>[] = [
     {
@@ -25,16 +26,20 @@ export const supplyColumns: ColumnDef<SupplyModel>[] = [
     {
         accessorKey: 'baseUnit',
         header: 'Unidade / referência',
-        cell: ({ row }) => <SupplyReferenceSelectorCell supply={row.original} />,
+        cell: ({ row }) => (
+            <SupplyReferenceSelectorCell supply={row.original} />
+        ),
     },
     {
         accessorKey: 'stockQuantity',
         header: 'Estoque disponível',
         cell: ({ row }) => (
-            <SupplyStockDisplayCell
-                supply={row.original}
-                value={row.original.stockQuantity}
-            />
+            <TrackedStock trackStock={row.original.trackStock}>
+                <SupplyStockDisplayCell
+                    supply={row.original}
+                    value={row.original.stockQuantity}
+                />
+            </TrackedStock>
         ),
     },
     {

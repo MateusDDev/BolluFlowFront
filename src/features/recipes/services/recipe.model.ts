@@ -9,5 +9,6 @@ export interface RecipeModel {
     costPerBaseUnit?: number | null
     isActive: boolean
     stockQuantity: number
+    trackStock: boolean
     minimumStockQuantity?: number | null
 }

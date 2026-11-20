@@ -30,19 +30,21 @@ export function SupplyStockDisplayCell({ supply, value }: Props) {
     const factor =
         selectedConversion === BASE_OPTION_VALUE
             ? 1
-            : options.find((item) => item.value === selectedConversion)?.factor ?? 1
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.factor ?? 1)
 
     const label =
         selectedConversion === BASE_OPTION_VALUE
             ? getMeasurementUnitLabel(supply.baseUnit)
-            : options.find((item) => item.value === selectedConversion)?.label ??
-              getMeasurementUnitLabel(supply.baseUnit)
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.label ?? getMeasurementUnitLabel(supply.baseUnit))
 
     const converted = value / factor
 
     return (
         <span>
-            {converted.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} {label}
+            {converted.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}{' '}
+            {label}
         </span>
     )
 }

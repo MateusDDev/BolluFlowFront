@@ -12,9 +12,8 @@ export const getReferenceKey = (supplyId: number) =>
 export function useSupplyReferenceSelection(supplyId: number) {
     const { data: preference } = useGetStockUnitPreference('supply', supplyId)
     const setStockUnitPreference = useSetStockUnitPreference()
-    const [selectedConversion, setSelectedConversionState] = useState(
-        BASE_OPTION_VALUE
-    )
+    const [selectedConversion, setSelectedConversionState] =
+        useState(BASE_OPTION_VALUE)
 
     useEffect(() => {
         const key = getReferenceKey(supplyId)
@@ -25,7 +24,10 @@ export function useSupplyReferenceSelection(supplyId: number) {
         }
 
         const listener = (event: Event) => {
-            const customEvent = event as CustomEvent<{ key: string; value: string }>
+            const customEvent = event as CustomEvent<{
+                key: string
+                value: string
+            }>
             if (customEvent.detail?.key === key) {
                 setSelectedConversionState(customEvent.detail.value)
             }

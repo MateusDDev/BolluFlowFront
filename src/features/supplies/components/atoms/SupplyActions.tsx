@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useModules } from '@/shared/modules/useModules'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -37,6 +38,7 @@ export function SupplyActions({ supply }: Props) {
     const [isConversionsOpen, setIsConversionsOpen] = useState(false)
     const [isStockEntryOpen, setIsStockEntryOpen] = useState(false)
     const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
+    const { hasModule, hasAnyModule } = useModules()
 
     const { mutateAsync, isPending } = useDeleteSupply()
 
@@ -64,14 +66,23 @@ export function SupplyActions({ supply }: Props) {
                     >
                         Gerenciar conversoes
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsStockEntryOpen(true)}>
-                        Registrar compra
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => setIsStockAdjustmentOpen(true)}
-                    >
-                        Corrigir estoque
-                    </DropdownMenuItem>
+                    {hasAnyModule(['stock', 'finance']) && (
+                        <DropdownMenuItem
+                            onClick={() => setIsStockEntryOpen(true)}
+                        >
+                            Registrar compra
+                        </DropdownMenuItem>
+                    )}
+
+                    {hasModule('stock') && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={() => setIsStockAdjustmentOpen(true)}
+                            >
+                                Corrigir estoque
+                            </DropdownMenuItem>
+                        </>
+                    )}
                     <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive">
                             Excluir insumo

@@ -6,6 +6,7 @@ import { Badge } from 'ui/badge'
 import { RecipeActions } from '@/features/recipes/list/components/atoms/RecipeActions'
 import { RecipeReferenceSelectorCell } from '@/features/recipes/list/components/molecules/RecipeReferenceSelectorCell'
 import { RecipeStockDisplayCell } from '@/features/recipes/list/components/molecules/RecipeStockDisplayCell'
+import { TrackedStock } from '@/shared/modules/stock'
 
 export const recipeColumns: ColumnDef<RecipeModel>[] = [
     {
@@ -41,10 +42,12 @@ export const recipeColumns: ColumnDef<RecipeModel>[] = [
         accessorKey: 'stockQuantity',
         header: 'Estoque disponível',
         cell: ({ row }) => (
-            <RecipeStockDisplayCell
-                recipe={row.original}
-                value={row.original.stockQuantity}
-            />
+            <TrackedStock trackStock={row.original.trackStock}>
+                <RecipeStockDisplayCell
+                    recipe={row.original}
+                    value={row.original.stockQuantity}
+                />
+            </TrackedStock>
         ),
     },
     {

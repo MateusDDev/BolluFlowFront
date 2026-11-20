@@ -12,7 +12,10 @@ type Props = {
 }
 
 export function IngredientStockDisplayCell({ ingredient, value }: Props) {
-    const { data: conversions } = useGetIngredientConversions(ingredient.id, true)
+    const { data: conversions } = useGetIngredientConversions(
+        ingredient.id,
+        true
+    )
 
     const options = useMemo(
         () =>
@@ -30,19 +33,21 @@ export function IngredientStockDisplayCell({ ingredient, value }: Props) {
     const factor =
         selectedConversion === BASE_OPTION_VALUE
             ? 1
-            : options.find((item) => item.value === selectedConversion)?.factor ?? 1
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.factor ?? 1)
 
     const label =
         selectedConversion === BASE_OPTION_VALUE
             ? getMeasurementUnitLabel(ingredient.baseUnit)
-            : options.find((item) => item.value === selectedConversion)?.label ??
-              getMeasurementUnitLabel(ingredient.baseUnit)
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.label ?? getMeasurementUnitLabel(ingredient.baseUnit))
 
     const converted = value / factor
 
     return (
         <span>
-            {converted.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} {label}
+            {converted.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}{' '}
+            {label}
         </span>
     )
 }

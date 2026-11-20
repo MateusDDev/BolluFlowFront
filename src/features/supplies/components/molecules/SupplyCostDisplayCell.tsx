@@ -28,7 +28,8 @@ export function SupplyCostDisplayCell({ supply }: Props) {
     const factor =
         selectedConversion === BASE_OPTION_VALUE
             ? 1
-            : options.find((item) => item.value === selectedConversion)?.factor ?? 1
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.factor ?? 1)
 
     return <span>{formatCurrency(supply.unitCost * factor)}</span>
 }

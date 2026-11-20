@@ -33,19 +33,23 @@ export function IngredientConversionsModal({
 }: IngredientConversionsModalProps) {
     const [newConversionName, setNewConversionName] = useState('')
     const [newConversionQuantity, setNewConversionQuantity] = useState('')
-    const [editingConversionId, setEditingConversionId] = useState<number | null>(
-        null
-    )
+    const [editingConversionId, setEditingConversionId] = useState<
+        number | null
+    >(null)
     const [editingConversionName, setEditingConversionName] = useState('')
-    const [editingConversionQuantity, setEditingConversionQuantity] = useState('')
+    const [editingConversionQuantity, setEditingConversionQuantity] =
+        useState('')
 
     const { data: conversions, isLoading } = useGetIngredientConversions(
         ingredient.id,
         open
     )
 
-    const { mutateAsync: createConversion, isPending: isCreating, error } =
-        useCreateIngredientConversion()
+    const {
+        mutateAsync: createConversion,
+        isPending: isCreating,
+        error,
+    } = useCreateIngredientConversion()
     const {
         mutateAsync: updateConversion,
         isPending: isUpdating,
@@ -109,7 +113,9 @@ export function IngredientConversionsModal({
     const handleUpdate = async () => {
         if (editingConversionId === null) return
 
-        const parsedQuantity = Number(editingConversionQuantity.replace(',', '.'))
+        const parsedQuantity = Number(
+            editingConversionQuantity.replace(',', '.')
+        )
 
         if (
             !editingConversionName.trim() ||
@@ -185,28 +191,33 @@ export function IngredientConversionsModal({
                                     Nenhuma conversão personalizada cadastrada.
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Você pode usar as padrão abaixo para começar.
+                                    Você pode usar as padrão abaixo para
+                                    começar.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                    {defaultConversions.map((defaultConversion) => (
-                                        <Button
-                                            key={defaultConversion.name}
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleCreate(
-                                                    defaultConversion.name,
-                                                    String(
-                                                        defaultConversion.quantityInBaseUnit
+                                    {defaultConversions.map(
+                                        (defaultConversion) => (
+                                            <Button
+                                                key={defaultConversion.name}
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    handleCreate(
+                                                        defaultConversion.name,
+                                                        String(
+                                                            defaultConversion.quantityInBaseUnit
+                                                        )
                                                     )
-                                                )
-                                            }
-                                            disabled={isBusy}
-                                        >
-                                            {defaultConversion.name} ={' '}
-                                            {defaultConversion.quantityInBaseUnit}
-                                        </Button>
-                                    ))}
+                                                }
+                                                disabled={isBusy}
+                                            >
+                                                {defaultConversion.name} ={' '}
+                                                {
+                                                    defaultConversion.quantityInBaseUnit
+                                                }
+                                            </Button>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -262,7 +273,9 @@ export function IngredientConversionsModal({
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={() => startEdit(conversion)}
+                                            onClick={() =>
+                                                startEdit(conversion)
+                                            }
                                             disabled={isBusy}
                                         >
                                             <Pencil className="h-4 w-4" />

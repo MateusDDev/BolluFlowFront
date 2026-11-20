@@ -11,7 +11,10 @@ type Props = {
 }
 
 export function IngredientCostDisplayCell({ ingredient }: Props) {
-    const { data: conversions } = useGetIngredientConversions(ingredient.id, true)
+    const { data: conversions } = useGetIngredientConversions(
+        ingredient.id,
+        true
+    )
 
     const options = useMemo(
         () =>
@@ -28,7 +31,8 @@ export function IngredientCostDisplayCell({ ingredient }: Props) {
     const factor =
         selectedConversion === BASE_OPTION_VALUE
             ? 1
-            : options.find((item) => item.value === selectedConversion)?.factor ?? 1
+            : (options.find((item) => item.value === selectedConversion)
+                  ?.factor ?? 1)
 
     return <span>{formatCurrency(ingredient.unitCost * factor)}</span>
 }

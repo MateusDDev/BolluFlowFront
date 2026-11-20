@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useModules } from '@/shared/modules/useModules'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,6 +22,7 @@ type Props = {
 export function RecipeActions({ recipe }: Props) {
     const [isProductionOpen, setIsProductionOpen] = useState(false)
     const [isStockAdjustmentOpen, setIsStockAdjustmentOpen] = useState(false)
+    const { hasModule } = useModules()
 
     return (
         <>
@@ -37,14 +39,20 @@ export function RecipeActions({ recipe }: Props) {
                     <DropdownMenuItem asChild>
                         <Link href={`/recipes/${recipe.id}`}>Ver detalhes</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsProductionOpen(true)}>
-                        Registrar produção
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => setIsStockAdjustmentOpen(true)}
-                    >
-                        Corrigir estoque
-                    </DropdownMenuItem>
+                    {hasModule('stock') && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={() => setIsProductionOpen(true)}
+                            >
+                                Registrar produção
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setIsStockAdjustmentOpen(true)}
+                            >
+                                Corrigir estoque
+                            </DropdownMenuItem>
+                        </>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 

@@ -50,6 +50,7 @@ export type UpdateProductDataType = {
     description?: string | null
     category?: string | null
     isActive?: boolean
+    trackStock?: boolean
     stockQuantity?: number
     minimumStockQuantity?: number
     imageUrl?: string | null

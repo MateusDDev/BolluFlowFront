@@ -6,6 +6,7 @@ import { IngredientModel } from '@/features/ingredients/services/ingredient.mode
 import { IngredientReferenceSelectorCell } from '@/features/ingredients/components/molecules/IngredientReferenceSelectorCell'
 import { IngredientStockDisplayCell } from '@/features/ingredients/components/molecules/IngredientStockDisplayCell'
 import { IngredientCostDisplayCell } from '@/features/ingredients/components/molecules/IngredientCostDisplayCell'
+import { TrackedStock } from '@/shared/modules/stock'
 
 export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
     {
@@ -37,10 +38,12 @@ export const ingredientsTableColumns: ColumnDef<IngredientModel>[] = [
         accessorKey: 'stockQuantity',
         header: 'Estoque disponível',
         cell: ({ row }) => (
-            <IngredientStockDisplayCell
-                ingredient={row.original as IngredientModel}
-                value={row.original.stockQuantity}
-            />
+            <TrackedStock trackStock={row.original.trackStock}>
+                <IngredientStockDisplayCell
+                    ingredient={row.original as IngredientModel}
+                    value={row.original.stockQuantity}
+                />
+            </TrackedStock>
         ),
     },
     {

@@ -15,10 +15,16 @@ import {
 import Link from 'next/link'
 import { navItems, navSections } from '@/shared/navigation/items'
 import { useMe } from '@/features/login/hooks/useMe'
+import { useModules } from '@/shared/modules/useModules'
 
 const AppSidebar = () => {
     const { state } = useSidebar()
     const { data: user } = useMe()
+    const { hasAnyModule } = useModules()
+
+    const visibleItems = navItems.filter(
+        (item) => !item.modules || hasAnyModule(item.modules)
+    )
 
     return (
         <Sidebar collapsible="icon">
@@ -34,7 +40,7 @@ const AppSidebar = () => {
 
             <SidebarContent>
                 {navSections.map((section) => {
-                    const items = navItems.filter(
+                    const items = visibleItems.filter(
                         (item) => item.section === section.key
                     )
 
