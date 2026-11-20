@@ -1,6 +1,7 @@
 'use client'
 
-import { GalleryVerticalEnd } from 'lucide-react'
+import Link from 'next/link'
+import { AuthHeader } from '@/features/login/components/AuthHeader'
 
 import { cn } from 'lib/utils'
 import { Button } from 'ui/button'
@@ -25,16 +26,7 @@ export function LoginForm() {
         <div className={cn('flex flex-col gap-6')}>
             <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-col items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md">
-                            <GalleryVerticalEnd className="size-6" />
-                        </div>
-
-                        <h1 className="text-xl font-bold">BolluFlow</h1>
-                        <p className="text-center text-sm">
-                            Sistema para administração de docerias
-                        </p>
-                    </div>
+                    <AuthHeader subtitle="Sistema para administração de docerias" />
 
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
@@ -72,29 +64,21 @@ export function LoginForm() {
                             className="w-full"
                             disabled={isPending}
                         >
-                            {isPending ? 'Carregando...' : 'Login'}
+                            {isPending ? 'Entrando...' : 'Entrar'}
                         </Button>
                     </div>
                 </div>
             </form>
 
-            <div className="text-balance text-center text-xs text-muted-foreground">
-                By clicking login, you agree to our{' '}
-                <a
-                    href="#"
+            <p className="text-center text-sm text-muted-foreground">
+                Ainda não tem conta?{' '}
+                <Link
+                    href="/cadastro"
                     className="underline underline-offset-4 hover:text-primary"
                 >
-                    Terms of Service
-                </a>{' '}
-                and{' '}
-                <a
-                    href="#"
-                    className="underline underline-offset-4 hover:text-primary"
-                >
-                    Privacy Policy
-                </a>
-                .
-            </div>
+                    Criar conta grátis
+                </Link>
+            </p>
         </div>
     )
 }

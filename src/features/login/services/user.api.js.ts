@@ -8,6 +8,14 @@ export function login(email: string, password: string) {
     })
 }
 
+export function signUp(name: string, email: string, password: string) {
+    return apiClient<UserModel>('/auth/sign-up', 'POST', {
+        name,
+        email,
+        password,
+    })
+}
+
 export function logout() {
     return apiClient('/auth/logout', 'POST')
 }
