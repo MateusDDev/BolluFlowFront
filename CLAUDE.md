@@ -53,6 +53,13 @@ Aliases (tsconfig): `@/*` → `src/*`, `components/*`, `ui/*`, `lib/*`, `hooks/*
 
 - **Código em inglês**: componentes, hooks, funções, variáveis, tipos, nomes de arquivo e de pasta (ex.: `trackStock`, `useGetOnboardingProgress`). Só o texto exibido ao usuário fica em pt-BR. Rotas de página já existentes em pt-BR (`/financeiro`, `/configuracoes`, `/cardapio`) são URLs públicas e ficam como estão.
 - **Não escreva comentários no código** (nem `//`, nem `/* */`, nem JSDoc). Nomes claros substituem comentários; contexto vai na mensagem de commit/PR.
+- **Módulos (orders, recipes, stock, finance)** — nunca espalhe `if` soltos:
+  - mostrar/esconder bloco → `<ModuleGate module="stock">` (`src/shared/modules/ModuleGate.tsx`);
+  - coluna de tabela → `meta: { module: 'stock' }` na `ColumnDef` + `useModuleColumns(columns)`;
+  - página → declare `modules` no item de `src/shared/navigation/items.ts`; o `ModuleRouteGuard` e o menu usam essa lista;
+  - query de dado de módulo → passe `enabled` (não busque o que não vai aparecer);
+  - `useModules()` só quando o módulo muda **lógica** (texto, valor, regra), não para esconder JSX.
+- Item de estoque sem controle aparece com `<TrackedStock>`; interruptor de controle com `<TrackStockField>`.
 - Páginas em `app/` são finas: só renderizam o container da feature.
 - Toda chamada à API passa por `apiClient(endpoint, method, body)`; erro da API (`{ message, code, details }`) vira `Error(message)` — o toast mostra a mensagem do backend.
 - Sessão: cookie `access_token` (`credentials: 'include'`); `useMe()` carrega o usuário e o `AuthWrapper` redireciona para `/login` em erro.
