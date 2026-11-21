@@ -26,6 +26,7 @@ const NewCustomerModal = () => {
     const [street, setStreet] = useState('')
     const [number, setNumber] = useState('')
     const [neighborhood, setNeighborhood] = useState('')
+    const [complement, setComplement] = useState('')
 
     const {
         mutateAsync: createCustomer,
@@ -42,7 +43,12 @@ const NewCustomerModal = () => {
             birthday,
             preferences,
             deliveryAddress: street.trim()
-                ? { neighborhood, number: Number(number), street }
+                ? {
+                      neighborhood,
+                      number: Number(number),
+                      street,
+                      complement: complement.trim() || undefined,
+                  }
                 : undefined,
         })
 
@@ -58,6 +64,7 @@ const NewCustomerModal = () => {
         setStreet('')
         setNumber('')
         setNeighborhood('')
+        setComplement('')
     }
 
     return (
@@ -149,6 +156,12 @@ const NewCustomerModal = () => {
                                 required={street.trim() !== ''}
                             />
                         </div>
+
+                        <Input
+                            placeholder="Ponto de referência"
+                            value={complement}
+                            onChange={(e) => setComplement(e.target.value)}
+                        />
                     </div>
 
                     <DialogFooter>

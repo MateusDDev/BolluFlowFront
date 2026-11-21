@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent } from 'react'
-import { LoaderCircle, X } from 'lucide-react'
+import { Clock, LoaderCircle, X } from 'lucide-react'
 import {
     Alert,
     AlertDescription,
@@ -18,8 +18,14 @@ import {
     SheetTitle,
 } from '@/shared/components/ui/sheet'
 import { CustomerForm } from '@/features/menu/components/CustomerForm'
+import { MenuPaymentPicker } from '@/features/menu/components/MenuPaymentPicker'
 import { OrderSummary } from '@/features/menu/components/OrderSummary'
-import { CartItem, OrderFormState } from '@/features/menu/types/menu.types'
+import { getDeliveryTimeLabel } from '@/features/menu/helpers/deliveryTime'
+import {
+    CartItem,
+    MenuStoreAddress,
+    OrderFormState,
+} from '@/features/menu/types/menu.types'
 
 type Props = {
     cart: CartItem[]
@@ -36,6 +42,9 @@ type Props = {
     submissionError: string | null
     total: number
     validationMessage: string | null
+    deliveryTimeMinutes?: number | null
+    pixKey?: string | null
+    storeAddress: MenuStoreAddress | null
 }
 
 export function CheckoutSheet({
@@ -50,7 +59,12 @@ export function CheckoutSheet({
     onFieldChange,
     onWhatsappBlur,
     onSubmit,
+    deliveryTimeMinutes,
+    pixKey,
+    storeAddress,
 }: Props) {
+    const deliveryTimeLabel = getDeliveryTimeLabel(deliveryTimeMinutes)
+
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-full overflow-y-auto border-l-menu-border bg-menu-background sm:max-w-xl">
@@ -73,9 +87,29 @@ export function CheckoutSheet({
                             form={form}
                             onFieldChange={onFieldChange}
                             onWhatsappBlur={onWhatsappBlur}
+                            storeAddress={storeAddress}
+                        />
+
+                        <MenuPaymentPicker
+                            value={form.paymentMethod}
+                            onChange={(value) =>
+                                onFieldChange('paymentMethod', value)
+                            }
+                            changeFor={form.changeFor}
+                            onChangeForChange={(value) =>
+                                onFieldChange('changeFor', value)
+                            }
+                            pixKey={pixKey}
                         />
 
                         <OrderSummary cart={cart} total={total} />
+
+                        {deliveryTimeLabel ? (
+                            <p className="flex items-center gap-2 text-sm text-menu-muted">
+                                <Clock className="size-4" />
+                                {deliveryTimeLabel}
+                            </p>
+                        ) : null}
 
                         {validationMessage ? (
                             <Alert className="border-menu-border bg-menu-primary-light text-menu-text">

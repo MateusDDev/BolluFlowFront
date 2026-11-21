@@ -9,5 +9,9 @@ export const initialOrderFormState: OrderFormState = {
     customerStreet: '',
     customerNumber: '',
     customerNeighborhood: '',
+    customerComplement: '',
+    isPickup: false,
     note: '',
+    paymentMethod: null,
+    changeFor: '',
 }

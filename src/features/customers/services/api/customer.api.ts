@@ -14,6 +14,7 @@ export function createCustomer(data: {
         street: string
         number: number
         neighborhood: string
+        complement?: string
     }
 }) {
     return apiClient<CustomerModel>('/customers', 'POST', data)

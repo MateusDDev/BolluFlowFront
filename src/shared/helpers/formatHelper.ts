@@ -45,6 +45,12 @@ export function formatCurrencyFromInput(
     }).format(number)
 }
 
+export function parseCurrencyInput(value: string): number | undefined {
+    const digits = value.replace(/\D/g, '')
+
+    return digits ? Number(digits) / 100 : undefined
+}
+
 export function formatQuantityInput(value: string) {
     let formatted = value.replace(/[^\d,]/g, '')
 

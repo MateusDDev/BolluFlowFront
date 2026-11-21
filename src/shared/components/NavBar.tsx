@@ -18,6 +18,7 @@ import { SidebarTrigger } from 'ui/sidebar'
 import { usePathname, useRouter } from 'next/navigation'
 import { navItems } from '@/shared/navigation/items'
 import ThemeButton from 'components/ThemeButton'
+import { NotificationBell } from '@/features/notifications/components/NotificationBell'
 import { useLogout } from '@/features/login/hooks/mutations/useLogout'
 import { useMe } from '@/features/login/hooks/useMe'
 import { usePageTitle } from 'components/providers/PageTitleProvider'
@@ -41,6 +42,7 @@ const NavBar = () => {
             <h1>{pageName}</h1>
 
             <div className="flex items-center gap-4">
+                <NotificationBell />
                 <ThemeButton />
 
                 <DropdownMenu>

@@ -8,6 +8,16 @@ export type ProfileModel = {
     whatsapp: string | null
     enabledModules: AppModule[]
     allowNegativeStock: boolean
+    deliveryTimeMinutes: number | null
+    pixKey: string | null
+    storeAddress: StoreAddressModel | null
+}
+
+export type StoreAddressModel = {
+    street: string
+    number: number
+    neighborhood: string
+    complement: string | null
 }
 
 export type UpdateProfileDataType = Partial<ProfileModel>

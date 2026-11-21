@@ -7,6 +7,8 @@ import {
     formatDate,
     getPaymentMethodLabel,
 } from '@/shared/helpers/formatHelper'
+import { formatAddress } from '@/shared/helpers/addressHelper'
+import { buildWhatsappUrl } from '@/shared/helpers/whatsappHelper'
 import { TEMPLATE_KEYS } from '@/features/orders/helpers/whatsappTemplate.constants'
 
 export type OrderWhatsappMessageModel = OrderModel & {
@@ -22,11 +24,11 @@ function formatOrderItems(items: OrderItemModel[]): string {
 }
 
 function formatDeliveryAddress(order: OrderModel): string {
+    if (order.isPickup) return 'Retirada na doceria'
+
     const deliveryAddress = order.customer?.deliveryAddress
 
-    if (!deliveryAddress) return ''
-
-    return `${deliveryAddress.street}, ${deliveryAddress.number} — ${deliveryAddress.neighborhood}`
+    return deliveryAddress ? formatAddress(deliveryAddress) : ''
 }
 
 export function applyWhatsappTemplate(
@@ -99,10 +101,9 @@ export function buildOrderWhatsappMessage(
         lines.push(`Entrega: ${formatDate(order.deliveryDate)}`)
     }
 
-    if (order.customer?.deliveryAddress) {
-        const { street, number, neighborhood } = order.customer.deliveryAddress
-        lines.push(`${street}, ${number} — ${neighborhood}`)
-    }
+    const address = formatDeliveryAddress(order)
+
+    if (address) lines.push(address)
 
     if (order.note) {
         lines.push('')
@@ -116,9 +117,5 @@ export function buildOrderWhatsappMessage(
 }
 
 export function openWhatsapp(whatsapp: string, message: string): void {
-    const phone = whatsapp.replace(/\D/g, '')
-    const fullPhone = phone.startsWith('55') ? phone : `55${phone}`
-    const encoded = encodeURIComponent(message)
-
-    window.open(`https://wa.me/${fullPhone}?text=${encoded}`, '_blank')
+    window.open(buildWhatsappUrl(whatsapp, message), '_blank')
 }

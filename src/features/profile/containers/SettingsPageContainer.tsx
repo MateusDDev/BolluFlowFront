@@ -14,15 +14,28 @@ import {
 } from 'ui/card'
 import { Input } from 'ui/input'
 import { Label } from 'ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'ui/select'
 import { Separator } from 'ui/separator'
 import { Switch } from 'ui/switch'
 import { Textarea } from 'ui/textarea'
+import { StoreAddressCard } from '@/features/profile/components/StoreAddressCard'
 import { useUpdateProfile } from '@/features/profile/hooks/mutations/useUpdateProfile'
 import { useGetProfile } from '@/features/profile/hooks/queries/useGetProfile'
 import {
     DEFAULT_WHATSAPP_TEMPLATE,
     TEMPLATE_VARIABLES,
 } from '@/features/orders/helpers/whatsappTemplate.constants'
+import {
+    DeliveryTimeUnit,
+    splitDeliveryTime,
+    toDeliveryTimeMinutes,
+} from '@/features/profile/helpers/deliveryTime'
 import { sanitizeSlug as sanitizeMenuSlug } from '@/shared/helpers/slugHelper'
 import { APP_MODULES, AppModule } from '@/shared/modules/modules'
 
@@ -41,6 +54,13 @@ export default function SettingsPageContainer() {
         string | undefined
     >(undefined)
     const [menuSlug, setMenuSlug] = useState<string | undefined>(undefined)
+    const [deliveryTime, setDeliveryTime] = useState<string | undefined>(
+        undefined
+    )
+    const [deliveryTimeUnit, setDeliveryTimeUnit] = useState<
+        DeliveryTimeUnit | undefined
+    >(undefined)
+    const [pixKey, setPixKey] = useState<string | undefined>(undefined)
     const [appOrigin] = useState(() =>
         typeof window === 'undefined' ? '' : window.location.origin
     )
@@ -67,6 +87,15 @@ export default function SettingsPageContainer() {
         indirectCostRate ?? (profile?.indirectCostRate ?? 0).toString()
     const currentMenuSlug = menuSlug ?? profile?.slug ?? ''
     const normalizedMenuSlug = sanitizeMenuSlug(currentMenuSlug)
+    const storedDeliveryTime = splitDeliveryTime(profile?.deliveryTimeMinutes)
+    const currentDeliveryTime = deliveryTime ?? storedDeliveryTime.value
+    const currentDeliveryTimeUnit = deliveryTimeUnit ?? storedDeliveryTime.unit
+    const deliveryTimeMinutes = toDeliveryTimeMinutes(
+        currentDeliveryTime,
+        currentDeliveryTimeUnit
+    )
+    const isInvalidDeliveryTime = deliveryTimeMinutes === undefined
+    const currentPixKey = pixKey ?? profile?.pixKey ?? ''
     const publicMenuLink =
         appOrigin && normalizedMenuSlug
             ? `${appOrigin}/cardapio/${normalizedMenuSlug}`
@@ -113,11 +142,18 @@ export default function SettingsPageContainer() {
     }
 
     const handleSaveMenuSlug = async () => {
-        if (!normalizedMenuSlug) return
+        if (!normalizedMenuSlug || deliveryTimeMinutes === undefined) return
 
-        await updateProfile({ slug: normalizedMenuSlug })
+        await updateProfile({
+            slug: normalizedMenuSlug,
+            deliveryTimeMinutes,
+            pixKey: currentPixKey.trim() || null,
+        })
         setMenuSlug(undefined)
-        setMenuFeedback('Link do cardápio salvo com sucesso!')
+        setDeliveryTime(undefined)
+        setDeliveryTimeUnit(undefined)
+        setPixKey(undefined)
+        setMenuFeedback('Cardápio salvo com sucesso!')
     }
 
     const handleToggleModule = async (module: AppModule, enabled: boolean) => {
@@ -207,6 +243,8 @@ export default function SettingsPageContainer() {
                     </div>
                 </CardContent>
             </Card>
+
+            <StoreAddressCard storeAddress={profile.storeAddress} />
 
             <Card>
                 <CardHeader>
@@ -298,6 +336,78 @@ export default function SettingsPageContainer() {
                         </p>
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label htmlFor="menu-delivery-time">
+                            Tempo de entrega (opcional)
+                        </Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                id="menu-delivery-time"
+                                inputMode="numeric"
+                                placeholder="40"
+                                className="w-24"
+                                value={currentDeliveryTime}
+                                onChange={(event) => {
+                                    setMenuFeedback(null)
+                                    setDeliveryTime(event.target.value)
+                                }}
+                            />
+                            <Select
+                                value={currentDeliveryTimeUnit}
+                                onValueChange={(value) => {
+                                    setMenuFeedback(null)
+                                    setDeliveryTimeUnit(
+                                        value as DeliveryTimeUnit
+                                    )
+                                }}
+                            >
+                                <SelectTrigger
+                                    className="w-32"
+                                    aria-label="Unidade do tempo de entrega"
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="minutes">
+                                        minutos
+                                    </SelectItem>
+                                    <SelectItem value="hours">horas</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <p
+                            className={
+                                isInvalidDeliveryTime
+                                    ? 'text-sm text-destructive'
+                                    : 'text-sm text-muted-foreground'
+                            }
+                        >
+                            {isInvalidDeliveryTime
+                                ? 'Informe um número inteiro, de 1 minuto até 24 horas.'
+                                : 'Quanto tempo o pedido leva para sair da doceria e chegar ao cliente. Aparece no cardápio.'}
+                        </p>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="menu-pix-key">
+                            Chave Pix (opcional)
+                        </Label>
+                        <Input
+                            id="menu-pix-key"
+                            placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+                            maxLength={140}
+                            value={currentPixKey}
+                            onChange={(event) => {
+                                setMenuFeedback(null)
+                                setPixKey(event.target.value)
+                            }}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                            Aparece para o cliente que escolher Pix no cardápio,
+                            com botão de copiar.
+                        </p>
+                    </div>
+
                     <Separator />
 
                     <div className="space-y-2">
@@ -338,7 +448,11 @@ export default function SettingsPageContainer() {
 
                             <Button
                                 onClick={handleSaveMenuSlug}
-                                disabled={isPending || !normalizedMenuSlug}
+                                disabled={
+                                    isPending ||
+                                    !normalizedMenuSlug ||
+                                    isInvalidDeliveryTime
+                                }
                             >
                                 {isPending ? 'Salvando...' : 'Salvar'}
                             </Button>
