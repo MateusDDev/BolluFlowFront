@@ -30,6 +30,7 @@ interface FormState {
     street: string
     number: string
     neighborhood: string
+    complement: string
 }
 
 const mapCustomerToForm = (customer: CustomerModel): FormState => ({
@@ -40,6 +41,7 @@ const mapCustomerToForm = (customer: CustomerModel): FormState => ({
     street: customer.deliveryAddress?.street ?? '',
     number: customer.deliveryAddress?.number?.toString() ?? '',
     neighborhood: customer.deliveryAddress?.neighborhood ?? '',
+    complement: customer.deliveryAddress?.complement ?? '',
 })
 
 const EditCustomerModal = ({
@@ -83,6 +85,7 @@ const EditCustomerModal = ({
                           street: form.street,
                           number: Number(form.number),
                           neighborhood: form.neighborhood,
+                          complement: form.complement.trim() || undefined,
                       }
                     : undefined,
             },
@@ -168,6 +171,14 @@ const EditCustomerModal = ({
                                 className="col-span-2"
                             />
                         </div>
+
+                        <Input
+                            placeholder="Ponto de referência"
+                            value={form.complement}
+                            onChange={(e) =>
+                                setField('complement', e.target.value)
+                            }
+                        />
                     </div>
 
                     <DialogFooter>

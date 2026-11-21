@@ -1,4 +1,4 @@
-import { PackageCheck } from 'lucide-react'
+import { MessageCircle, PackageCheck } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import {
     Card,
@@ -7,18 +7,28 @@ import {
     CardHeader,
     CardTitle,
 } from '@/shared/components/ui/card'
-import { PublicOrderConfirmationModel } from '@/features/menu/types/menu.types'
+import { PixKeyCopy } from '@/features/menu/components/PixKeyCopy'
+import {
+    CompletedMenuOrder,
+    MenuStoreAddress,
+} from '@/features/menu/types/menu.types'
+import { formatAddress } from '@/shared/helpers/addressHelper'
 
 type Props = {
-    order: PublicOrderConfirmationModel
+    order: CompletedMenuOrder
+    pixKey?: string | null
+    storeAddress: MenuStoreAddress | null
     onBack: () => void
 }
 
-function getOrderNumber(order: PublicOrderConfirmationModel) {
-    return order.orderNumber ?? order.number ?? order.id
-}
+export function OrderConfirmation({
+    order,
+    pixKey,
+    storeAddress,
+    onBack,
+}: Props) {
+    const { whatsappUrl } = order
 
-export function OrderConfirmation({ order, onBack }: Props) {
     return (
         <div className="flex min-h-screen items-center justify-center px-4">
             <div className="w-full max-w-sm text-center">
@@ -28,14 +38,45 @@ export function OrderConfirmation({ order, onBack }: Props) {
                             <PackageCheck className="size-8" />
                         </div>
                         <CardTitle className="text-3xl text-emerald-950">
-                            Pedido recebido!
+                            Pedido #{order.orderNumber} recebido!
                         </CardTitle>
                         <CardDescription className="text-base text-emerald-900/85">
-                            O acompanhamento do pedido pode ser feito pelo
-                            whatsapp.
+                            {whatsappUrl
+                                ? 'Envie o pedido pelo WhatsApp para a loja confirmar.'
+                                : 'A loja vai falar com você pelo WhatsApp.'}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex flex-col items-center gap-3">
+                        {order.isPickup && storeAddress ? (
+                            <div className="w-full rounded-xl border border-menu-border bg-menu-card p-3 text-left">
+                                <p className="text-xs font-medium uppercase tracking-wide text-menu-muted">
+                                    Retire seu pedido em
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-menu-text">
+                                    {formatAddress(storeAddress)}
+                                </p>
+                            </div>
+                        ) : null}
+                        {order.paymentMethod === 'Pix' && pixKey ? (
+                            <div className="w-full">
+                                <PixKeyCopy pixKey={pixKey} />
+                            </div>
+                        ) : null}
+                        {whatsappUrl ? (
+                            <Button
+                                asChild
+                                className="h-11 w-full rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
+                            >
+                                <a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <MessageCircle />
+                                    Enviar pedido no WhatsApp
+                                </a>
+                            </Button>
+                        ) : null}
                         <Button
                             type="button"
                             variant="outline"

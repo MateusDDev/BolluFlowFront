@@ -38,6 +38,7 @@ import {
     formatWhatsapp,
     getPaymentMethodLabel,
 } from '@/shared/helpers/formatHelper'
+import { formatAddress } from '@/shared/helpers/addressHelper'
 import { useGetOrderCustomers } from '@/features/orders/list/hooks/queries/useGetOrderCustomers'
 import { useUpdateOrder } from '@/features/orders/details/hooks/mutations/useUpdateOrder'
 import { UpdateOrderDataType } from '@/features/orders/services/order.api'
@@ -298,15 +299,26 @@ export function OrderDetails() {
                                 </div>
                             )}
 
-                            {order.customer?.deliveryAddress && (
+                            {order.isPickup ? (
+                                <div className="grid gap-2">
+                                    <Label>Entrega</Label>
+                                    <div>
+                                        <Badge variant="outline">
+                                            Retirada na doceria
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ) : order.customer?.deliveryAddress ? (
                                 <div className="grid gap-2">
                                     <Label>Endereço</Label>
                                     <Input
-                                        value={`Rua ${order.customer.deliveryAddress.street}, Nº ${order.customer.deliveryAddress.number} - Bairro ${order.customer.deliveryAddress.neighborhood}`}
+                                        value={formatAddress(
+                                            order.customer.deliveryAddress
+                                        )}
                                         disabled
                                     />
                                 </div>
-                            )}
+                            ) : null}
 
                             <div className="grid gap-2">
                                 <Label>Forma de pagamento</Label>
@@ -593,6 +605,16 @@ export function OrderDetails() {
                                     </Badge>
                                 </div>
                             )}
+
+                            {order.paymentMethod === 'Cash' &&
+                                order.changeFor && (
+                                    <div className="flex justify-between">
+                                        <span>Troco para:</span>
+                                        <span>
+                                            {formatCurrency(order.changeFor)}
+                                        </span>
+                                    </div>
+                                )}
                         </CardContent>
                     </Card>
 

@@ -10,6 +10,7 @@ export type CreateCustomerInput = {
         street: string
         number: number
         neighborhood: string
+        complement?: string
     }
 }
 

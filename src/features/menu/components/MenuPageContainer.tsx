@@ -8,7 +8,11 @@ import {
 } from '@/shared/components/ui/alert'
 import { Card, CardHeader } from '@/shared/components/ui/card'
 import { Skeleton } from '@/shared/components/ui/skeleton'
-import { formatCurrency, formatWhatsapp } from '@/shared/helpers/formatHelper'
+import {
+    formatCurrency,
+    formatWhatsapp,
+    parseCurrencyInput,
+} from '@/shared/helpers/formatHelper'
 import { CartSummary } from '@/features/menu/components/CartSummary'
 import { MenuHeader } from '@/features/menu/components/MenuHeader'
 import { OrderConfirmation } from '@/features/menu/components/OrderConfirmation'
@@ -21,8 +25,11 @@ import { useMenuData } from '@/features/menu/hooks/useMenuData'
 import {
     CreatePublicOrderDataType,
     OrderFormState,
-    PublicOrderConfirmationModel,
+    CompletedMenuOrder,
 } from '@/features/menu/types/menu.types'
+import { buildMenuOrderMessage } from '@/features/menu/helpers/menuOrderMessage'
+import { formatAddress } from '@/shared/helpers/addressHelper'
+import { buildWhatsappUrl } from '@/shared/helpers/whatsappHelper'
 import { CheckoutSheet } from '@/features/menu/components/CheckoutSheet'
 
 type Props = {
@@ -58,8 +65,9 @@ export function MenuPageContainer({ slug }: Props) {
         null
     )
     const [submissionError, setSubmissionError] = useState<string | null>(null)
-    const [createdOrder, setCreatedOrder] =
-        useState<PublicOrderConfirmationModel | null>(null)
+    const [createdOrder, setCreatedOrder] = useState<CompletedMenuOrder | null>(
+        null
+    )
 
     const quantities = useMemo(
         () =>
@@ -85,9 +93,14 @@ export function MenuPageContainer({ slug }: Props) {
             ...current,
             customerName: storedCustomer.name,
             customerWhatsapp: formatWhatsapp(storedCustomer.whatsapp),
-            customerStreet: storedCustomer.street,
-            customerNumber: String(storedCustomer.number),
-            customerNeighborhood: storedCustomer.neighborhood,
+            customerStreet: storedCustomer.street || current.customerStreet,
+            customerNumber: storedCustomer.number
+                ? String(storedCustomer.number)
+                : current.customerNumber,
+            customerNeighborhood:
+                storedCustomer.neighborhood || current.customerNeighborhood,
+            customerComplement:
+                storedCustomer.complement ?? current.customerComplement,
         }))
     }
 
@@ -115,13 +128,26 @@ export function MenuPageContainer({ slug }: Props) {
         setCheckoutOpen(true)
     }
 
+    const changeFor =
+        form.paymentMethod === 'Cash'
+            ? parseCurrencyInput(form.changeFor)
+            : undefined
+
+    const storeAddress = menu?.storeAddress ?? null
+    const isPickup = form.isPickup && storeAddress !== null
+
     const validateForm = () => {
         if (cart.length === 0) return 'Adicione pelo menos um produto.'
         if (whatsappDigits.length < 10) return 'WhatsApp inválido.'
         if (!form.customerName.trim()) return 'Informe seu nome.'
-        if (!form.customerStreet.trim()) return 'Informe a rua.'
-        if (!form.customerNumber.trim()) return 'Informe o número.'
-        if (!form.customerNeighborhood.trim()) return 'Informe o bairro.'
+        if (!isPickup) {
+            if (!form.customerStreet.trim()) return 'Informe a rua.'
+            if (!form.customerNumber.trim()) return 'Informe o número.'
+            if (!form.customerNeighborhood.trim()) return 'Informe o bairro.'
+        }
+        if (!form.paymentMethod) return 'Escolha a forma de pagamento.'
+        if (changeFor !== undefined && changeFor < total)
+            return 'O troco deve ser para um valor maior ou igual ao total.'
         return null
     }
 
@@ -129,18 +155,27 @@ export function MenuPageContainer({ slug }: Props) {
         event.preventDefault()
 
         const errorMessage = validateForm()
-        if (errorMessage) {
-            setValidationMessage(errorMessage)
+        if (errorMessage || !form.paymentMethod) {
+            setValidationMessage(errorMessage ?? 'Confira os dados.')
             return
         }
 
         const payload: CreatePublicOrderDataType = {
             customerName: form.customerName.trim(),
             customerWhatsapp: whatsappDigits,
-            customerStreet: form.customerStreet.trim(),
-            customerNumber: form.customerNumber.trim(),
-            customerNeighborhood: form.customerNeighborhood.trim(),
+            ...(isPickup
+                ? {}
+                : {
+                      customerStreet: form.customerStreet.trim(),
+                      customerNumber: form.customerNumber.trim(),
+                      customerNeighborhood: form.customerNeighborhood.trim(),
+                      customerComplement:
+                          form.customerComplement.trim() || undefined,
+                  }),
+            isPickup,
             note: form.note.trim() || undefined,
+            paymentMethod: form.paymentMethod,
+            changeFor,
             items: cart.map((item) => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -151,15 +186,50 @@ export function MenuPageContainer({ slug }: Props) {
             const order = await createOrder(payload)
 
             // salva localmente
-            saveCustomer({
-                name: payload.customerName,
-                whatsapp: payload.customerWhatsapp,
-                street: payload.customerStreet,
-                number: Number.parseInt(payload.customerNumber, 10) || 0,
-                neighborhood: payload.customerNeighborhood,
-            })
+            if (!isPickup) {
+                saveCustomer({
+                    name: payload.customerName,
+                    whatsapp: payload.customerWhatsapp,
+                    street: payload.customerStreet ?? '',
+                    number:
+                        Number.parseInt(payload.customerNumber ?? '', 10) || 0,
+                    neighborhood: payload.customerNeighborhood ?? '',
+                    complement: payload.customerComplement,
+                })
+            }
 
-            setCreatedOrder(order)
+            const storeWhatsapp = menu?.whatsapp?.trim()
+            const whatsappUrl = storeWhatsapp
+                ? buildWhatsappUrl(
+                      storeWhatsapp,
+                      buildMenuOrderMessage({
+                          storeName: menu?.name ?? '',
+                          orderNumber: order.orderNumber,
+                          customerName: payload.customerName,
+                          items: cart,
+                          total,
+                          paymentMethod: payload.paymentMethod,
+                          changeFor: payload.changeFor,
+                          address: isPickup
+                              ? null
+                              : formatAddress({
+                                    street: payload.customerStreet ?? '',
+                                    number: payload.customerNumber ?? '',
+                                    neighborhood:
+                                        payload.customerNeighborhood ?? '',
+                                    complement: payload.customerComplement,
+                                }),
+                          note: payload.note,
+                      })
+                  )
+                : null
+
+            setCreatedOrder({
+                orderNumber: order.orderNumber,
+                paymentMethod: payload.paymentMethod,
+                isPickup,
+                whatsappUrl,
+            })
             setCheckoutOpen(false)
             clearCart()
             setForm(initialOrderFormState)
@@ -172,6 +242,8 @@ export function MenuPageContainer({ slug }: Props) {
         return (
             <OrderConfirmation
                 order={createdOrder}
+                pixKey={menu?.pixKey}
+                storeAddress={menu?.storeAddress ?? null}
                 onBack={() => setCreatedOrder(null)}
             />
         )
@@ -199,7 +271,10 @@ export function MenuPageContainer({ slug }: Props) {
             <div className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
                     <section className="space-y-8">
-                        <MenuHeader title={menu?.name ?? 'Cardápio'} />
+                        <MenuHeader
+                            title={menu?.name ?? 'Cardápio'}
+                            deliveryTimeMinutes={menu?.deliveryTimeMinutes}
+                        />
 
                         <ProductList
                             products={products}
@@ -243,6 +318,9 @@ export function MenuPageContainer({ slug }: Props) {
                 onFieldChange={handleFieldChange}
                 onWhatsappBlur={handleWhatsappBlur}
                 onSubmit={handleSubmit}
+                pixKey={menu?.pixKey}
+                storeAddress={storeAddress}
+                deliveryTimeMinutes={menu?.deliveryTimeMinutes}
             />
             {cart.length > 0 ? (
                 <>

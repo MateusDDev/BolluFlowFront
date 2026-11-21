@@ -1,7 +1,20 @@
+import { PaymentMethod } from '@/features/orders/services/order.model'
+
 export interface PublicMenuModel {
     name: string
     slug?: string
     description?: string | null
+    whatsapp?: string | null
+    deliveryTimeMinutes?: number | null
+    pixKey?: string | null
+    storeAddress?: MenuStoreAddress | null
+}
+
+export interface MenuStoreAddress {
+    street: string
+    number: number
+    neighborhood: string
+    complement: string | null
 }
 
 export interface PublicMenuProductModel {
@@ -31,17 +44,27 @@ export interface CreatePublicOrderItemDataType {
 export interface CreatePublicOrderDataType {
     customerName: string
     customerWhatsapp: string
-    customerStreet: string
-    customerNumber: string
-    customerNeighborhood: string
+    customerStreet?: string
+    customerNumber?: string
+    customerNeighborhood?: string
+    customerComplement?: string
+    isPickup: boolean
     note?: string
+    paymentMethod: PaymentMethod
+    changeFor?: number
     items: CreatePublicOrderItemDataType[]
 }
 
 export interface PublicOrderConfirmationModel {
-    id: number
-    number?: number
-    orderNumber?: number
+    orderId: number
+    orderNumber: number
+}
+
+export interface CompletedMenuOrder {
+    orderNumber: number
+    paymentMethod: PaymentMethod
+    isPickup: boolean
+    whatsappUrl: string | null
 }
 
 export interface CustomerLookupResponse {
@@ -54,6 +77,7 @@ export interface StoredCustomer {
     street: string
     number: number
     neighborhood: string
+    complement?: string
 }
 
 export interface OrderFormState {
@@ -62,7 +86,11 @@ export interface OrderFormState {
     customerStreet: string
     customerNumber: string
     customerNeighborhood: string
+    customerComplement: string
+    isPickup: boolean
     note: string
+    paymentMethod: PaymentMethod | null
+    changeFor: string
 }
 
 export interface ProductCategoryGroup {

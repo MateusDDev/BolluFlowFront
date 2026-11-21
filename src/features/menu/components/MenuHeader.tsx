@@ -1,10 +1,14 @@
-import { Store } from 'lucide-react'
+import { Clock, Store } from 'lucide-react'
+import { getDeliveryTimeLabel } from '@/features/menu/helpers/deliveryTime'
 
 type Props = {
     title: string
+    deliveryTimeMinutes?: number | null
 }
 
-export function MenuHeader({ title }: Props) {
+export function MenuHeader({ title, deliveryTimeMinutes }: Props) {
+    const deliveryTimeLabel = getDeliveryTimeLabel(deliveryTimeMinutes)
+
     return (
         <div className="overflow-hidden rounded-[28px] border border-menu-border/80 bg-menu-card/85 shadow-[0_24px_60px_hsl(var(--menu-primary-medium)/0.32)] backdrop-blur">
             <div className="px-6 py-10 text-center sm:px-10">
@@ -21,6 +25,12 @@ export function MenuHeader({ title }: Props) {
                     Escolha seus doces favoritos, monte o carrinho e envie seu
                     pedido direto por aqui.
                 </p>
+                {deliveryTimeLabel ? (
+                    <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-menu-primary-light px-4 py-1.5 text-sm font-medium text-menu-primary-dark">
+                        <Clock className="size-4" />
+                        {deliveryTimeLabel}
+                    </p>
+                ) : null}
             </div>
         </div>
     )

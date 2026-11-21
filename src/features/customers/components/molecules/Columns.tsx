@@ -7,6 +7,7 @@ import { Button } from 'ui/button'
 import { CustomerActions } from '@/features/customers/components/atoms/CustomerActions'
 import { formatDate, formatWhatsapp } from '@/shared/helpers/formatHelper'
 import { CustomerModel } from '@/features/customers/services/api/customer.model'
+import { formatAddress } from '@/shared/helpers/addressHelper'
 
 export const columns: ColumnDef<CustomerModel>[] = [
     {
@@ -70,9 +71,7 @@ export const columns: ColumnDef<CustomerModel>[] = [
                     </div>
                 )
 
-            return (
-                <div className="text-center">{`Bairro ${address.neighborhood}, Rua ${address.street} - Nº ${address.number}`}</div>
-            )
+            return <div className="text-center">{formatAddress(address)}</div>
         },
     },
     {

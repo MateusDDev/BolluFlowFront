@@ -37,6 +37,7 @@ interface CustomerDeliveryAddress {
     street: string
     number: number
     neighborhood: string
+    complement?: string | null
 }
 
 interface CustomerModel {
@@ -61,6 +62,8 @@ export interface OrderModel {
     discountType?: 'Percentage' | 'Fixed' | null
     discountValue: number
     shippingFee: number
+    changeFor?: number | null
+    isPickup?: boolean
     total: number
     createdAt: Date
     deliveryDate?: Date
